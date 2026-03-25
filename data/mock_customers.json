@@ -1,0 +1,1404 @@
+[
+  {
+    "customer_id": "CUST-001",
+    "name": "Rahul Sharma",
+    "phone": "+919876543210",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711100000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Aashirvaad Atta 5kg", "category": "Staples", "quantity": 2, "price": 280, "timestamp": 1709500000 },
+      { "product": "McCain Smiles Frozen Potatoes", "category": "Frozen", "quantity": 3, "price": 180, "timestamp": 1710200000 },
+      { "product": "Vadilal Ice Cream 500ml", "category": "Frozen", "quantity": 2, "price": 150, "timestamp": 1711000000 },
+      { "product": "Tata Salt 1kg", "category": "Staples", "quantity": 1, "price": 25, "timestamp": 1708500000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-002",
+    "name": "Priya Nair",
+    "phone": "+919812345678",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710800000,
+    "last_offer_category": "Dairy",
+    "purchase_history": [
+      { "product": "Amul Butter 500g", "category": "Dairy", "quantity": 2, "price": 250, "timestamp": 1709800000 },
+      { "product": "ITC Master Chef Frozen Paratha", "category": "Frozen", "quantity": 4, "price": 120, "timestamp": 1710500000 },
+      { "product": "Kwality Wall's Cornetto", "category": "Frozen", "quantity": 3, "price": 90, "timestamp": 1711200000 },
+      { "product": "Britannia Milk Bikis", "category": "Biscuits", "quantity": 2, "price": 60, "timestamp": 1708800000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-003",
+    "name": "Amit Verma",
+    "phone": "+919898765432",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1709000000,
+    "last_offer_category": "Beverages",
+    "purchase_history": [
+      { "product": "Nescafe Classic 100g", "category": "Beverages", "quantity": 1, "price": 320, "timestamp": 1709300000 },
+      { "product": "McCain French Fries", "category": "Frozen", "quantity": 2, "price": 160, "timestamp": 1710600000 },
+      { "product": "Mother Dairy Frozen Peas 500g", "category": "Frozen", "quantity": 3, "price": 70, "timestamp": 1711100000 },
+      { "product": "Haldiram Namkeen 200g", "category": "Snacks", "quantity": 2, "price": 80, "timestamp": 1708200000 },
+      { "product": "Maggi Noodles 70g x4", "category": "Instant Food", "quantity": 2, "price": 100, "timestamp": 1709100000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-004",
+    "name": "Sneha Patel",
+    "phone": "+919765432109",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711250000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Vadilal Frozen Kulfi", "category": "Frozen", "quantity": 4, "price": 130, "timestamp": 1710900000 },
+      { "product": "ITC Master Chef Nuggets", "category": "Frozen", "quantity": 2, "price": 210, "timestamp": 1711100000 },
+      { "product": "Fortune Sunflower Oil 1L", "category": "Cooking Oil", "quantity": 2, "price": 180, "timestamp": 1709400000 },
+      { "product": "Amul Taaza Milk 1L", "category": "Dairy", "quantity": 5, "price": 58, "timestamp": 1710000000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-005",
+    "name": "Vikram Reddy",
+    "phone": "+919654321098",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710300000,
+    "last_offer_category": "Snacks",
+    "purchase_history": [
+      { "product": "Lays Classic Salted 52g", "category": "Snacks", "quantity": 3, "price": 30, "timestamp": 1709700000 },
+      { "product": "Tropicana Orange Juice 1L", "category": "Beverages", "quantity": 2, "price": 140, "timestamp": 1710100000 },
+      { "product": "McCain Aloo Tikki", "category": "Frozen", "quantity": 2, "price": 180, "timestamp": 1710800000 },
+      { "product": "Kwality Wall's Mango Bars", "category": "Frozen", "quantity": 3, "price": 50, "timestamp": 1711200000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-006",
+    "name": "Ananya Iyer",
+    "phone": "+919543210987",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711300000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Vadilal Ice Cream 750ml", "category": "Frozen", "quantity": 1, "price": 220, "timestamp": 1711000000 },
+      { "product": "ITC Master Chef Frozen Momos", "category": "Frozen", "quantity": 2, "price": 190, "timestamp": 1711200000 },
+      { "product": "Tata Tea Premium 500g", "category": "Beverages", "quantity": 2, "price": 290, "timestamp": 1709600000 },
+      { "product": "Parle-G Biscuits 800g", "category": "Biscuits", "quantity": 3, "price": 105, "timestamp": 1708600000 },
+      { "product": "Colgate Toothpaste 200g", "category": "Personal Care", "quantity": 2, "price": 120, "timestamp": 1709200000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-007",
+    "name": "Rohit Gupta",
+    "phone": "+919432109876",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1708500000,
+    "last_offer_category": "Staples",
+    "purchase_history": [
+      { "product": "India Gate Basmati Rice 5kg", "category": "Staples", "quantity": 1, "price": 520, "timestamp": 1708400000 },
+      { "product": "Ariel Matic Powder 2kg", "category": "Home Care", "quantity": 1, "price": 380, "timestamp": 1709200000 },
+      { "product": "Nestle KitKat 4F", "category": "Snacks", "quantity": 5, "price": 30, "timestamp": 1710000000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-008",
+    "name": "Meera Krishnan",
+    "phone": "+919321098765",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711150000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Mother Dairy Frozen Corn 500g", "category": "Frozen", "quantity": 3, "price": 85, "timestamp": 1710700000 },
+      { "product": "Vadilal Frozen Kulfi Sticks", "category": "Frozen", "quantity": 4, "price": 110, "timestamp": 1711100000 },
+      { "product": "Amul Cheese Slices 200g", "category": "Dairy", "quantity": 2, "price": 150, "timestamp": 1709900000 },
+      { "product": "Surf Excel Matic 2kg", "category": "Home Care", "quantity": 1, "price": 420, "timestamp": 1708900000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-009",
+    "name": "Arjun Singh",
+    "phone": "+919210987654",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710900000,
+    "last_offer_category": "Beverages",
+    "purchase_history": [
+      { "product": "Red Bull Energy Drink 250ml", "category": "Beverages", "quantity": 4, "price": 125, "timestamp": 1710600000 },
+      { "product": "McCain Smiles Frozen", "category": "Frozen", "quantity": 2, "price": 180, "timestamp": 1710900000 },
+      { "product": "Frozen Mixed Vegetables 1kg", "category": "Frozen", "quantity": 2, "price": 120, "timestamp": 1711200000 },
+      { "product": "Britannia Good Day Butter", "category": "Biscuits", "quantity": 3, "price": 50, "timestamp": 1709500000 },
+      { "product": "Dove Soap 3pc", "category": "Personal Care", "quantity": 1, "price": 195, "timestamp": 1708700000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-010",
+    "name": "Deepika Rao",
+    "phone": "+919109876543",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711200000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Kwality Wall's Vanilla Tub 1L", "category": "Frozen", "quantity": 1, "price": 350, "timestamp": 1710800000 },
+      { "product": "ITC Master Chef Frozen Paratha 5pc", "category": "Frozen", "quantity": 3, "price": 120, "timestamp": 1711100000 },
+      { "product": "Aashirvaad Atta 10kg", "category": "Staples", "quantity": 1, "price": 490, "timestamp": 1709300000 },
+      { "product": "Maggi 2-Minute Noodles x8", "category": "Instant Food", "quantity": 2, "price": 120, "timestamp": 1710200000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-011",
+    "name": "Suresh Menon",
+    "phone": "+919998877665",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1706000000,
+    "last_offer_category": "Snacks",
+    "purchase_history": [
+      { "product": "Haldiram Bhujia 400g", "category": "Snacks", "quantity": 2, "price": 120, "timestamp": 1708300000 },
+      { "product": "Tata Salt 1kg x2", "category": "Staples", "quantity": 2, "price": 45, "timestamp": 1709000000 },
+      { "product": "Saffola Gold Oil 2L", "category": "Cooking Oil", "quantity": 1, "price": 390, "timestamp": 1709800000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-012",
+    "name": "Kavya Joshi",
+    "phone": "+919887766554",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711050000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "McCain French Fries 420g", "category": "Frozen", "quantity": 2, "price": 160, "timestamp": 1710400000 },
+      { "product": "Vadilal Ice Cream Sandwich", "category": "Frozen", "quantity": 4, "price": 40, "timestamp": 1710900000 },
+      { "product": "Mother Dairy Dahi 1kg", "category": "Dairy", "quantity": 3, "price": 65, "timestamp": 1710100000 },
+      { "product": "Patanjali Honey 500g", "category": "Health Foods", "quantity": 1, "price": 250, "timestamp": 1709500000 },
+      { "product": "Nivea Face Wash 100ml", "category": "Personal Care", "quantity": 1, "price": 180, "timestamp": 1708800000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-013",
+    "name": "Manish Tiwari",
+    "phone": "+919776655443",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711000000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Green Peas 500g", "category": "Frozen", "quantity": 3, "price": 70, "timestamp": 1710500000 },
+      { "product": "Kwality Wall's Feast Bar", "category": "Frozen", "quantity": 5, "price": 30, "timestamp": 1711100000 },
+      { "product": "Dabur Honey 1kg", "category": "Health Foods", "quantity": 1, "price": 380, "timestamp": 1709700000 },
+      { "product": "Lays Cream & Onion 52g", "category": "Snacks", "quantity": 4, "price": 30, "timestamp": 1710200000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-014",
+    "name": "Ritu Agarwal",
+    "phone": "+919665544332",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710700000,
+    "last_offer_category": "Dairy",
+    "purchase_history": [
+      { "product": "Amul Paneer 200g", "category": "Dairy", "quantity": 3, "price": 90, "timestamp": 1710400000 },
+      { "product": "ITC Master Chef Frozen Aloo Paratha", "category": "Frozen", "quantity": 4, "price": 140, "timestamp": 1710900000 },
+      { "product": "Frozen Spinach 400g", "category": "Frozen", "quantity": 2, "price": 65, "timestamp": 1711200000 },
+      { "product": "Horlicks Classic 500g", "category": "Health Foods", "quantity": 1, "price": 290, "timestamp": 1709400000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-015",
+    "name": "Karan Malhotra",
+    "phone": "+919554433221",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1707500000,
+    "last_offer_category": "Beverages",
+    "purchase_history": [
+      { "product": "Bisleri Water 1L x6", "category": "Beverages", "quantity": 2, "price": 90, "timestamp": 1708600000 },
+      { "product": "Thums Up 750ml x6", "category": "Beverages", "quantity": 1, "price": 180, "timestamp": 1709400000 },
+      { "product": "Marico Parachute Coconut Oil 500ml", "category": "Personal Care", "quantity": 1, "price": 150, "timestamp": 1710000000 },
+      { "product": "Haldiram Rasgulla 500g", "category": "Sweets", "quantity": 2, "price": 80, "timestamp": 1710700000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-016",
+    "name": "Pooja Desai",
+    "phone": "+919443322110",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711300000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "McCain Frozen Nuggets 400g", "category": "Frozen", "quantity": 2, "price": 210, "timestamp": 1711000000 },
+      { "product": "Vadilal Chocolate Ice Cream 750ml", "category": "Frozen", "quantity": 1, "price": 240, "timestamp": 1711200000 },
+      { "product": "Tata Sampann Dal 1kg", "category": "Staples", "quantity": 2, "price": 140, "timestamp": 1710100000 },
+      { "product": "Colgate MaxFresh 150g", "category": "Personal Care", "quantity": 2, "price": 110, "timestamp": 1709300000 },
+      { "product": "Britannia NutriChoice 200g", "category": "Biscuits", "quantity": 3, "price": 55, "timestamp": 1708900000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-017",
+    "name": "Ajay Pillai",
+    "phone": "+919332211009",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1709800000,
+    "last_offer_category": "Staples",
+    "purchase_history": [
+      { "product": "Fortune Chakki Fresh Atta 10kg", "category": "Staples", "quantity": 1, "price": 400, "timestamp": 1709500000 },
+      { "product": "India Gate Basmati Rice 1kg", "category": "Staples", "quantity": 3, "price": 130, "timestamp": 1710300000 },
+      { "product": "Nestle Munch Bar 3pc", "category": "Snacks", "quantity": 4, "price": 30, "timestamp": 1710900000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-018",
+    "name": "Nisha Bhat",
+    "phone": "+919221100998",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711100000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Mixed Veg 1kg", "category": "Frozen", "quantity": 3, "price": 120, "timestamp": 1710600000 },
+      { "product": "ITC Sunfeast Dark Fantasy", "category": "Biscuits", "quantity": 2, "price": 65, "timestamp": 1709200000 },
+      { "product": "Kwality Wall's Cornetto Chocomania", "category": "Frozen", "quantity": 3, "price": 90, "timestamp": 1711000000 },
+      { "product": "Lifebuoy Handwash 250ml", "category": "Personal Care", "quantity": 2, "price": 70, "timestamp": 1708700000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-019",
+    "name": "Varun Choudhary",
+    "phone": "+919110099887",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1706500000,
+    "last_offer_category": "Home Care",
+    "purchase_history": [
+      { "product": "Vim Dishwash Liquid 750ml", "category": "Home Care", "quantity": 2, "price": 110, "timestamp": 1708200000 },
+      { "product": "Harpic Toilet Cleaner 1L", "category": "Home Care", "quantity": 1, "price": 130, "timestamp": 1709000000 },
+      { "product": "Cadbury Dairy Milk 100g", "category": "Snacks", "quantity": 3, "price": 95, "timestamp": 1709800000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-020",
+    "name": "Shweta Kulkarni",
+    "phone": "+919009988776",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711250000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Vadilal Quick Treat Ice Cream", "category": "Frozen", "quantity": 2, "price": 180, "timestamp": 1710800000 },
+      { "product": "McCain Aloo Tikki 400g", "category": "Frozen", "quantity": 3, "price": 185, "timestamp": 1711200000 },
+      { "product": "Real Fruit Juice Mango 1L", "category": "Beverages", "quantity": 2, "price": 130, "timestamp": 1710000000 },
+      { "product": "Saffola Active Oats 500g", "category": "Health Foods", "quantity": 1, "price": 200, "timestamp": 1709400000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-021",
+    "name": "Aditya Kumar",
+    "phone": "+919988776655",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710600000,
+    "last_offer_category": "Snacks",
+    "purchase_history": [
+      { "product": "Doritos Nacho Cheese 70g", "category": "Snacks", "quantity": 3, "price": 50, "timestamp": 1710300000 },
+      { "product": "Amul Kool Kafe 200ml", "category": "Beverages", "quantity": 4, "price": 40, "timestamp": 1710800000 },
+      { "product": "McCain Veggie Fingers 250g", "category": "Frozen", "quantity": 2, "price": 175, "timestamp": 1711000000 },
+      { "product": "Kwality Wall's Paddle Pop", "category": "Frozen", "quantity": 4, "price": 25, "timestamp": 1711200000 },
+      { "product": "Maggi Hot & Sweet Sauce 700g", "category": "Condiments", "quantity": 1, "price": 90, "timestamp": 1709500000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-022",
+    "name": "Divya Nambiar",
+    "phone": "+919877665544",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711000000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Mother Dairy Frozen Corn 400g", "category": "Frozen", "quantity": 4, "price": 85, "timestamp": 1710500000 },
+      { "product": "Frozen Green Peas 1kg", "category": "Frozen", "quantity": 2, "price": 100, "timestamp": 1711000000 },
+      { "product": "Dabur Chyawanprash 500g", "category": "Health Foods", "quantity": 1, "price": 230, "timestamp": 1709700000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-023",
+    "name": "Nikhil Saxena",
+    "phone": "+919766554433",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1709200000,
+    "last_offer_category": "Beverages",
+    "purchase_history": [
+      { "product": "Coca-Cola 2L", "category": "Beverages", "quantity": 3, "price": 95, "timestamp": 1709000000 },
+      { "product": "Pepsi 2L", "category": "Beverages", "quantity": 2, "price": 95, "timestamp": 1710000000 },
+      { "product": "Balaji Wafers Masala 150g", "category": "Snacks", "quantity": 3, "price": 50, "timestamp": 1710800000 },
+      { "product": "Parle-G Biscuits 400g", "category": "Biscuits", "quantity": 4, "price": 55, "timestamp": 1709700000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-024",
+    "name": "Aarti Pandey",
+    "phone": "+919655443322",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711150000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "ITC Master Chef Frozen Samosa 20pc", "category": "Frozen", "quantity": 2, "price": 160, "timestamp": 1710700000 },
+      { "product": "Vadilal Mango Ice Cream 1L", "category": "Frozen", "quantity": 1, "price": 290, "timestamp": 1711000000 },
+      { "product": "Amul Butter 100g", "category": "Dairy", "quantity": 4, "price": 55, "timestamp": 1710200000 },
+      { "product": "Tata Tea Gold 500g", "category": "Beverages", "quantity": 1, "price": 310, "timestamp": 1709300000 },
+      { "product": "Fevicol SH 200g", "category": "Stationery", "quantity": 1, "price": 80, "timestamp": 1708500000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-025",
+    "name": "Santosh Hegde",
+    "phone": "+919544332211",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710500000,
+    "last_offer_category": "Home Care",
+    "purchase_history": [
+      { "product": "Ariel Matic Liquid 2L", "category": "Home Care", "quantity": 1, "price": 480, "timestamp": 1710200000 },
+      { "product": "Pril Dishwash Bar 500g x2", "category": "Home Care", "quantity": 2, "price": 95, "timestamp": 1710900000 },
+      { "product": "Cadbury 5 Star 40g x3", "category": "Snacks", "quantity": 3, "price": 30, "timestamp": 1709800000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-026",
+    "name": "Ishaan Trivedi",
+    "phone": "+919433221100",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711200000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "McCain Hash Browns 400g", "category": "Frozen", "quantity": 2, "price": 170, "timestamp": 1710900000 },
+      { "product": "Kwality Wall's Mango Dolly", "category": "Frozen", "quantity": 5, "price": 20, "timestamp": 1711200000 },
+      { "product": "Aashirvaad Multigrain Atta 5kg", "category": "Staples", "quantity": 1, "price": 310, "timestamp": 1709800000 },
+      { "product": "Real Guava Juice 1L", "category": "Beverages", "quantity": 2, "price": 120, "timestamp": 1710300000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-027",
+    "name": "Rekha Shetty",
+    "phone": "+919322110099",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1707800000,
+    "last_offer_category": "Dairy",
+    "purchase_history": [
+      { "product": "Amul Taaza Milk 500ml x6", "category": "Dairy", "quantity": 2, "price": 170, "timestamp": 1708400000 },
+      { "product": "Mother Dairy Mishti Doi 400g", "category": "Dairy", "quantity": 2, "price": 100, "timestamp": 1709200000 },
+      { "product": "Frozen Corn Kernels 500g", "category": "Frozen", "quantity": 3, "price": 80, "timestamp": 1710600000 },
+      { "product": "ITC Master Chef Frozen Paratha", "category": "Frozen", "quantity": 2, "price": 120, "timestamp": 1711100000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-028",
+    "name": "Gaurav Mishra",
+    "phone": "+919211009988",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710800000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Vadilal Frozen Pista Kulfi", "category": "Frozen", "quantity": 3, "price": 150, "timestamp": 1710500000 },
+      { "product": "McCain Smiles 420g", "category": "Frozen", "quantity": 2, "price": 180, "timestamp": 1710900000 },
+      { "product": "Sunfeast Yippee Noodles 4pk", "category": "Instant Food", "quantity": 3, "price": 95, "timestamp": 1709600000 },
+      { "product": "Dettol Handwash 250ml", "category": "Personal Care", "quantity": 2, "price": 95, "timestamp": 1709000000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-029",
+    "name": "Lakshmi Venkatesh",
+    "phone": "+919100998877",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711300000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Baby Potatoes 500g", "category": "Frozen", "quantity": 2, "price": 90, "timestamp": 1711000000 },
+      { "product": "Kwality Wall's Chocolate Tub 1L", "category": "Frozen", "quantity": 1, "price": 380, "timestamp": 1711200000 },
+      { "product": "Patanjali Desi Ghee 1L", "category": "Dairy", "quantity": 1, "price": 580, "timestamp": 1709900000 },
+      { "product": "Maggi Chicken Noodles 4pk", "category": "Instant Food", "quantity": 2, "price": 110, "timestamp": 1710500000 },
+      { "product": "Bournvita 500g", "category": "Health Foods", "quantity": 1, "price": 250, "timestamp": 1708800000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-030",
+    "name": "Devraj Nair",
+    "phone": "+919090909090",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710200000,
+    "last_offer_category": "Snacks",
+    "purchase_history": [
+      { "product": "Haldiram Khatta Meetha 400g", "category": "Snacks", "quantity": 3, "price": 100, "timestamp": 1709900000 },
+      { "product": "Frooti Mango 250ml x6", "category": "Beverages", "quantity": 2, "price": 120, "timestamp": 1710400000 },
+      { "product": "McCain Veggie Burger Patty 4pc", "category": "Frozen", "quantity": 2, "price": 220, "timestamp": 1710900000 },
+      { "product": "Frozen Sweet Corn 1kg", "category": "Frozen", "quantity": 3, "price": 110, "timestamp": 1711200000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-031",
+    "name": "Tanvi Shah",
+    "phone": "+919979797979",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711050000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "ITC Master Chef Frozen Veg Burger Patty", "category": "Frozen", "quantity": 2, "price": 200, "timestamp": 1710700000 },
+      { "product": "Vadilal Strawberry Ice Cream 500ml", "category": "Frozen", "quantity": 2, "price": 170, "timestamp": 1711000000 },
+      { "product": "Amul Mozzarella Cheese 200g", "category": "Dairy", "quantity": 2, "price": 180, "timestamp": 1709800000 },
+      { "product": "Nature's Basket Organic Dal 500g", "category": "Staples", "quantity": 1, "price": 220, "timestamp": 1709100000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-032",
+    "name": "Harish Balasubramanian",
+    "phone": "+919868686868",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1708000000,
+    "last_offer_category": "Staples",
+    "purchase_history": [
+      { "product": "Sona Masoori Rice 5kg", "category": "Staples", "quantity": 1, "price": 290, "timestamp": 1708200000 },
+      { "product": "Toor Dal 1kg", "category": "Staples", "quantity": 2, "price": 130, "timestamp": 1709100000 },
+      { "product": "Priya Pickles Mango 500g", "category": "Condiments", "quantity": 1, "price": 110, "timestamp": 1710200000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-033",
+    "name": "Sonal Kapoor",
+    "phone": "+919757575757",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711100000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Mixed Vegetables 500g", "category": "Frozen", "quantity": 4, "price": 65, "timestamp": 1710600000 },
+      { "product": "McCain French Fries Spicy 420g", "category": "Frozen", "quantity": 2, "price": 160, "timestamp": 1711100000 },
+      { "product": "Tropicana Mixed Fruit 1L", "category": "Beverages", "quantity": 2, "price": 140, "timestamp": 1710000000 },
+      { "product": "Parle Monaco Biscuits 300g", "category": "Biscuits", "quantity": 3, "price": 60, "timestamp": 1709400000 },
+      { "product": "Dettol Soap 4pc", "category": "Personal Care", "quantity": 1, "price": 160, "timestamp": 1708700000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-034",
+    "name": "Mukesh Yadav",
+    "phone": "+919646464646",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710700000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Kwality Wall's Vanilla Tub 500ml", "category": "Frozen", "quantity": 2, "price": 180, "timestamp": 1710400000 },
+      { "product": "Frozen Green Peas 750g", "category": "Frozen", "quantity": 3, "price": 90, "timestamp": 1710800000 },
+      { "product": "Aashirvaad Atta 5kg", "category": "Staples", "quantity": 2, "price": 280, "timestamp": 1709600000 },
+      { "product": "Sprite 2L", "category": "Beverages", "quantity": 2, "price": 95, "timestamp": 1710200000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-035",
+    "name": "Pallavi Goswami",
+    "phone": "+919535353535",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711250000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "ITC Frozen Chicken Salami", "category": "Frozen", "quantity": 2, "price": 280, "timestamp": 1711000000 },
+      { "product": "Vadilal Ice Cream Sandwich 6pc", "category": "Frozen", "quantity": 3, "price": 120, "timestamp": 1711200000 },
+      { "product": "Amul Paneer 500g", "category": "Dairy", "quantity": 2, "price": 200, "timestamp": 1710300000 },
+      { "product": "Sunfeast Mom's Magic Biscuits", "category": "Biscuits", "quantity": 2, "price": 55, "timestamp": 1709200000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-036",
+    "name": "Prasad Kulkarni",
+    "phone": "+919424242424",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1709500000,
+    "last_offer_category": "Cooking Oil",
+    "purchase_history": [
+      { "product": "Sunflower Oil 5L", "category": "Cooking Oil", "quantity": 1, "price": 750, "timestamp": 1709300000 },
+      { "product": "Groundnut Oil 2L", "category": "Cooking Oil", "quantity": 1, "price": 320, "timestamp": 1710300000 },
+      { "product": "Biscuits Assorted 400g", "category": "Biscuits", "quantity": 2, "price": 120, "timestamp": 1710900000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-037",
+    "name": "Madhuri Bhatt",
+    "phone": "+919313131313",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711000000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "McCain Aloo Tikki Burger 10pc", "category": "Frozen", "quantity": 1, "price": 220, "timestamp": 1710600000 },
+      { "product": "Kwality Wall's Black Currant Ice Cream 1L", "category": "Frozen", "quantity": 1, "price": 320, "timestamp": 1710900000 },
+      { "product": "Nescafe Latte 3-in-1 Sachets", "category": "Beverages", "quantity": 3, "price": 100, "timestamp": 1709800000 },
+      { "product": "Good Knight Refill 45ml", "category": "Home Care", "quantity": 2, "price": 60, "timestamp": 1709100000 },
+      { "product": "Amul Chocolate 150g", "category": "Snacks", "quantity": 2, "price": 120, "timestamp": 1710300000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-038",
+    "name": "Siddharth Menon",
+    "phone": "+919202020202",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711200000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Baby Carrots 500g", "category": "Frozen", "quantity": 3, "price": 80, "timestamp": 1710800000 },
+      { "product": "Mother Dairy Frozen Paneer 200g", "category": "Frozen", "quantity": 2, "price": 110, "timestamp": 1711100000 },
+      { "product": "Tata Sampann Rajma 500g", "category": "Staples", "quantity": 2, "price": 100, "timestamp": 1710000000 },
+      { "product": "Cadbury Silk 150g", "category": "Snacks", "quantity": 2, "price": 185, "timestamp": 1709500000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-039",
+    "name": "Jyoti Rathore",
+    "phone": "+919191919191",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710400000,
+    "last_offer_category": "Dairy",
+    "purchase_history": [
+      { "product": "Amul Taaza Full Cream Milk 1L", "category": "Dairy", "quantity": 5, "price": 62, "timestamp": 1710200000 },
+      { "product": "Mother Dairy Butter 500g", "category": "Dairy", "quantity": 1, "price": 250, "timestamp": 1710700000 },
+      { "product": "Frozen Stir Fry Vegetables 500g", "category": "Frozen", "quantity": 2, "price": 110, "timestamp": 1710900000 },
+      { "product": "Vadilal Vanilla Scoop Ice Cream 1L", "category": "Frozen", "quantity": 1, "price": 280, "timestamp": 1711200000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-040",
+    "name": "Manoj Rawat",
+    "phone": "+919180807060",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1707000000,
+    "last_offer_category": "Home Care",
+    "purchase_history": [
+      { "product": "Lizol Floor Cleaner 2L", "category": "Home Care", "quantity": 1, "price": 220, "timestamp": 1708100000 },
+      { "product": "Odonil Room Freshener", "category": "Home Care", "quantity": 2, "price": 85, "timestamp": 1709000000 },
+      { "product": "Kurkure Masala Munch 80g", "category": "Snacks", "quantity": 4, "price": 30, "timestamp": 1710200000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-041",
+    "name": "Chandrika Subramaniam",
+    "phone": "+919170605040",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711100000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Vadilal Kesar Badam Ice Cream 1L", "category": "Frozen", "quantity": 1, "price": 310, "timestamp": 1710800000 },
+      { "product": "McCain Frozen Corn 400g", "category": "Frozen", "quantity": 3, "price": 90, "timestamp": 1711000000 },
+      { "product": "Saffola Oats 1kg", "category": "Health Foods", "quantity": 1, "price": 280, "timestamp": 1709700000 },
+      { "product": "Real Pomegranate Juice 1L", "category": "Beverages", "quantity": 1, "price": 175, "timestamp": 1710300000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-042",
+    "name": "Naveen Pillai",
+    "phone": "+919160504030",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710900000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "ITC Master Chef Veg Samosa 20pc", "category": "Frozen", "quantity": 2, "price": 160, "timestamp": 1710600000 },
+      { "product": "Kwality Wall's Mango Kulfi Sticks", "category": "Frozen", "quantity": 4, "price": 35, "timestamp": 1710900000 },
+      { "product": "Amul Pro Whey Protein 500g", "category": "Health Foods", "quantity": 1, "price": 490, "timestamp": 1709400000 },
+      { "product": "Sprite 1.25L", "category": "Beverages", "quantity": 3, "price": 70, "timestamp": 1710100000 },
+      { "product": "Ruffles American Style Cream 45g", "category": "Snacks", "quantity": 3, "price": 35, "timestamp": 1709800000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-043",
+    "name": "Sunita Ghosh",
+    "phone": "+919150403020",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711300000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Broccoli 500g", "category": "Frozen", "quantity": 2, "price": 120, "timestamp": 1711000000 },
+      { "product": "McCain Hash Browns Box 6pc", "category": "Frozen", "quantity": 2, "price": 195, "timestamp": 1711200000 },
+      { "product": "Nestea Iced Tea Lemon 1L", "category": "Beverages", "quantity": 3, "price": 90, "timestamp": 1710400000 },
+      { "product": "Britannia Bourbon Biscuits 150g", "category": "Biscuits", "quantity": 4, "price": 40, "timestamp": 1709600000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-044",
+    "name": "Ramesh Babu",
+    "phone": "+919140302010",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1708800000,
+    "last_offer_category": "Staples",
+    "purchase_history": [
+      { "product": "Ponni Rice 5kg", "category": "Staples", "quantity": 1, "price": 280, "timestamp": 1708600000 },
+      { "product": "Toor Dal 2kg", "category": "Staples", "quantity": 1, "price": 250, "timestamp": 1709500000 },
+      { "product": "MDH Chhole Masala 100g", "category": "Spices", "quantity": 2, "price": 65, "timestamp": 1710400000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-045",
+    "name": "Preeti Jain",
+    "phone": "+919130201090",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711150000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Vadilal Ice Cream Cone 4pc", "category": "Frozen", "quantity": 3, "price": 90, "timestamp": 1710700000 },
+      { "product": "Frozen Edamame 400g", "category": "Frozen", "quantity": 2, "price": 150, "timestamp": 1711100000 },
+      { "product": "Amul Butter 500g", "category": "Dairy", "quantity": 2, "price": 250, "timestamp": 1709900000 },
+      { "product": "Tata Tea Agni 500g", "category": "Beverages", "quantity": 1, "price": 250, "timestamp": 1709200000 },
+      { "product": "Vim Bar 200g x3", "category": "Home Care", "quantity": 1, "price": 75, "timestamp": 1708600000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-046",
+    "name": "Dinesh Kumar",
+    "phone": "+919120100980",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711000000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "ITC Frozen Chicken Nuggets 400g", "category": "Frozen", "quantity": 2, "price": 280, "timestamp": 1710600000 },
+      { "product": "Kwality Wall's Cornetto Strawberry", "category": "Frozen", "quantity": 3, "price": 90, "timestamp": 1711000000 },
+      { "product": "Masala Oats 500g", "category": "Health Foods", "quantity": 2, "price": 180, "timestamp": 1710100000 },
+      { "product": "Pepsi 1.25L", "category": "Beverages", "quantity": 2, "price": 70, "timestamp": 1709700000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-047",
+    "name": "Bhavana Reddy",
+    "phone": "+919110090870",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711200000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Cauliflower Florets 500g", "category": "Frozen", "quantity": 2, "price": 85, "timestamp": 1710900000 },
+      { "product": "Vadilal Kesar Pista Ice Cream 500ml", "category": "Frozen", "quantity": 2, "price": 195, "timestamp": 1711200000 },
+      { "product": "Aashirvaad Atta 5kg", "category": "Staples", "quantity": 2, "price": 280, "timestamp": 1709800000 },
+      { "product": "Maggi Tomato Ketchup 1kg", "category": "Condiments", "quantity": 1, "price": 155, "timestamp": 1710300000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-048",
+    "name": "Ganesh Narayanan",
+    "phone": "+919100080760",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1709700000,
+    "last_offer_category": "Health Foods",
+    "purchase_history": [
+      { "product": "Quaker Oats 1kg", "category": "Health Foods", "quantity": 2, "price": 290, "timestamp": 1709400000 },
+      { "product": "Britannia Digestive Biscuits 250g", "category": "Biscuits", "quantity": 3, "price": 60, "timestamp": 1710200000 },
+      { "product": "Tropicana Pineapple Juice 1L", "category": "Beverages", "quantity": 2, "price": 145, "timestamp": 1710800000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-049",
+    "name": "Yamini Chakraborty",
+    "phone": "+919090070650",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711100000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "McCain Veggie Fingers 250g", "category": "Frozen", "quantity": 3, "price": 175, "timestamp": 1710700000 },
+      { "product": "Frozen Mixed Berries 400g", "category": "Frozen", "quantity": 2, "price": 250, "timestamp": 1711100000 },
+      { "product": "Saffola Total Atta 5kg", "category": "Staples", "quantity": 1, "price": 320, "timestamp": 1709900000 },
+      { "product": "Real Fruit Power Apple 1L", "category": "Beverages", "quantity": 2, "price": 130, "timestamp": 1710400000 },
+      { "product": "Dabur Vatika Shampoo 200ml", "category": "Personal Care", "quantity": 1, "price": 155, "timestamp": 1709200000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-050",
+    "name": "Alok Mehta",
+    "phone": "+919080060540",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711300000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "ITC Master Chef Veg Burger Patty 4pc", "category": "Frozen", "quantity": 2, "price": 200, "timestamp": 1711000000 },
+      { "product": "Kwality Wall's Vanilla & Chocolate 1L", "category": "Frozen", "quantity": 1, "price": 320, "timestamp": 1711200000 },
+      { "product": "India Gate Basmati Rice 5kg", "category": "Staples", "quantity": 1, "price": 520, "timestamp": 1709700000 },
+      { "product": "Nescafe Classic 200g", "category": "Beverages", "quantity": 1, "price": 580, "timestamp": 1710200000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-051",
+    "name": "Swathi Rangaiah",
+    "phone": "+919070050430",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710500000,
+    "last_offer_category": "Personal Care",
+    "purchase_history": [
+      { "product": "Pantene Shampoo 340ml", "category": "Personal Care", "quantity": 1, "price": 320, "timestamp": 1710200000 },
+      { "product": "Gillette Mach3 Razor", "category": "Personal Care", "quantity": 1, "price": 250, "timestamp": 1710800000 },
+      { "product": "Frozen Mango Pulp 500g", "category": "Frozen", "quantity": 2, "price": 140, "timestamp": 1711100000 },
+      { "product": "McCain French Fries 420g", "category": "Frozen", "quantity": 2, "price": 160, "timestamp": 1711300000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-052",
+    "name": "Rajesh Nambiar",
+    "phone": "+919060040320",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711000000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Sweet Potato Fries 400g", "category": "Frozen", "quantity": 2, "price": 190, "timestamp": 1710700000 },
+      { "product": "Vadilal Sitaphal Ice Cream 750ml", "category": "Frozen", "quantity": 1, "price": 240, "timestamp": 1710900000 },
+      { "product": "Tata Sampann Rajma 1kg", "category": "Staples", "quantity": 2, "price": 180, "timestamp": 1709800000 },
+      { "product": "Haldiram Aloo Bhujia 400g", "category": "Snacks", "quantity": 2, "price": 120, "timestamp": 1710300000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-053",
+    "name": "Kavitha Gopalan",
+    "phone": "+919050030210",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1710100000,
+    "last_offer_category": "Snacks",
+    "purchase_history": [
+      { "product": "Lay's India Magic Masala 52g", "category": "Snacks", "quantity": 4, "price": 30, "timestamp": 1709800000 },
+      { "product": "Cadbury Gems 36g", "category": "Snacks", "quantity": 5, "price": 30, "timestamp": 1710500000 },
+      { "product": "Frozen Edamame 500g", "category": "Frozen", "quantity": 2, "price": 165, "timestamp": 1711000000 },
+      { "product": "Frozen Baby Spinach 250g", "category": "Frozen", "quantity": 3, "price": 95, "timestamp": 1711200000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-054",
+    "name": "Mohit Aggarwal",
+    "phone": "+919040020100",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711200000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "ITC Frozen Chicken Seekh Kebab", "category": "Frozen", "quantity": 2, "price": 320, "timestamp": 1710900000 },
+      { "product": "Kwality Wall's Feast 4pc", "category": "Frozen", "quantity": 3, "price": 120, "timestamp": 1711200000 },
+      { "product": "Sunflower Oil 1L", "category": "Cooking Oil", "quantity": 3, "price": 165, "timestamp": 1710100000 },
+      { "product": "Maggi Chicken Noodles 4pk", "category": "Instant Food", "quantity": 2, "price": 110, "timestamp": 1709600000 },
+      { "product": "Lifebuoy Total Soap 4pc", "category": "Personal Care", "quantity": 1, "price": 140, "timestamp": 1708900000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-055",
+    "name": "Radha Krishnamurthy",
+    "phone": "+919030010090",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711100000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Butter Chicken 300g", "category": "Frozen", "quantity": 2, "price": 280, "timestamp": 1710700000 },
+      { "product": "Vadilal Ice Cream Sandwich 4pc", "category": "Frozen", "quantity": 2, "price": 80, "timestamp": 1711100000 },
+      { "product": "Amul Dahi 400g", "category": "Dairy", "quantity": 3, "price": 55, "timestamp": 1710200000 },
+      { "product": "Saffola Gold Oil 1L", "category": "Cooking Oil", "quantity": 2, "price": 225, "timestamp": 1709500000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-056",
+    "name": "Pawan Bhardwaj",
+    "phone": "+919020090870",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1708300000,
+    "last_offer_category": "Beverages",
+    "purchase_history": [
+      { "product": "Bisleri Water 500ml x12", "category": "Beverages", "quantity": 2, "price": 120, "timestamp": 1708500000 },
+      { "product": "Minute Maid Pulpy Orange 1L", "category": "Beverages", "quantity": 3, "price": 105, "timestamp": 1709700000 },
+      { "product": "Bourbon Biscuits 200g", "category": "Biscuits", "quantity": 2, "price": 50, "timestamp": 1710700000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-057",
+    "name": "Nandini Iyer",
+    "phone": "+919010080760",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711250000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "McCain Aloo Tikki 400g", "category": "Frozen", "quantity": 3, "price": 185, "timestamp": 1711000000 },
+      { "product": "Frozen Mango Chunks 400g", "category": "Frozen", "quantity": 2, "price": 130, "timestamp": 1711200000 },
+      { "product": "Tata Tea Premium 500g", "category": "Beverages", "quantity": 1, "price": 290, "timestamp": 1710100000 },
+      { "product": "Haldiram Navratan Mix 200g", "category": "Snacks", "quantity": 3, "price": 90, "timestamp": 1709600000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-058",
+    "name": "Rajeev Deshpande",
+    "phone": "+919900870650",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710800000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "ITC Master Chef Frozen Momos 20pc", "category": "Frozen", "quantity": 2, "price": 190, "timestamp": 1710500000 },
+      { "product": "Kwality Wall's Chocolate Eclair", "category": "Frozen", "quantity": 3, "price": 100, "timestamp": 1710800000 },
+      { "product": "Aashirvaad Atta 10kg", "category": "Staples", "quantity": 1, "price": 490, "timestamp": 1709200000 },
+      { "product": "Dove Shampoo 340ml", "category": "Personal Care", "quantity": 1, "price": 350, "timestamp": 1709800000 },
+      { "product": "Oreo Biscuits 300g", "category": "Biscuits", "quantity": 2, "price": 95, "timestamp": 1710300000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-059",
+    "name": "Swati Bose",
+    "phone": "+919890760540",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711100000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Palak Paneer 300g", "category": "Frozen", "quantity": 2, "price": 200, "timestamp": 1710800000 },
+      { "product": "Vadilal Alphonso Mango Ice Cream 1L", "category": "Frozen", "quantity": 1, "price": 320, "timestamp": 1711100000 },
+      { "product": "Real Kiwi Juice 1L", "category": "Beverages", "quantity": 2, "price": 155, "timestamp": 1710200000 },
+      { "product": "Fortune Basmati Rice 5kg", "category": "Staples", "quantity": 1, "price": 480, "timestamp": 1709500000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-060",
+    "name": "Himanshu Srivastava",
+    "phone": "+919880650430",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1710000000,
+    "last_offer_category": "Instant Food",
+    "purchase_history": [
+      { "product": "Sunfeast Yippee Noodles 8pk", "category": "Instant Food", "quantity": 2, "price": 180, "timestamp": 1709700000 },
+      { "product": "Maggi 2-Minute Noodles 8pk", "category": "Instant Food", "quantity": 2, "price": 150, "timestamp": 1710500000 },
+      { "product": "Lays Tomato Flavor 52g", "category": "Snacks", "quantity": 4, "price": 30, "timestamp": 1710900000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-061",
+    "name": "Aparna Menon",
+    "phone": "+919870540320",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711300000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "McCain Smiles Frozen Potatoes 420g", "category": "Frozen", "quantity": 3, "price": 180, "timestamp": 1711100000 },
+      { "product": "Kwality Wall's Kulfi Bar 3pc", "category": "Frozen", "quantity": 4, "price": 60, "timestamp": 1711200000 },
+      { "product": "Tata Sampann Chana Dal 1kg", "category": "Staples", "quantity": 2, "price": 130, "timestamp": 1710200000 },
+      { "product": "Sprite 750ml x2", "category": "Beverages", "quantity": 3, "price": 90, "timestamp": 1709800000 },
+      { "product": "Parle-G 1kg", "category": "Biscuits", "quantity": 2, "price": 130, "timestamp": 1709100000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-062",
+    "name": "Vivek Sharma",
+    "phone": "+919860430210",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710700000,
+    "last_offer_category": "Snacks",
+    "purchase_history": [
+      { "product": "Pringles Sour Cream & Onion 165g", "category": "Snacks", "quantity": 2, "price": 190, "timestamp": 1710400000 },
+      { "product": "Cadbury Dairy Milk Silk 60g", "category": "Snacks", "quantity": 3, "price": 85, "timestamp": 1710800000 },
+      { "product": "Frozen Spinach 400g", "category": "Frozen", "quantity": 2, "price": 80, "timestamp": 1711100000 },
+      { "product": "Frozen Mixed Vegetables 1kg", "category": "Frozen", "quantity": 2, "price": 120, "timestamp": 1711300000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-063",
+    "name": "Usha Raghavan",
+    "phone": "+919850320100",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711050000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Vadilal Frozen Kulfi 12pc", "category": "Frozen", "quantity": 2, "price": 180, "timestamp": 1710700000 },
+      { "product": "Mother Dairy Frozen Peas 1kg", "category": "Frozen", "quantity": 3, "price": 120, "timestamp": 1711000000 },
+      { "product": "Amul Paneer 200g", "category": "Dairy", "quantity": 3, "price": 90, "timestamp": 1710100000 },
+      { "product": "Saffola Active Oats 1kg", "category": "Health Foods", "quantity": 1, "price": 350, "timestamp": 1709500000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-064",
+    "name": "Tarun Gupta",
+    "phone": "+919840210090",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1709000000,
+    "last_offer_category": "Cooking Oil",
+    "purchase_history": [
+      { "product": "Saffola Gold Oil 2L", "category": "Cooking Oil", "quantity": 2, "price": 390, "timestamp": 1708800000 },
+      { "product": "Mustard Oil 1L", "category": "Cooking Oil", "quantity": 1, "price": 180, "timestamp": 1709700000 },
+      { "product": "Tata Salt 1kg x2", "category": "Staples", "quantity": 2, "price": 45, "timestamp": 1710600000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-065",
+    "name": "Lalitha Suresh",
+    "phone": "+919830100980",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711200000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "ITC Master Chef Paneer Tikka 300g", "category": "Frozen", "quantity": 2, "price": 260, "timestamp": 1710900000 },
+      { "product": "Kwality Wall's Raspberry Ice Cream 1L", "category": "Frozen", "quantity": 1, "price": 310, "timestamp": 1711100000 },
+      { "product": "Tata Tea Gold 500g", "category": "Beverages", "quantity": 1, "price": 310, "timestamp": 1710100000 },
+      { "product": "Haldiram Gulab Jamun 1kg", "category": "Sweets", "quantity": 1, "price": 250, "timestamp": 1709600000 },
+      { "product": "Dove Soap 4pc", "category": "Personal Care", "quantity": 1, "price": 250, "timestamp": 1709000000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-066",
+    "name": "Yash Singhania",
+    "phone": "+919820090870",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711100000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Hara Bhara Kebab 10pc", "category": "Frozen", "quantity": 2, "price": 190, "timestamp": 1710700000 },
+      { "product": "Vadilal Frozen Kulfi Falooda 4pc", "category": "Frozen", "quantity": 3, "price": 90, "timestamp": 1711000000 },
+      { "product": "Dabur Real Juice 1L", "category": "Beverages", "quantity": 2, "price": 130, "timestamp": 1710200000 },
+      { "product": "Nestle Kitkat 4-Finger 3pk", "category": "Snacks", "quantity": 3, "price": 90, "timestamp": 1709700000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-067",
+    "name": "Bindiya Kapoor",
+    "phone": "+919810080760",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1707200000,
+    "last_offer_category": "Personal Care",
+    "purchase_history": [
+      { "product": "L'Oreal Shampoo 175ml", "category": "Personal Care", "quantity": 1, "price": 280, "timestamp": 1708400000 },
+      { "product": "Ponds Cold Cream 200ml", "category": "Personal Care", "quantity": 1, "price": 145, "timestamp": 1709300000 },
+      { "product": "Bournvita 1kg", "category": "Health Foods", "quantity": 1, "price": 420, "timestamp": 1710200000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-068",
+    "name": "Samir Chatterjee",
+    "phone": "+919800070650",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711300000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Dahi Kebab 10pc", "category": "Frozen", "quantity": 2, "price": 200, "timestamp": 1711000000 },
+      { "product": "Kwality Wall's Chocolate Stix 4pc", "category": "Frozen", "quantity": 3, "price": 75, "timestamp": 1711200000 },
+      { "product": "Aashirvaad Atta 5kg", "category": "Staples", "quantity": 1, "price": 280, "timestamp": 1709800000 },
+      { "product": "Amul Taaza Milk 1L", "category": "Dairy", "quantity": 5, "price": 58, "timestamp": 1710400000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-069",
+    "name": "Nalini Krishnan",
+    "phone": "+919790060540",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710600000,
+    "last_offer_category": "Dairy",
+    "purchase_history": [
+      { "product": "Amul Cheese Block 400g", "category": "Dairy", "quantity": 1, "price": 320, "timestamp": 1710300000 },
+      { "product": "Mother Dairy Mishti Doi 200g", "category": "Dairy", "quantity": 3, "price": 60, "timestamp": 1710700000 },
+      { "product": "ITC Master Chef Frozen Idli", "category": "Frozen", "quantity": 2, "price": 150, "timestamp": 1711100000 },
+      { "product": "Frozen Jackfruit 500g", "category": "Frozen", "quantity": 2, "price": 140, "timestamp": 1711300000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-070",
+    "name": "Girish Thakur",
+    "phone": "+919780050430",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711050000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "McCain Frozen Wedges 400g", "category": "Frozen", "quantity": 2, "price": 175, "timestamp": 1710700000 },
+      { "product": "Vadilal Sitaphal Kulfi 6pc", "category": "Frozen", "quantity": 2, "price": 120, "timestamp": 1711000000 },
+      { "product": "Tata Sampann Masoor Dal 500g", "category": "Staples", "quantity": 2, "price": 95, "timestamp": 1710100000 },
+      { "product": "Fortune Atta 10kg", "category": "Staples", "quantity": 1, "price": 430, "timestamp": 1709300000 },
+      { "product": "Colgate Advanced Toothpaste 140g", "category": "Personal Care", "quantity": 2, "price": 115, "timestamp": 1708700000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-071",
+    "name": "Archana Vyas",
+    "phone": "+919770040320",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1706800000,
+    "last_offer_category": "Staples",
+    "purchase_history": [
+      { "product": "India Gate Basmati Rice 1kg", "category": "Staples", "quantity": 5, "price": 130, "timestamp": 1708300000 },
+      { "product": "Aashirvaad Atta 5kg", "category": "Staples", "quantity": 2, "price": 280, "timestamp": 1709200000 },
+      { "product": "MDH Kitchen King Masala 100g", "category": "Spices", "quantity": 2, "price": 95, "timestamp": 1710100000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-072",
+    "name": "Sunil Bhandari",
+    "phone": "+919760030210",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711200000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Moong Dal Halwa 250g", "category": "Frozen", "quantity": 2, "price": 180, "timestamp": 1710900000 },
+      { "product": "Kwality Wall's Vanilla Family Pack 2L", "category": "Frozen", "quantity": 1, "price": 480, "timestamp": 1711100000 },
+      { "product": "Nescafe Sunrise 200g", "category": "Beverages", "quantity": 1, "price": 350, "timestamp": 1710200000 },
+      { "product": "Amul Dark Chocolate 150g", "category": "Snacks", "quantity": 2, "price": 160, "timestamp": 1709700000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-073",
+    "name": "Padma Naidu",
+    "phone": "+919750020100",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711100000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "ITC Master Chef Frozen Dosa 5pc", "category": "Frozen", "quantity": 2, "price": 160, "timestamp": 1710800000 },
+      { "product": "Mother Dairy Frozen Mixed Veg 500g", "category": "Frozen", "quantity": 3, "price": 75, "timestamp": 1711100000 },
+      { "product": "Patanjali Amla Juice 1L", "category": "Health Foods", "quantity": 1, "price": 120, "timestamp": 1710100000 },
+      { "product": "Britannia Good Day Cashew", "category": "Biscuits", "quantity": 3, "price": 65, "timestamp": 1709500000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-074",
+    "name": "Harish Parekh",
+    "phone": "+919740010090",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1710300000,
+    "last_offer_category": "Beverages",
+    "purchase_history": [
+      { "product": "Mountain Dew 2L", "category": "Beverages", "quantity": 2, "price": 95, "timestamp": 1710000000 },
+      { "product": "Limca 2L", "category": "Beverages", "quantity": 2, "price": 90, "timestamp": 1710700000 },
+      { "product": "Haldiram Bhujia Sev 400g", "category": "Snacks", "quantity": 2, "price": 110, "timestamp": 1711100000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-075",
+    "name": "Shalini Tripathi",
+    "phone": "+919730000980",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711250000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "McCain Masala Corn 400g", "category": "Frozen", "quantity": 2, "price": 160, "timestamp": 1711000000 },
+      { "product": "Vadilal Frozen Badam Kulfi", "category": "Frozen", "quantity": 4, "price": 60, "timestamp": 1711200000 },
+      { "product": "Saffola Heart Atta 5kg", "category": "Staples", "quantity": 1, "price": 340, "timestamp": 1709700000 },
+      { "product": "Real Mixed Fruit Juice 1L", "category": "Beverages", "quantity": 2, "price": 135, "timestamp": 1710300000 },
+      { "product": "Goodnight Liquid Mosquito Repellent", "category": "Home Care", "quantity": 1, "price": 95, "timestamp": 1709100000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-076",
+    "name": "Kaustubh Rane",
+    "phone": "+919720990870",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710900000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Kofta Curry 300g", "category": "Frozen", "quantity": 2, "price": 220, "timestamp": 1710600000 },
+      { "product": "Kwality Wall's Magnum Almond Ice Cream", "category": "Frozen", "quantity": 2, "price": 130, "timestamp": 1710900000 },
+      { "product": "Tata Gluco+ Mango 100ml x6", "category": "Beverages", "quantity": 2, "price": 120, "timestamp": 1710200000 },
+      { "product": "Parle Krackjack 300g", "category": "Biscuits", "quantity": 3, "price": 65, "timestamp": 1709700000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-077",
+    "name": "Rukmini Sharma",
+    "phone": "+919710980760",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711000000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "ITC Frozen Veg Manchurian 300g", "category": "Frozen", "quantity": 2, "price": 195, "timestamp": 1710700000 },
+      { "product": "Vadilal Ice Cream Roll 4pc", "category": "Frozen", "quantity": 3, "price": 100, "timestamp": 1711000000 },
+      { "product": "Aashirvaad Atta 10kg", "category": "Staples", "quantity": 1, "price": 490, "timestamp": 1709200000 },
+      { "product": "Amul Butter 500g", "category": "Dairy", "quantity": 2, "price": 250, "timestamp": 1709900000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-078",
+    "name": "Radhika Nair",
+    "phone": "+919700970650",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1709400000,
+    "last_offer_category": "Personal Care",
+    "purchase_history": [
+      { "product": "Pantene Pro-V Conditioner 340ml", "category": "Personal Care", "quantity": 1, "price": 300, "timestamp": 1709100000 },
+      { "product": "Garnier Micellar Water 400ml", "category": "Personal Care", "quantity": 1, "price": 340, "timestamp": 1710100000 },
+      { "product": "Tropicana Watermelon Juice 1L", "category": "Beverages", "quantity": 2, "price": 150, "timestamp": 1710800000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-079",
+    "name": "Kishore Venkataraman",
+    "phone": "+919690960540",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711200000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Masala Papad 10pc", "category": "Frozen", "quantity": 3, "price": 90, "timestamp": 1710900000 },
+      { "product": "Mother Dairy Frozen Veg Burger Patty", "category": "Frozen", "quantity": 2, "price": 190, "timestamp": 1711100000 },
+      { "product": "Kwality Wall's Chocolate Brownie Ice Cream", "category": "Frozen", "quantity": 1, "price": 340, "timestamp": 1711200000 },
+      { "product": "Fortune Mustard Oil 1L", "category": "Cooking Oil", "quantity": 2, "price": 185, "timestamp": 1710100000 },
+      { "product": "Horlicks Women's 500g", "category": "Health Foods", "quantity": 1, "price": 300, "timestamp": 1709400000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-080",
+    "name": "Mala Srinivasan",
+    "phone": "+919680950430",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711100000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Vadilal Frozen Moong Dal Halwa 250g", "category": "Frozen", "quantity": 2, "price": 175, "timestamp": 1710700000 },
+      { "product": "McCain Frozen Corn Puppies", "category": "Frozen", "quantity": 3, "price": 155, "timestamp": 1711000000 },
+      { "product": "Tata Sampann Poha 500g", "category": "Staples", "quantity": 2, "price": 80, "timestamp": 1710200000 },
+      { "product": "Real Cranberry Juice 1L", "category": "Beverages", "quantity": 2, "price": 160, "timestamp": 1709700000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-081",
+    "name": "Krishnaswamy Iyer",
+    "phone": "+919670940320",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1707400000,
+    "last_offer_category": "Staples",
+    "purchase_history": [
+      { "product": "Ponni Boiled Rice 5kg", "category": "Staples", "quantity": 1, "price": 295, "timestamp": 1708100000 },
+      { "product": "Urad Dal 1kg", "category": "Staples", "quantity": 2, "price": 145, "timestamp": 1709000000 },
+      { "product": "MDH Rasam Powder 50g", "category": "Spices", "quantity": 3, "price": 55, "timestamp": 1710200000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-082",
+    "name": "Preethi Balaji",
+    "phone": "+919660930210",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711250000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "ITC Master Chef Frozen Paneer Butter Masala", "category": "Frozen", "quantity": 2, "price": 270, "timestamp": 1711000000 },
+      { "product": "Kwality Wall's Kulfi Chocobar 4pc", "category": "Frozen", "quantity": 3, "price": 80, "timestamp": 1711200000 },
+      { "product": "Saffola Oats Masala 500g", "category": "Health Foods", "quantity": 2, "price": 195, "timestamp": 1710200000 },
+      { "product": "Tropicana Apple Juice 1L", "category": "Beverages", "quantity": 2, "price": 140, "timestamp": 1709700000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-083",
+    "name": "Abhishek Chandra",
+    "phone": "+919650920100",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710700000,
+    "last_offer_category": "Beverages",
+    "purchase_history": [
+      { "product": "Red Bull 250ml x4", "category": "Beverages", "quantity": 1, "price": 450, "timestamp": 1710400000 },
+      { "product": "Monster Energy Drink 500ml", "category": "Beverages", "quantity": 2, "price": 170, "timestamp": 1710900000 },
+      { "product": "Frozen Mini Samosas 20pc", "category": "Frozen", "quantity": 2, "price": 150, "timestamp": 1711100000 },
+      { "product": "Vadilal Mango Bar 5pc", "category": "Frozen", "quantity": 3, "price": 75, "timestamp": 1711300000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-084",
+    "name": "Shobha Acharya",
+    "phone": "+919640910090",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711100000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Mother Dairy Frozen Veg Biryani 300g", "category": "Frozen", "quantity": 2, "price": 195, "timestamp": 1710800000 },
+      { "product": "Kwality Wall's Strawberry Ice Cream 1L", "category": "Frozen", "quantity": 1, "price": 290, "timestamp": 1711100000 },
+      { "product": "Dabur Chyawanprakash 500g", "category": "Health Foods", "quantity": 1, "price": 220, "timestamp": 1710100000 },
+      { "product": "Haldiram Pav Bhaji 300g", "category": "Snacks", "quantity": 2, "price": 80, "timestamp": 1709600000 },
+      { "product": "Amul Taaza Milk 1L x6", "category": "Dairy", "quantity": 1, "price": 330, "timestamp": 1709000000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-085",
+    "name": "Vinay Kapoor",
+    "phone": "+919630900980",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1710500000,
+    "last_offer_category": "Home Care",
+    "purchase_history": [
+      { "product": "Surf Excel Matic Liquid 2L", "category": "Home Care", "quantity": 1, "price": 520, "timestamp": 1710200000 },
+      { "product": "Comfort Fabric Conditioner 800ml", "category": "Home Care", "quantity": 1, "price": 210, "timestamp": 1710800000 },
+      { "product": "Kurkure Chilli Chatka 80g", "category": "Snacks", "quantity": 4, "price": 30, "timestamp": 1711200000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-086",
+    "name": "Geeta Sharma",
+    "phone": "+919620890870",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711300000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "ITC Frozen Veg Fried Rice 300g", "category": "Frozen", "quantity": 2, "price": 180, "timestamp": 1711000000 },
+      { "product": "Vadilal Frozen Gajar Ka Halwa 250g", "category": "Frozen", "quantity": 2, "price": 190, "timestamp": 1711200000 },
+      { "product": "Aashirvaad Atta 5kg", "category": "Staples", "quantity": 2, "price": 280, "timestamp": 1709800000 },
+      { "product": "Tata Tea Premium 500g", "category": "Beverages", "quantity": 1, "price": 290, "timestamp": 1710300000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-087",
+    "name": "Prakash Rao",
+    "phone": "+919610880760",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710900000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Dal Makhani 300g", "category": "Frozen", "quantity": 2, "price": 220, "timestamp": 1710600000 },
+      { "product": "Mother Dairy Frozen Kulfi 6pc", "category": "Frozen", "quantity": 3, "price": 90, "timestamp": 1710900000 },
+      { "product": "Maggi Coconut Milk Powder 180g", "category": "Cooking Essentials", "quantity": 2, "price": 130, "timestamp": 1710100000 },
+      { "product": "Fortune Kachi Ghani Mustard Oil 1L", "category": "Cooking Oil", "quantity": 2, "price": 195, "timestamp": 1709500000 },
+      { "product": "Britannia Treat Jam Filled Biscuits 100g", "category": "Biscuits", "quantity": 4, "price": 25, "timestamp": 1708900000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-088",
+    "name": "Teena Mathur",
+    "phone": "+919600870650",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711200000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Chole Bhature Set", "category": "Frozen", "quantity": 2, "price": 210, "timestamp": 1710900000 },
+      { "product": "Kwality Wall's Royal Treat Vanilla 1L", "category": "Frozen", "quantity": 1, "price": 320, "timestamp": 1711200000 },
+      { "product": "Amul Mozzarella 200g", "category": "Dairy", "quantity": 2, "price": 180, "timestamp": 1710200000 },
+      { "product": "Sunfeast Marie Light 300g", "category": "Biscuits", "quantity": 3, "price": 40, "timestamp": 1709700000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-089",
+    "name": "Arun Nair",
+    "phone": "+919590860540",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1708700000,
+    "last_offer_category": "Beverages",
+    "purchase_history": [
+      { "product": "Maaza Mango 600ml x4", "category": "Beverages", "quantity": 2, "price": 160, "timestamp": 1708500000 },
+      { "product": "Frooti Mango 500ml x3", "category": "Beverages", "quantity": 2, "price": 90, "timestamp": 1709400000 },
+      { "product": "Lays Magic Masala 130g", "category": "Snacks", "quantity": 3, "price": 60, "timestamp": 1710400000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-090",
+    "name": "Kaveri Venkatesh",
+    "phone": "+919580850430",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711100000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "ITC Master Chef Frozen Pav Bhaji 300g", "category": "Frozen", "quantity": 2, "price": 190, "timestamp": 1710700000 },
+      { "product": "Vadilal Frozen Corn 400g", "category": "Frozen", "quantity": 3, "price": 85, "timestamp": 1711100000 },
+      { "product": "Saffola Total Atta 5kg", "category": "Staples", "quantity": 1, "price": 320, "timestamp": 1709900000 },
+      { "product": "Nescafe Classic 100g", "category": "Beverages", "quantity": 1, "price": 320, "timestamp": 1710400000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-091",
+    "name": "Mohan Seshadri",
+    "phone": "+919570840320",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710600000,
+    "last_offer_category": "Staples",
+    "purchase_history": [
+      { "product": "Raw Rice 10kg", "category": "Staples", "quantity": 1, "price": 550, "timestamp": 1710300000 },
+      { "product": "Moong Dal 1kg", "category": "Staples", "quantity": 2, "price": 140, "timestamp": 1710800000 },
+      { "product": "Frozen Thepla 10pc", "category": "Frozen", "quantity": 2, "price": 170, "timestamp": 1711100000 },
+      { "product": "Kwality Wall's Chocobar 6pc", "category": "Frozen", "quantity": 3, "price": 90, "timestamp": 1711300000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-092",
+    "name": "Veena Krishnan",
+    "phone": "+919560830210",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711200000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Mother Dairy Frozen Peas 500g", "category": "Frozen", "quantity": 4, "price": 70, "timestamp": 1710900000 },
+      { "product": "ITC Master Chef Frozen Poha 250g", "category": "Frozen", "quantity": 2, "price": 135, "timestamp": 1711100000 },
+      { "product": "Vadilal Ice Cream Cup 100ml x4", "category": "Frozen", "quantity": 3, "price": 120, "timestamp": 1711200000 },
+      { "product": "Tata Sampann Besan 1kg", "category": "Staples", "quantity": 2, "price": 120, "timestamp": 1710200000 },
+      { "product": "Dabur Vatika Hair Oil 300ml", "category": "Personal Care", "quantity": 1, "price": 210, "timestamp": 1709600000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-093",
+    "name": "Suresh Pandey",
+    "phone": "+919550820100",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1710400000,
+    "last_offer_category": "Snacks",
+    "purchase_history": [
+      { "product": "Haldiram's Moong Dal Namkeen 400g", "category": "Snacks", "quantity": 2, "price": 100, "timestamp": 1710100000 },
+      { "product": "Bingo Mad Angles 70g", "category": "Snacks", "quantity": 4, "price": 30, "timestamp": 1710700000 },
+      { "product": "Tropicana Orange Juice 1L", "category": "Beverages", "quantity": 2, "price": 140, "timestamp": 1711100000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-094",
+    "name": "Leena Datta",
+    "phone": "+919540810090",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711300000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Rajma Chawal 300g", "category": "Frozen", "quantity": 2, "price": 190, "timestamp": 1711000000 },
+      { "product": "Kwality Wall's Kulfi Sticks Mango 4pc", "category": "Frozen", "quantity": 4, "price": 40, "timestamp": 1711200000 },
+      { "product": "Amul Ghee 1L", "category": "Dairy", "quantity": 1, "price": 580, "timestamp": 1710200000 },
+      { "product": "Himalaya Neem Face Wash 150ml", "category": "Personal Care", "quantity": 2, "price": 145, "timestamp": 1709700000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-095",
+    "name": "Shiva Prasad",
+    "phone": "+919530800980",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711050000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "ITC Frozen Chicken Biryani 300g", "category": "Frozen", "quantity": 2, "price": 295, "timestamp": 1710700000 },
+      { "product": "Mother Dairy Frozen Palak 400g", "category": "Frozen", "quantity": 3, "price": 75, "timestamp": 1711000000 },
+      { "product": "Aashirvaad Whole Wheat Atta 5kg", "category": "Staples", "quantity": 1, "price": 290, "timestamp": 1709800000 },
+      { "product": "Sprite 2L", "category": "Beverages", "quantity": 2, "price": 95, "timestamp": 1710300000 },
+      { "product": "Oreo Double Stuff 150g", "category": "Biscuits", "quantity": 3, "price": 75, "timestamp": 1709700000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-096",
+    "name": "Jayashree Murthy",
+    "phone": "+919520790870",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1710900000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Veg Pulao 300g", "category": "Frozen", "quantity": 2, "price": 165, "timestamp": 1710600000 },
+      { "product": "Vadilal Kulfi Sandwich 6pc", "category": "Frozen", "quantity": 3, "price": 105, "timestamp": 1710900000 },
+      { "product": "Dabur Real Mango Juice 1L", "category": "Beverages", "quantity": 2, "price": 130, "timestamp": 1710100000 },
+      { "product": "Nestle Milkmaid 400g", "category": "Dairy", "quantity": 2, "price": 120, "timestamp": 1709500000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-097",
+    "name": "Hemant Joshi",
+    "phone": "+919510780760",
+    "whatsapp_opted_in": false,
+    "last_offer_timestamp": 1708200000,
+    "last_offer_category": "Staples",
+    "purchase_history": [
+      { "product": "Aashirvaad Atta 5kg", "category": "Staples", "quantity": 2, "price": 280, "timestamp": 1708000000 },
+      { "product": "Tata Salt 1kg x3", "category": "Staples", "quantity": 1, "price": 65, "timestamp": 1709000000 },
+      { "product": "Haldiram Bhujia Sev 200g", "category": "Snacks", "quantity": 3, "price": 70, "timestamp": 1710200000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-098",
+    "name": "Champa Goswami",
+    "phone": "+919500770650",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711200000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "ITC Master Chef Frozen Upma 250g", "category": "Frozen", "quantity": 2, "price": 130, "timestamp": 1710900000 },
+      { "product": "Kwality Wall's Choco Fudge Ice Cream 1L", "category": "Frozen", "quantity": 1, "price": 350, "timestamp": 1711200000 },
+      { "product": "Patanjali Divya Peya 500g", "category": "Beverages", "quantity": 1, "price": 180, "timestamp": 1710300000 },
+      { "product": "Fortune Sunflower Oil 5L", "category": "Cooking Oil", "quantity": 1, "price": 780, "timestamp": 1709600000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-099",
+    "name": "Sumanth Reddy",
+    "phone": "+919490760540",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711100000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "Frozen Chicken Tikka 250g", "category": "Frozen", "quantity": 2, "price": 310, "timestamp": 1710700000 },
+      { "product": "Vadilal Frozen Mango Kulfi 4pc", "category": "Frozen", "quantity": 3, "price": 80, "timestamp": 1711100000 },
+      { "product": "Tata Tea Agni 250g", "category": "Beverages", "quantity": 2, "price": 145, "timestamp": 1710100000 },
+      { "product": "Amul Butter 200g", "category": "Dairy", "quantity": 3, "price": 120, "timestamp": 1709600000 },
+      { "product": "Maggi Hot & Sweet Sauce 200g", "category": "Condiments", "quantity": 2, "price": 60, "timestamp": 1709000000 }
+    ]
+  },
+  {
+    "customer_id": "CUST-100",
+    "name": "Amrita Singh",
+    "phone": "+919480750430",
+    "whatsapp_opted_in": true,
+    "last_offer_timestamp": 1711300000,
+    "last_offer_category": "Frozen",
+    "purchase_history": [
+      { "product": "McCain Smiles 420g Family Pack", "category": "Frozen", "quantity": 3, "price": 210, "timestamp": 1711000000 },
+      { "product": "Kwality Wall's Vanilla Tub 2L", "category": "Frozen", "quantity": 1, "price": 480, "timestamp": 1711200000 },
+      { "product": "Aashirvaad Atta 5kg", "category": "Staples", "quantity": 2, "price": 280, "timestamp": 1709700000 },
+      { "product": "Real Pomegranate Juice 1L", "category": "Beverages", "quantity": 2, "price": 175, "timestamp": 1710300000 }
+    ]
+  }
+]

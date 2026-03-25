@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0f0f0f;
+  --card: #1a1a1a;
+  --primary: #2979ff;
+  --success: #00c853;
+  --danger: #ff1744;
+  --warning: #ffd600;
+  --text: #ffffff;
+  --text-muted: #a0a0a0;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-all active:scale-95;
+  }
+  .btn-success {
+    @apply bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl transition-all active:scale-95;
+  }
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition-all active:scale-95;
+  }
+}
+
+.whatsapp-bubble-out {
+  @apply bg-blue-700 text-white p-3 rounded-2xl rounded-tr-none max-w-[80%] self-end shadow-lg;
+}
+
+.whatsapp-bubble-in {
+  @apply bg-zinc-800 text-white p-3 rounded-2xl rounded-tl-none max-w-[80%] self-start shadow-lg;
+}
+
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.05);
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 3px;
+  }
+}
