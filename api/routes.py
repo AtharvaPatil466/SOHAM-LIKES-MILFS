@@ -1,3 +1,4 @@
+import asyncio
 import json
 import time
 from typing import Any
@@ -17,7 +18,8 @@ class ConnectionManager:
         self.active_connections.append(websocket)
 
     def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
 
     async def broadcast(self, message: str):
         for connection in self.active_connections:
@@ -72,6 +74,15 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
         allow_headers=["*"],
     )
 
+    # ── Helper ──────────────────────────────────────────────
+    def _get_skill(name: str):
+        """Look up a skill from the orchestrator's skills dict."""
+        return orchestrator.skills.get(name)
+
+    def _list_skills():
+        """Return status for all loaded skills."""
+        return [skill.status() for skill in orchestrator.skills.values()]
+
     # ── Real-time Events ────────────────────────────────────
     @app.websocket("/ws/events")
     async def websocket_endpoint(websocket: WebSocket):
@@ -86,7 +97,7 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
 
     @app.get("/api/status")
     async def get_status():
-        skills = orchestrator.skill_loader.list_skills()
+        skills = _list_skills()
         return {
             "runtime": "running" if orchestrator.running else "stopped",
             "skills": skills,
@@ -96,11 +107,11 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
 
     @app.get("/api/skills")
     async def list_skills():
-        return orchestrator.skill_loader.list_skills()
+        return _list_skills()
 
     @app.post("/api/skills/{skill_name}/pause")
     async def pause_skill(skill_name: str):
-        skill = orchestrator.skill_loader.get_skill(skill_name)
+        skill = _get_skill(skill_name)
         if not skill:
             raise HTTPException(status_code=404, detail=f"Skill '{skill_name}' not found")
         await skill.pause()
@@ -108,7 +119,7 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
 
     @app.post("/api/skills/{skill_name}/resume")
     async def resume_skill(skill_name: str):
-        skill = orchestrator.skill_loader.get_skill(skill_name)
+        skill = _get_skill(skill_name)
         if not skill:
             raise HTTPException(status_code=404, detail=f"Skill '{skill_name}' not found")
         await skill.resume()
@@ -125,7 +136,7 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
 
     @app.get("/api/inventory")
     async def get_inventory():
-        skill = orchestrator.skill_loader.get_skill("inventory")
+        skill = _get_skill("inventory")
         if not skill:
             raise HTTPException(status_code=404, detail="Inventory skill not loaded")
         return await skill.get_full_inventory()
@@ -133,7 +144,7 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
     @app.post("/api/inventory/update")
     async def update_stock(payload: StockUpdatePayload):
         """Manually update stock level — used for demo."""
-        skill = orchestrator.skill_loader.get_skill("inventory")
+        skill = _get_skill("inventory")
         if not skill:
             raise HTTPException(status_code=404, detail="Inventory skill not loaded")
 
@@ -141,7 +152,6 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
         if "error" in result:
             raise HTTPException(status_code=404, detail=result["error"])
 
-        # Emit stock update event to trigger the full flow
         await orchestrator.emit_event({
             "type": "stock_update",
             "data": {"sku": payload.sku, "quantity": payload.quantity},
@@ -176,7 +186,7 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
     @app.post("/api/demo/supplier-reply")
     async def mock_supplier_reply(payload: SupplierReplyPayload):
         """Demo endpoint — simulate a supplier WhatsApp reply."""
-        negotiation_skill = orchestrator.skill_loader.get_skill("negotiation")
+        negotiation_skill = _get_skill("negotiation")
         if not negotiation_skill:
             raise HTTPException(status_code=404, detail="Negotiation skill not loaded")
 
@@ -188,7 +198,6 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
             "product_name": payload.product_name,
         })
 
-        # If deal is ready and needs approval, register with orchestrator
         if result.get("needs_approval"):
             approval_id = result["approval_id"]
             orchestrator.pending_approvals[approval_id] = {
@@ -237,7 +246,7 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
 
     @app.get("/api/negotiations")
     async def get_negotiations():
-        skill = orchestrator.skill_loader.get_skill("negotiation")
+        skill = _get_skill("negotiation")
         if not skill:
             raise HTTPException(status_code=404, detail="Negotiation skill not loaded")
         return {
@@ -259,22 +268,141 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
             return summary or {"message": "No analytics summary available yet"}
         return {"message": "Memory not available"}
 
-    # ── Demo Flow ───────────────────────────────────────────
+    # ── Demo Flow (Scripted Chain) ──────────────────────────
 
     @app.post("/api/demo/trigger-flow")
     async def trigger_demo_flow():
-        """Trigger the full ice cream demo flow."""
-        # Drop ice cream stock to critical level
-        skill = orchestrator.skill_loader.get_skill("inventory")
-        if skill:
-            await skill.update_stock("SKU-001", 5)
+        """Trigger the full ice cream demo flow with timed events."""
+        inventory_skill = _get_skill("inventory")
+        if not inventory_skill:
+            raise HTTPException(status_code=404, detail="Inventory skill not loaded")
 
-        # Emit stock update event
-        await orchestrator.emit_event({
-            "type": "stock_update",
-            "data": {"sku": "SKU-001", "quantity": 5},
-        })
+        async def _run_demo():
+            """Background task: runs the cinematic demo chain."""
+            try:
+                # Step 1: Drop stock to critical
+                await orchestrator.audit.log(
+                    skill="orchestrator",
+                    event_type="demo_started",
+                    decision="🎬 Demo started — Ice cream stock dropping to critical",
+                    reasoning="Owner triggered the live demo flow",
+                    outcome="Stock will drop to 5 units",
+                    status="success",
+                )
+                await inventory_skill.update_stock("SKU-001", 5)
 
-        return {"status": "demo_flow_triggered", "message": "Ice cream stock dropped to 5 units"}
+                await asyncio.sleep(2)
+
+                # Step 2: Simulate inventory detection
+                await orchestrator.audit.log(
+                    skill="inventory",
+                    event_type="low_stock_detected",
+                    decision="🚨 Ice cream stock critically low — only 5 units left!",
+                    reasoning="Stock dropped below reorder threshold of 20 units",
+                    outcome=json.dumps({"sku": "SKU-001", "product_name": "Amul Vanilla Ice Cream", "quantity": 5, "threshold": 20}),
+                    status="alert",
+                )
+
+                await asyncio.sleep(2)
+
+                # Step 3: Simulate procurement search
+                await orchestrator.audit.log(
+                    skill="procurement",
+                    event_type="supplier_ranking",
+                    decision="📋 Evaluated 5 suppliers — FreshFreeze Distributors is the best option",
+                    reasoning="Ranked by composite score: price ₹145/unit, reliability 4.8/5, next-day delivery, good trust score (94%)",
+                    outcome=json.dumps([
+                        {"rank": 1, "supplier_name": "FreshFreeze Distributors", "price_per_unit": 145, "delivery_days": 1},
+                        {"rank": 2, "supplier_name": "CoolChain India", "price_per_unit": 155, "delivery_days": 2},
+                    ]),
+                    status="success",
+                )
+
+                await asyncio.sleep(2)
+
+                # Step 4: Simulate negotiation outreach
+                await orchestrator.audit.log(
+                    skill="negotiation",
+                    event_type="outreach_sent",
+                    decision="📱 Sent WhatsApp message to FreshFreeze Distributors",
+                    reasoning="Top-ranked supplier for ice cream procurement",
+                    outcome="Message sent via WhatsApp Business API",
+                    status="success",
+                    metadata={"supplier_id": "SUP-001"},
+                )
+
+                await asyncio.sleep(2)
+
+                # Step 5: Simulate supplier reply
+                await orchestrator.audit.log(
+                    skill="negotiation",
+                    event_type="reply_parsed",
+                    decision="💬 Supplier replied: 50 boxes at ₹145/unit, delivery tomorrow, COD accepted",
+                    reasoning="Parsed WhatsApp reply from FreshFreeze — deal is within budget (saving ₹2,500 vs usual price)",
+                    outcome=json.dumps({
+                        "supplier": "FreshFreeze Distributors",
+                        "price_per_unit": 145,
+                        "quantity": 50,
+                        "delivery": "tomorrow",
+                        "terms": "COD"
+                    }),
+                    status="success",
+                )
+
+                await asyncio.sleep(2)
+
+                # Step 6: Create the approval card
+                approval_id = f"demo_procurement_SKU-001_{int(time.time())}"
+                orchestrator.pending_approvals[approval_id] = {
+                    "id": approval_id,
+                    "skill": "negotiation",
+                    "reason": "I found a better price for Amul Vanilla Ice Cream!",
+                    "result": {
+                        "product_name": "Amul Vanilla Ice Cream",
+                        "sku": "SKU-001",
+                        "negotiation_id": f"neg_demo_{int(time.time())}",
+                        "top_supplier": {
+                            "supplier_id": "SUP-001",
+                            "supplier_name": "FreshFreeze Distributors",
+                            "price_per_unit": 145,
+                            "delivery_days": 1,
+                            "min_order_qty": 30,
+                        },
+                        "parsed": {
+                            "price_per_unit": 145,
+                            "quantity": 50,
+                            "delivery": "tomorrow",
+                        },
+                    },
+                    "event": {"type": "supplier_reply"},
+                    "timestamp": time.time(),
+                }
+
+                await orchestrator.audit.log(
+                    skill="orchestrator",
+                    event_type="approval_requested",
+                    decision="🔔 Deal ready! Waiting for your approval on the Approvals tab",
+                    reasoning="FreshFreeze offered ₹145/unit for 50 boxes of ice cream with next-day delivery. Saving ₹2,500 vs usual supplier.",
+                    outcome="Approval card created — tap YES to order",
+                    status="pending",
+                )
+
+            except Exception as e:
+                await orchestrator.audit.log(
+                    skill="orchestrator",
+                    event_type="demo_error",
+                    decision="Demo flow encountered an error",
+                    reasoning=str(e),
+                    outcome="Some steps may not have completed",
+                    status="error",
+                )
+
+        # Launch the demo as a background task
+        asyncio.create_task(_run_demo())
+
+        return {
+            "status": "demo_flow_triggered",
+            "message": "🎬 Demo started! Watch the Dashboard tab for live events.",
+        }
 
     return app

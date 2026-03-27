@@ -6,9 +6,11 @@ import {
   Users, 
   Bell,
   ArrowRight,
-  RefreshCw
+  RefreshCw,
+  Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Sidebar from './components/Sidebar';
 import HomeTab from './components/HomeTab';
 import ApprovalsTab from './components/ApprovalsTab';
 import WhatHappenedTab from './components/WhatHappenedTab';
@@ -72,7 +74,6 @@ export default function App() {
       const message = JSON.parse(event.data);
       if (message.type === 'audit_log') {
         setLogs(prev => [message.data, ...prev].slice(0, 100));
-        // Refresh approvals if something changed
         if (['owner_approved', 'owner_rejected', 'approval_requested'].includes(message.data.event_type)) {
           fetchData();
         }
@@ -80,19 +81,32 @@ export default function App() {
     };
   };
 
-  const tabs = [
+  const mobileTabs = [
     { id: 'home', label: 'HOME', icon: LayoutDashboard },
     { id: 'approvals', label: 'APPROVALS', icon: CheckCircle2, badge: approvals.length },
-    { id: 'history', label: 'WHAT HAPPENED', icon: History },
-    { id: 'agents', label: 'MY AGENTS', icon: Users },
+    { id: 'history', label: 'HISTORY', icon: History },
+    { id: 'agents', label: 'AGENTS', icon: Users },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col max-w-md mx-auto bg-black text-white relative">
-      {/* Header / Tabs */}
-      <nav className="sticky top-0 z-50 bg-[#0f0f0f]/80 backdrop-blur-md border-b border-white/5 px-4 pt-6 pb-2">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-black tracking-tighter italic">RetailOS</h1>
+    <div className="min-h-screen bg-black text-white">
+      {/* Desktop Sidebar */}
+      <Sidebar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        approvalCount={approvals.length}
+        isConnected={isConnected}
+      />
+
+      {/* Mobile Top Nav — hidden on desktop */}
+      <nav className="lg:hidden sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-white/5 px-4 pt-6 pb-2">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <Zap size={16} className="text-white" />
+            </div>
+            <h1 className="text-xl font-black tracking-tighter">RetailOS</h1>
+          </div>
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
             <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest leading-none">
@@ -102,12 +116,12 @@ export default function App() {
         </div>
         
         <div className="flex items-center justify-between">
-          {tabs.map((tab) => (
+          {mobileTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex flex-col items-center gap-1.5 pb-2 transition-all relative ${
-                activeTab === tab.id ? 'text-primary' : 'text-white/40 hover:text-white/60'
+                activeTab === tab.id ? 'text-blue-500' : 'text-white/40 hover:text-white/60'
               }`}
             >
               <tab.icon size={20} strokeWidth={activeTab === tab.id ? 2.5 : 2} />
@@ -115,14 +129,14 @@ export default function App() {
                 {tab.label}
               </span>
               {tab.badge > 0 && (
-                <span className="absolute -top-1 -right-1 bg-danger text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                   {tab.badge}
                 </span>
               )}
               {activeTab === tab.id && (
                 <motion.div 
-                  layoutId="activeTab" 
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" 
+                  layoutId="activeTabMobile" 
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500" 
                 />
               )}
             </button>
@@ -130,43 +144,79 @@ export default function App() {
         </div>
       </nav>
 
-      {/* Main Content */}
-      <main className="flex-1 p-4 pb-24 overflow-x-hidden">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+      {/* Desktop Header Bar — hidden on mobile */}
+      <header className="hidden lg:flex fixed top-0 left-64 right-0 z-40 h-16 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5 items-center justify-between px-8">
+        <div>
+          <h2 className="text-lg font-black capitalize tracking-tight">
+            {activeTab === 'home' ? 'Dashboard' : activeTab === 'history' ? 'What Happened' : activeTab === 'agents' ? 'My Agents' : 'Approvals'}
+          </h2>
+          <p className="text-[11px] text-white/30 font-medium -mt-0.5">
+            {activeTab === 'home' ? 'Real-time overview of your store operations' : 
+             activeTab === 'approvals' ? `${approvals.length} pending decisions` :
+             activeTab === 'history' ? 'Complete audit trail of every action' :
+             'Your autonomous agent workforce'}
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={fetchData}
+            className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-white/40 hover:text-white transition-all"
+            title="Refresh data"
           >
-            {activeTab === 'home' && (
-              <HomeTab 
-                stats={stats} 
-                logs={logs} 
-                approvalCount={approvals.length}
-                onGoToApprovals={() => setActiveTab('approvals')}
-              />
+            <RefreshCw size={16} />
+          </button>
+          <div className="relative">
+            <button className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-white/40 hover:text-white transition-all">
+              <Bell size={16} />
+            </button>
+            {approvals.length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+                {approvals.length}
+              </span>
             )}
-            {activeTab === 'approvals' && (
-              <ApprovalsTab 
-                approvals={approvals} 
-                onRefresh={fetchData}
-              />
-            )}
-            {activeTab === 'history' && (
-              <WhatHappenedTab 
-                logs={logs} 
-              />
-            )}
-            {activeTab === 'agents' && (
-              <AgentsTab 
-                agents={agents} 
-                onRefresh={fetchData}
-              />
-            )}
-          </motion.div>
-        </AnimatePresence>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="lg:ml-64 lg:pt-16">
+        <div className="p-4 lg:p-8 pb-24 lg:pb-8 overflow-x-hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              {activeTab === 'home' && (
+                <HomeTab 
+                  stats={stats} 
+                  logs={logs} 
+                  approvalCount={approvals.length}
+                  onGoToApprovals={() => setActiveTab('approvals')}
+                />
+              )}
+              {activeTab === 'approvals' && (
+                <ApprovalsTab 
+                  approvals={approvals} 
+                  onRefresh={fetchData}
+                />
+              )}
+              {activeTab === 'history' && (
+                <WhatHappenedTab 
+                  logs={logs} 
+                />
+              )}
+              {activeTab === 'agents' && (
+                <AgentsTab 
+                  agents={agents} 
+                  onRefresh={fetchData}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </main>
     </div>
   );

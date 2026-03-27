@@ -92,6 +92,9 @@ class ProcurementSkill(BaseSkill):
             f"--------------------------------"
         )
         
+        # Find suppliers that carry this product/category
+        matching_suppliers = self._find_suppliers(product_name, category)
+
         # Analyze Quotes vs Market Data
         from brain.price_monitor import get_market_reference
         from brain.price_analyzer import format_supplier_verdict
@@ -110,9 +113,6 @@ class ProcurementSkill(BaseSkill):
                 if sp:
                     market_context_str += format_supplier_verdict(supplier["supplier_name"], float(sp), market_ref) + "\n"
             market_context_str += "---------------------------\n"
-
-        # Find suppliers that carry this product/category
-        matching_suppliers = self._find_suppliers(product_name, category)
 
         if not matching_suppliers:
             return {

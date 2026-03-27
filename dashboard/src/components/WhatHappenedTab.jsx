@@ -10,7 +10,8 @@ import {
   ChevronDown,
   ChevronUp,
   BrainCircuit,
-  Calendar
+  Calendar,
+  Filter
 } from 'lucide-react';
 
 const CATEGORIES = {
@@ -37,18 +38,24 @@ export default function WhatHappenedTab({ logs }) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xs font-black text-white/40 uppercase tracking-widest px-1">Everything RetailOS did</h2>
+      <div className="flex items-center justify-between px-1">
+        <h2 className="text-xs font-black text-white/40 uppercase tracking-widest">Everything RetailOS did</h2>
+        <div className="hidden lg:flex items-center gap-1.5 text-[10px] font-bold text-white/20">
+          <Filter size={10} />
+          <span>{filteredLogs.length} events</span>
+        </div>
+      </div>
 
       {/* Filters */}
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide lg:flex-wrap">
         {['All', 'Stock Checks', 'Supplier Finder', 'Supplier Talks', 'Offers Sent'].map(f => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap border transition-all ${
               filter === f 
-                ? 'bg-primary border-primary text-white shadow-lg shadow-blue-600/20' 
-                : 'bg-zinc-900 border-white/5 text-white/40 hover:text-white/60'
+                ? 'bg-blue-500 border-blue-500 text-white shadow-lg shadow-blue-500/20' 
+                : 'bg-zinc-900 border-white/5 text-white/40 hover:text-white/60 hover:border-white/10'
             }`}
           >
             {f}
@@ -57,7 +64,7 @@ export default function WhatHappenedTab({ logs }) {
       </div>
 
       {/* Timeline */}
-      <div className="space-y-4">
+      <div className="space-y-3 lg:space-y-4">
         {filteredLogs.map((log, i) => {
           const category = CATEGORIES[log.skill] || CATEGORIES.orchestrator;
           const Icon = category.icon;
@@ -68,39 +75,40 @@ export default function WhatHappenedTab({ logs }) {
               key={log.id}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: Math.min(i * 0.03, 0.3) }}
               className="group"
             >
-              <div className="relative rounded-3xl bg-zinc-900/50 border border-white/5 overflow-hidden transition-all hover:border-white/10">
-                <div className="p-4 flex gap-4">
-                  <div className={`w-12 h-12 rounded-2xl ${category.bg} flex items-center justify-center flex-shrink-0`}>
-                    <Icon size={20} className={category.color} />
+              <div className="relative rounded-2xl lg:rounded-3xl bg-zinc-900/50 border border-white/5 overflow-hidden transition-all hover:border-white/10">
+                <div className="p-4 lg:p-5 flex gap-3 lg:gap-4">
+                  <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl ${category.bg} flex items-center justify-center flex-shrink-0`}>
+                    <Icon size={18} className={category.color} />
                   </div>
                   
                   <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <span className={`text-[10px] font-black uppercase tracking-widest ${category.color}`}>
                         {category.label}
                       </span>
-                      <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest flex items-center gap-1">
+                      <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest flex items-center gap-1 flex-shrink-0">
                         <Calendar size={10} />
                         {new Date(log.timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
                     
-                    <h3 className="text-[14px] font-black leading-tight text-white group-hover:text-primary transition-colors">
+                    <h3 className="text-[13px] lg:text-[14px] font-black leading-tight text-white group-hover:text-blue-400 transition-colors">
                       {log.decision}
                     </h3>
                     
-                    <p className="text-[12px] font-medium text-white/40 leading-snug">
+                    <p className="text-[11px] lg:text-[12px] font-medium text-white/40 leading-snug line-clamp-2">
                       {log.reasoning}
                     </p>
 
                     <button 
                       onClick={() => toggleLog(log.id)}
-                      className="mt-2 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-primary/60 hover:text-primary transition-colors"
+                      className="mt-2 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-blue-500/60 hover:text-blue-400 transition-colors"
                     >
                       <BrainCircuit size={12} />
-                      <span>{isExpanded ? 'Hide my thinking' : 'Wait, how did you decide this?'}</span>
+                      <span>{isExpanded ? 'Hide thinking' : 'How did you decide this?'}</span>
                       {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                     </button>
                   </div>
@@ -115,14 +123,14 @@ export default function WhatHappenedTab({ logs }) {
                       className="bg-black/40 border-t border-white/5"
                     >
                       <div className="p-5 space-y-3">
-                        <div className="text-[10px] font-black uppercase tracking-widest text-primary">Here's exactly how I thought about this:</div>
+                        <div className="text-[10px] font-black uppercase tracking-widest text-blue-400">Here's exactly how I thought about this:</div>
                         <div className="text-[12px] font-medium leading-relaxed text-white/60 bg-white/5 p-4 rounded-2xl border border-white/5 italic">
                           "{log.reasoning || "I checked the current data and historical patterns to ensure the best possible outcome for your business."}"
                         </div>
                         {log.outcome && (
                           <div className="space-y-2">
                              <div className="text-[10px] font-black uppercase tracking-widest text-white/20">Final Result:</div>
-                             <div className="text-[11px] font-mono text-white/40 break-all bg-black/20 p-3 rounded-xl max-h-32 overflow-y-auto">
+                             <div className="text-[11px] font-mono text-white/40 break-all bg-black/20 p-3 rounded-xl max-h-32 overflow-y-auto scrollbar-thin">
                                {log.outcome}
                              </div>
                           </div>

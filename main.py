@@ -36,7 +36,6 @@ async def init_runtime():
     orchestrator = Orchestrator(
         memory=memory,
         audit=audit,
-        skill_loader=skill_loader,
         api_key=api_key,
     )
 

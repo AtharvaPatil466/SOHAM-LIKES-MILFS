@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 from runtime.audit import AuditLogger
 from runtime.memory import Memory
-from skills.base_skill import BaseSkill
+from skills.base_skill import BaseSkill, SkillState
 from skills.scheduling import SchedulingSkill
 
 
@@ -359,7 +359,7 @@ Decide which skill(s) to run and why."""
         self, skill_name: str, event: dict[str, Any], params: dict[str, Any], reason: str
     ) -> dict[str, Any]:
         """Execute a skill with retry logic and failure handling."""
-        skill = self.skill_loader.get_skill(skill_name)
+        skill = self.skills.get(skill_name)
 
         if not skill:
             await self.audit.log(

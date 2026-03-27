@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" fill="none">
+  <rect width="192" height="192" rx="40" fill="#0a0a0a"/>
+  <rect x="8" y="8" width="176" height="176" rx="36" fill="url(#grad)" opacity="0.15"/>
+  <defs>
+    <linearGradient id="grad" x1="0" y1="0" x2="192" y2="192">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <!-- Lightning bolt -->
+  <path d="M108 32L68 100h28L84 160l52-76h-32L108 32z" fill="url(#grad2)" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+  <defs>
+    <linearGradient id="grad2" x1="68" y1="32" x2="120" y2="160">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+  </defs>
+</svg>
