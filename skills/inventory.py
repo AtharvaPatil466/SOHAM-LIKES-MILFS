@@ -316,9 +316,13 @@ class InventorySkill(BaseSkill):
         from brain.wastage_tracker import log_movement
 
         result_lines = []
+        threshold_crossings = []
         for item, qty in sale_lines:
+            old_stock = item["current_stock"]
             item["current_stock"] -= qty
             item["threshold"] = item.get("reorder_threshold", item.get("threshold", 0))
+            new_stock = item["current_stock"]
+            threshold = item["threshold"]
             line_total = float(item.get("unit_price", 0)) * qty
             total_amount += line_total
             log_movement(item["sku"], -qty, "sale", order_id=order_id)
@@ -328,12 +332,18 @@ class InventorySkill(BaseSkill):
                 "qty": qty,
                 "unit_price": float(item.get("unit_price", 0)),
                 "line_total": round(line_total, 2),
-                "remaining_stock": item["current_stock"],
+                "remaining_stock": new_stock,
             })
+            if old_stock > threshold and new_stock <= threshold:
+                threshold_crossings.append({
+                    "sku": item["sku"],
+                    "new_quantity": new_stock,
+                })
 
         self._save_inventory()
         return {
             "order_id": order_id,
             "items": result_lines,
             "total_amount": round(total_amount, 2),
+            "threshold_crossings": threshold_crossings,
         }

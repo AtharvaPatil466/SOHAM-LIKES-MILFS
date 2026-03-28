@@ -239,6 +239,16 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
         result = await skill.record_sale([item.model_dump() for item in payload.items])
         if "error" in result:
             raise HTTPException(status_code=400, detail=result["error"])
+
+        for crossing in result.get("threshold_crossings", []):
+            await orchestrator.emit_event({
+                "type": "stock_update",
+                "data": {
+                    "sku": crossing["sku"],
+                    "quantity": crossing["new_quantity"],
+                    "movement_type": "sale",
+                },
+            })
         return result
 
     @app.post("/api/inventory/check")
