@@ -157,6 +157,9 @@ class SupplierPaymentPayload(BaseModel):
 class VoiceCommandPayload(BaseModel):
     text: str
 
+class CustomerAssistantPayload(BaseModel):
+    text: str
+
 
 # ── GST Rates by category ─────────────────────────────────
 GST_RATES = {
@@ -171,6 +174,716 @@ GST_RATES = {
     "Bakery": 0.05,
     "Protein & Health": 0.18,
 }
+
+STORE_PROFILE_DEFAULT = {
+    "store_name": "RetailOS Supermart",
+    "phone": "+91 98765 43210",
+    "address": "MG Road, Pune",
+    "hours": {
+        "monday": "8:00 AM - 10:00 PM",
+        "tuesday": "8:00 AM - 10:00 PM",
+        "wednesday": "8:00 AM - 10:00 PM",
+        "thursday": "8:00 AM - 10:00 PM",
+        "friday": "8:00 AM - 10:30 PM",
+        "saturday": "8:00 AM - 10:30 PM",
+        "sunday": "9:00 AM - 9:00 PM",
+    },
+    "holiday_note": "Holiday timings may vary on major festivals.",
+}
+
+ASSISTANT_CONFIG_DEFAULT = {
+    "whatsapp_number": "+91 98765 43210",
+    "supported_languages": ["English", "Hindi / Hinglish"],
+    "default_voice_language": "en-IN",
+    "enable_substitutes": True,
+    "enable_recipe_clarifications": True,
+    "recipe_bundles": [
+        {
+            "id": "chai-pack",
+            "name": "Chai Pack",
+            "prompt": "What do I need for chai?",
+            "description": "Daily tea essentials",
+            "inventory_queries": ["tea", "milk"],
+        },
+        {
+            "id": "pasta-night",
+            "name": "Pasta Night",
+            "prompt": "I want to make spaghetti tomato",
+            "description": "Check a simple tomato pasta ingredient set",
+            "inventory_queries": ["cooking oil", "salt"],
+        },
+    ],
+    "substitution_rules": {
+        "cooking oil": [
+            {"query": "sunflower oil", "label": "Fortune Sunflower Oil (1L)", "reason": "Closest stocked cooking oil"},
+        ],
+        "spaghetti pasta": [
+            {"query": "maggi", "label": "Maggi 2-Minute Noodles", "reason": "Closest quick noodle substitute in store"},
+        ],
+    },
+    "clarification_rules": [
+        {
+            "keyword": "pasta",
+            "question": "Do you want red sauce pasta or white sauce pasta?",
+            "options": ["Red sauce pasta", "White sauce pasta"],
+        },
+        {
+            "keyword": "sandwich",
+            "question": "Do you want a veg sandwich or a grilled cheese sandwich?",
+            "options": ["Veg sandwich", "Grilled cheese sandwich"],
+        },
+    ],
+}
+
+LOOKUP_STOPWORDS = {
+    "a",
+    "an",
+    "are",
+    "available",
+    "can",
+    "do",
+    "find",
+    "for",
+    "have",
+    "i",
+    "in",
+    "is",
+    "item",
+    "located",
+    "location",
+    "me",
+    "my",
+    "on",
+    "please",
+    "product",
+    "shelf",
+    "show",
+    "some",
+    "stock",
+    "the",
+    "where",
+    "which",
+    "zone",
+}
+
+RECIPE_KEYWORDS = (
+    "make",
+    "cook",
+    "recipe",
+    "ingredients",
+    "need for",
+    "need to make",
+    "want to make",
+    "want to cook",
+    "how do i make",
+    "what do i need for",
+)
+
+INGREDIENT_ALIASES = {
+    "cooking oil": ["oil", "sunflower oil", "refined oil"],
+    "oil": ["sunflower oil", "refined oil"],
+    "tea": ["tea", "chai"],
+    "chai patti": ["tea", "chai"],
+    "milk": ["milk"],
+    "doodh": ["milk"],
+    "butter": ["butter"],
+    "makhan": ["butter"],
+    "paneer": ["paneer"],
+    "salt": ["salt"],
+    "sugar": ["sugar"],
+    "spaghetti pasta": ["pasta", "spaghetti"],
+    "green chilli": ["chilli", "green chilli"],
+}
+
+HINGLISH_REPLACEMENTS = {
+    "kidhar": "where",
+    "kahan": "where",
+    "hai kya": "do you have",
+    "milta hai kya": "do you have",
+    "band kab": "what time do you close",
+    "khula kab": "when do you open",
+    "banana hai": "want to make",
+    "banani hai": "want to make",
+    "banane ke liye": "what do i need for",
+    "ke liye kya chahiye": "what do i need for",
+    "chai ke liye kya chahiye": "what do i need for chai",
+    "maggi hai kya": "do you have maggi",
+    "amul butter kidhar hai": "where is amul butter",
+}
+
+
+def _normalize_lookup_text(value: str) -> str:
+    return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9]+", " ", value.lower())).strip()
+
+
+def _lookup_tokens(value: str) -> list[str]:
+    return [token for token in _normalize_lookup_text(value).split() if token and token not in LOOKUP_STOPWORDS]
+
+
+def _inventory_snapshot(skill) -> list[dict[str, Any]]:
+    return getattr(skill, "inventory_data", None) or _read_json("mock_inventory.json", [])
+
+
+def _load_store_profile() -> dict[str, Any]:
+    return _read_json("store_profile.json", STORE_PROFILE_DEFAULT)
+
+
+def _load_assistant_config() -> dict[str, Any]:
+    return _read_json("customer_assistant_config.json", ASSISTANT_CONFIG_DEFAULT)
+
+
+def _write_assistant_config(config: dict[str, Any]) -> None:
+    _write_json("customer_assistant_config.json", config)
+
+
+def _load_assistant_logs() -> list[dict[str, Any]]:
+    return _read_json("customer_assistant_logs.json", [])
+
+
+def _write_assistant_logs(entries: list[dict[str, Any]]) -> None:
+    _write_json("customer_assistant_logs.json", entries)
+
+
+def _normalize_customer_query(text: str) -> str:
+    normalized = text.strip()
+    lowered = normalized.lower()
+    for source, target in HINGLISH_REPLACEMENTS.items():
+        lowered = lowered.replace(source, target)
+    return lowered
+
+
+def _resolve_zone_shelf(zone: dict[str, Any], shelf_level: str, preferred_shelf_id: str | None = None) -> dict[str, Any] | None:
+    shelves = zone.get("shelves", [])
+    if not shelves:
+        return None
+
+    if preferred_shelf_id:
+        preferred = next((shelf for shelf in shelves if shelf.get("shelf_id") == preferred_shelf_id), None)
+        if preferred:
+            return preferred
+
+    for shelf in shelves:
+        if shelf_level in shelf.get("levels", []):
+            return shelf
+
+    return shelves[0]
+
+
+def _hydrate_shelf_assignments(data: dict[str, Any], persist: bool = False) -> dict[str, Any]:
+    changed = False
+    for zone in data.get("zones", []):
+        for product in zone.get("products", []):
+            shelf = _resolve_zone_shelf(zone, product.get("shelf_level", "lower"), product.get("shelf_id"))
+            if not shelf:
+                continue
+            if product.get("shelf_id") != shelf.get("shelf_id"):
+                product["shelf_id"] = shelf.get("shelf_id")
+                changed = True
+            if product.get("shelf_name") != shelf.get("shelf_name"):
+                product["shelf_name"] = shelf.get("shelf_name")
+                changed = True
+
+    if persist and changed:
+        _write_json("mock_shelf_zones.json", data)
+
+    return data
+
+
+def _score_inventory_match(query: str, item: dict[str, Any]) -> int:
+    normalized_query = _normalize_lookup_text(query)
+    normalized_name = _normalize_lookup_text(item.get("product_name", ""))
+    normalized_sku = _normalize_lookup_text(item.get("sku", ""))
+    query_tokens = _lookup_tokens(query)
+    name_tokens = set(_lookup_tokens(item.get("product_name", "")))
+
+    score = 0
+    if normalized_query == normalized_sku:
+        score += 130
+    if normalized_query == normalized_name:
+        score += 120
+    if normalized_query and normalized_query in normalized_name:
+        score += 95
+    if normalized_query and normalized_query in normalized_sku:
+        score += 90
+
+    for alias in INGREDIENT_ALIASES.get(normalized_query, []):
+        normalized_alias = _normalize_lookup_text(alias)
+        if normalized_alias and normalized_alias in normalized_name:
+            score += 45
+
+    overlap = len([token for token in query_tokens if token in name_tokens or token == normalized_sku])
+    if overlap:
+        score += overlap * 20
+
+    category = _normalize_lookup_text(item.get("category", ""))
+    if normalized_query and normalized_query == category:
+        score += 10
+
+    return score
+
+
+def _find_best_inventory_match(query: str, inventory: list[dict[str, Any]]) -> dict[str, Any] | None:
+    if not query.strip():
+        return None
+
+    scored = []
+    for item in inventory:
+        score = _score_inventory_match(query, item)
+        if score > 0:
+            scored.append((score, item))
+
+    if not scored:
+        return None
+
+    scored.sort(key=lambda entry: (entry[0], entry[1].get("daily_sales_rate", 0), entry[1].get("current_stock", 0)), reverse=True)
+    return scored[0][1] if scored[0][0] >= 40 else None
+
+
+def _find_substitutes(ingredient_name: str, inventory: list[dict[str, Any]], assistant_config: dict[str, Any]) -> list[dict[str, Any]]:
+    suggestions = []
+    for rule in assistant_config.get("substitution_rules", {}).get(_normalize_lookup_text(ingredient_name), []):
+        matched = _find_best_inventory_match(rule.get("query", ""), inventory)
+        if not matched:
+            continue
+        suggestions.append(
+            {
+                "ingredient": ingredient_name,
+                "label": rule.get("label", matched.get("product_name")),
+                "reason": rule.get("reason", "Suggested substitute"),
+                "matched_product": matched.get("product_name"),
+                "sku": matched.get("sku"),
+                "current_stock": matched.get("current_stock", 0),
+            }
+        )
+    return suggestions
+
+
+def _extract_candidate_product_query(text: str) -> str:
+    patterns = [
+        r"(?:where(?: can i find| is| are)?|find|locate|which shelf(?: is| are)?|which zone(?: is| are)?|show me)\s+(.+)",
+        r"(?:do you have|have you got|is there|is|are)\s+(.+?)(?:\s+(?:available|in stock))?$",
+        r"(.+?)\s+(?:available|in stock)$",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if match:
+            return match.group(1).strip(" ?.")
+    return text.strip(" ?.")
+
+
+def _format_store_hours(profile: dict[str, Any]) -> tuple[str, str]:
+    hours = profile.get("hours", {})
+    today_key = datetime.now().strftime("%A").lower()
+    today_hours = hours.get(today_key, "Hours unavailable")
+    weekly = ", ".join(
+        f"{day[:3].title()} {hours[day]}"
+        for day in ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
+        if day in hours
+    )
+    return today_hours, weekly
+
+
+def _is_recipe_query(text: str) -> bool:
+    normalized = _normalize_lookup_text(text)
+    return any(keyword in normalized for keyword in RECIPE_KEYWORDS)
+
+
+def _extract_recipe_query(text: str) -> str:
+    patterns = [
+        r"(?:i want to make|i want to cook|want to make|want to cook|how do i make|what do i need for|ingredients for|recipe for)\s+(.+)",
+        r"(?:make|cook)\s+(.+)",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if match:
+            return match.group(1).strip(" ?.")
+    return text.strip(" ?.")
+
+
+def _build_recipe_clarification(recipe_query: str, assistant_config: dict[str, Any]) -> dict[str, Any] | None:
+    normalized = _normalize_lookup_text(recipe_query)
+    token_count = len(_lookup_tokens(recipe_query))
+    if token_count > 3:
+        return None
+
+    for rule in assistant_config.get("clarification_rules", []):
+        keyword = _normalize_lookup_text(rule.get("keyword", ""))
+        if keyword and keyword in normalized:
+            return {
+                "intent": "recipe_clarification",
+                "answer": rule.get("question", "Can you clarify which version you want?"),
+                "clarification_question": rule.get("question", ""),
+                "clarification_options": rule.get("options", []),
+                "follow_up_suggestions": rule.get("options", []),
+            }
+    return None
+
+
+def _build_shelf_lookup(shelf_data: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    shelf_lookup: dict[str, dict[str, Any]] = {}
+    for zone in shelf_data.get("zones", []):
+        for product in zone.get("products", []):
+            shelf_lookup[product.get("sku", "")] = {
+                "zone_id": zone.get("zone_id"),
+                "zone_name": zone.get("zone_name"),
+                "zone_type": zone.get("zone_type"),
+                "shelf_id": product.get("shelf_id"),
+                "shelf_name": product.get("shelf_name"),
+                "shelf_level": product.get("shelf_level"),
+            }
+    return shelf_lookup
+
+
+def _classify_inventory_match(item: dict[str, Any], placement: dict[str, Any] | None) -> str:
+    stock = item.get("current_stock", 0)
+    if stock <= 0:
+        return "out_of_stock"
+    if placement:
+        return "in_stock_mapped"
+    return "in_stock_unassigned"
+
+
+def _match_recipe_ingredients(recipe: dict[str, Any], inventory: list[dict[str, Any]], shelf_lookup: dict[str, dict[str, Any]], assistant_config: dict[str, Any]) -> dict[str, Any]:
+    found = []
+    missing = []
+    not_carried = []
+
+    for ingredient in recipe.get("ingredients", []):
+        ingredient_name = ingredient.get("name", "").strip()
+        if not ingredient_name:
+            continue
+
+        matched = _find_best_inventory_match(ingredient_name, inventory)
+        if not matched:
+            entry = (
+                {
+                    "ingredient": ingredient_name,
+                    "quantity_hint": ingredient.get("quantity_hint", ""),
+                    "category_hint": ingredient.get("category_hint", ""),
+                    "is_optional": bool(ingredient.get("is_optional", False)),
+                    "status": "not_carried",
+                }
+            )
+            if assistant_config.get("enable_substitutes"):
+                entry["substitutes"] = _find_substitutes(ingredient_name, inventory, assistant_config)
+            not_carried.append(entry)
+            continue
+
+        placement = shelf_lookup.get(matched.get("sku"))
+        status = _classify_inventory_match(matched, placement)
+        entry = {
+            "ingredient": ingredient_name,
+            "quantity_hint": ingredient.get("quantity_hint", ""),
+            "category_hint": ingredient.get("category_hint", ""),
+            "is_optional": bool(ingredient.get("is_optional", False)),
+            "matched_product": matched.get("product_name"),
+            "sku": matched.get("sku"),
+            "current_stock": matched.get("current_stock", 0),
+            "status": status,
+        }
+        if placement:
+            entry.update(placement)
+        if status != "in_stock_mapped" and assistant_config.get("enable_substitutes"):
+            entry["substitutes"] = _find_substitutes(ingredient_name, inventory, assistant_config)
+
+        if status == "out_of_stock":
+            missing.append(entry)
+        else:
+            found.append(entry)
+
+    return {
+        "ingredients_found": found,
+        "ingredients_missing": missing,
+        "ingredients_not_carried": not_carried,
+    }
+
+
+def _build_recipe_answer(recipe: dict[str, Any], matched: dict[str, Any]) -> dict[str, Any]:
+    found = matched["ingredients_found"]
+    missing = matched["ingredients_missing"]
+    not_carried = matched["ingredients_not_carried"]
+
+    answer_parts = [
+        f"For {recipe.get('dish_name', 'this dish')}, I checked the store and found {len(found)} ingredient{'s' if len(found) != 1 else ''} available now."
+    ]
+    if missing:
+        answer_parts.append(f"{len(missing)} ingredient{' is' if len(missing) == 1 else 's are'} currently out of stock.")
+    if not_carried:
+        answer_parts.append(f"{len(not_carried)} ingredient{' is' if len(not_carried) == 1 else 's are'} not currently carried.")
+    if recipe.get("notes"):
+        answer_parts.append(recipe["notes"])
+
+    first_available = found[0]["ingredient"] if found else None
+    substitute_count = sum(len(entry.get("substitutes", [])) for entry in missing + not_carried)
+    return {
+        "intent": "recipe_assistant",
+        "dish_name": recipe.get("dish_name"),
+        "answer": " ".join(answer_parts),
+        "recipe_notes": recipe.get("notes", ""),
+        **matched,
+        "substitute_count": substitute_count,
+        "follow_up_suggestions": [
+            f"Where is {first_available}?" if first_available else "Where is the first available ingredient?",
+            "Do you have everything for chai?",
+            "What time do you close?",
+        ],
+    }
+
+
+def _bundle_recommendations(inventory: list[dict[str, Any]], assistant_config: dict[str, Any]) -> list[dict[str, Any]]:
+    recommendations = []
+    for bundle in assistant_config.get("recipe_bundles", []):
+        bundle_items = []
+        all_available = True
+        for query in bundle.get("inventory_queries", []):
+            matched = _find_best_inventory_match(query, inventory)
+            bundle_items.append(
+                {
+                    "query": query,
+                    "matched_product": matched.get("product_name") if matched else None,
+                    "available": bool(matched and matched.get("current_stock", 0) > 0),
+                }
+            )
+            if not matched or matched.get("current_stock", 0) <= 0:
+                all_available = False
+        recommendations.append(
+            {
+                **bundle,
+                "all_available": all_available,
+                "items": bundle_items,
+            }
+        )
+    return recommendations
+
+
+def _log_customer_assistant_query(original_text: str, normalized_text: str, response: dict[str, Any]) -> None:
+    logs = _load_assistant_logs()
+    logs.append(
+        {
+            "timestamp": time.time(),
+            "query": original_text,
+            "normalized_query": normalized_text,
+            "intent": response.get("intent"),
+            "dish_name": response.get("dish_name"),
+            "availability_status": response.get("availability_status"),
+            "missing_ingredients": [entry.get("ingredient") for entry in response.get("ingredients_missing", [])],
+            "not_carried_ingredients": [entry.get("ingredient") for entry in response.get("ingredients_not_carried", [])],
+        }
+    )
+    _write_assistant_logs(logs[-400:])
+
+
+def _assistant_analytics() -> dict[str, Any]:
+    logs = _load_assistant_logs()
+    intent_counts: dict[str, int] = {}
+    query_counts: dict[str, int] = {}
+    missing_counts: dict[str, int] = {}
+    recipe_counts: dict[str, int] = {}
+
+    for entry in logs:
+        intent = entry.get("intent") or "unknown"
+        intent_counts[intent] = intent_counts.get(intent, 0) + 1
+        query = entry.get("normalized_query") or ""
+        if query:
+            query_counts[query] = query_counts.get(query, 0) + 1
+        if entry.get("dish_name"):
+            recipe_counts[entry["dish_name"]] = recipe_counts.get(entry["dish_name"], 0) + 1
+        for ingredient in entry.get("missing_ingredients", []) + entry.get("not_carried_ingredients", []):
+            if ingredient:
+                missing_counts[ingredient] = missing_counts.get(ingredient, 0) + 1
+
+    top_queries = sorted(query_counts.items(), key=lambda item: item[1], reverse=True)[:5]
+    top_missing = sorted(missing_counts.items(), key=lambda item: item[1], reverse=True)[:5]
+    top_recipes = sorted(recipe_counts.items(), key=lambda item: item[1], reverse=True)[:5]
+
+    return {
+        "total_queries": len(logs),
+        "intent_counts": intent_counts,
+        "top_queries": [{"query": query, "count": count} for query, count in top_queries],
+        "top_missing_items": [{"ingredient": ingredient, "count": count} for ingredient, count in top_missing],
+        "top_recipes": [{"dish_name": dish_name, "count": count} for dish_name, count in top_recipes],
+    }
+
+
+async def _answer_customer_assistant_query(
+    text: str,
+    inventory: list[dict[str, Any]],
+    shelf_data: dict[str, Any],
+    store_profile: dict[str, Any],
+    assistant_config: dict[str, Any],
+) -> dict[str, Any]:
+    cleaned_text = text.strip()
+    translated_text = _normalize_customer_query(cleaned_text)
+    normalized = _normalize_lookup_text(translated_text)
+    bundle_recommendations = _bundle_recommendations(inventory, assistant_config)
+
+    if not normalized:
+        return {
+            "intent": "unknown",
+            "answer": "Ask about a product location, availability, or store hours.",
+            "bundle_recommendations": bundle_recommendations,
+            "follow_up_suggestions": [
+                "Where is Amul butter?",
+                "Do you have Maggi?",
+                "What time do you close?",
+            ],
+        }
+
+    if any(phrase in normalized for phrase in ("store hours", "open today", "what time", "when do you open", "when do you close", "closing time", "opening time", "hours")):
+        today_hours, weekly_hours = _format_store_hours(store_profile)
+        return {
+            "intent": "store_info",
+            "answer": f"{store_profile.get('store_name', 'The store')} is open today from {today_hours}.",
+            "store_name": store_profile.get("store_name"),
+            "today_hours": today_hours,
+            "weekly_hours": weekly_hours,
+            "holiday_note": store_profile.get("holiday_note"),
+            "bundle_recommendations": bundle_recommendations,
+            "follow_up_suggestions": [
+                "Where is Coca-Cola?",
+                "Do you have Amul milk?",
+            ],
+        }
+
+    if _is_recipe_query(translated_text):
+        from brain.recipe_assistant import parse_recipe_request
+
+        recipe_query = _extract_recipe_query(translated_text)
+        if assistant_config.get("enable_recipe_clarifications"):
+            clarification = _build_recipe_clarification(recipe_query, assistant_config)
+            if clarification:
+                clarification["bundle_recommendations"] = bundle_recommendations
+                return clarification
+
+        recipe = await parse_recipe_request(recipe_query)
+        shelf_lookup = _build_shelf_lookup(shelf_data)
+        matched = _match_recipe_ingredients(recipe, inventory, shelf_lookup, assistant_config)
+        response = _build_recipe_answer(recipe, matched)
+        response["bundle_recommendations"] = bundle_recommendations
+        return response
+
+    candidate_query = _extract_candidate_product_query(translated_text)
+    matched = _find_best_inventory_match(candidate_query, inventory)
+    if not matched:
+        return {
+            "intent": "product_lookup",
+            "answer": f"I couldn't find a product matching '{candidate_query}'.",
+            "availability_status": "not_found",
+            "bundle_recommendations": bundle_recommendations,
+            "follow_up_suggestions": [
+                "Try the full product name",
+                "Ask: Do you have Maggi?",
+                "Ask: Where is Amul butter?",
+            ],
+        }
+
+    shelf_lookup = _build_shelf_lookup(shelf_data)
+    placement = shelf_lookup.get(matched.get("sku"))
+    current_stock = matched.get("current_stock", 0)
+    intent = "shelf_location" if any(word in normalized for word in ("where", "find", "shelf", "zone", "located")) else "product_availability"
+
+    if intent == "shelf_location":
+        if placement:
+            answer = (
+                f"{matched['product_name']} is in {placement['zone_name']} ({placement['zone_id']}), "
+                f"{placement.get('shelf_name', 'Shelf')}, {placement.get('shelf_level', 'lower').replace('_', ' ')} level."
+            )
+            return {
+                "intent": intent,
+                "answer": answer,
+                "product": matched["product_name"],
+                "sku": matched["sku"],
+                "availability_status": "in_stock" if current_stock > 0 else "out_of_stock",
+                "current_stock": current_stock,
+                "bundle_recommendations": bundle_recommendations,
+                **placement,
+                "follow_up_suggestions": [
+                    f"Do you have {matched['product_name']}?",
+                    "What time do you close?",
+                ],
+            }
+
+        if current_stock > 0:
+            return {
+                "intent": intent,
+                "answer": f"{matched['product_name']} is in stock, but it is not mapped to a shelf yet.",
+                "product": matched["product_name"],
+                "sku": matched["sku"],
+                "availability_status": "in_stock_unassigned",
+                "current_stock": current_stock,
+                "bundle_recommendations": bundle_recommendations,
+                "follow_up_suggestions": [
+                    f"Do you have {matched['product_name']}?",
+                    "What time do you close?",
+                ],
+            }
+
+        substitutes = _find_substitutes(matched["product_name"], inventory, assistant_config) if assistant_config.get("enable_substitutes") else []
+        return {
+            "intent": intent,
+            "answer": f"{matched['product_name']} is currently out of stock.",
+            "product": matched["product_name"],
+            "sku": matched["sku"],
+            "availability_status": "out_of_stock",
+            "current_stock": current_stock,
+            "substitutes": substitutes,
+            "bundle_recommendations": bundle_recommendations,
+            "follow_up_suggestions": [
+                "Do you have a similar item?",
+                "What time do you open tomorrow?",
+            ],
+        }
+
+    if current_stock > 0 and placement:
+        answer = (
+            f"Yes, {matched['product_name']} is available. "
+            f"You can find it in {placement['zone_name']} ({placement['zone_id']}), {placement.get('shelf_name', 'Shelf')}."
+        )
+        return {
+            "intent": intent,
+            "answer": answer,
+            "product": matched["product_name"],
+            "sku": matched["sku"],
+            "availability_status": "in_stock",
+            "current_stock": current_stock,
+            "bundle_recommendations": bundle_recommendations,
+            **placement,
+            "follow_up_suggestions": [
+                f"Where is {matched['product_name']}?",
+                "What time do you close?",
+            ],
+        }
+
+    if current_stock > 0:
+        return {
+            "intent": intent,
+            "answer": f"Yes, {matched['product_name']} is available. We have {current_stock} units in stock.",
+            "product": matched["product_name"],
+            "sku": matched["sku"],
+            "availability_status": "in_stock",
+            "current_stock": current_stock,
+            "bundle_recommendations": bundle_recommendations,
+            "follow_up_suggestions": [
+                f"Where is {matched['product_name']}?",
+                "What time do you close?",
+            ],
+        }
+
+    substitutes = _find_substitutes(matched["product_name"], inventory, assistant_config) if assistant_config.get("enable_substitutes") else []
+    return {
+        "intent": intent,
+        "answer": f"{matched['product_name']} is currently out of stock.",
+        "product": matched["product_name"],
+        "sku": matched["sku"],
+        "availability_status": "out_of_stock",
+        "current_stock": current_stock,
+        "substitutes": substitutes,
+        "bundle_recommendations": bundle_recommendations,
+        "follow_up_suggestions": [
+            "Ask for another product",
+            "What time do you open tomorrow?",
+        ],
+    }
 
 
 def _calc_gst(items: list, inventory_data: list | None = None) -> float:
@@ -440,6 +1153,30 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
         if not skill:
             raise HTTPException(status_code=404, detail="Inventory skill not loaded")
         return await skill.get_full_inventory()
+
+    @app.get("/api/store-profile")
+    async def get_store_profile():
+        return _load_store_profile()
+
+    @app.put("/api/store-profile")
+    async def update_store_profile(payload: dict):
+        profile = {**_load_store_profile(), **payload}
+        _write_json("store_profile.json", profile)
+        return profile
+
+    @app.get("/api/customer-assistant/config")
+    async def get_customer_assistant_config():
+        return _load_assistant_config()
+
+    @app.put("/api/customer-assistant/config")
+    async def update_customer_assistant_config(payload: dict):
+        config = {**_load_assistant_config(), **payload}
+        _write_assistant_config(config)
+        return config
+
+    @app.get("/api/customer-assistant/analytics")
+    async def get_customer_assistant_analytics():
+        return _assistant_analytics()
 
     @app.post("/api/inventory/update")
     async def update_stock(payload: StockUpdatePayload):
@@ -945,8 +1682,7 @@ Open RetailOS for details."""
 
         # Load inventory for matching
         skill = _get_skill("inventory")
-        inv_data = skill.inventory_data if skill else _read_json("mock_inventory.json", [])
-        inv_map = {i["product_name"].lower(): i for i in inv_data}
+        inv_data = _inventory_snapshot(skill)
 
         # Parse patterns
         # "add 20 units of Amul butter"
@@ -954,7 +1690,7 @@ Open RetailOS for details."""
         if add_match:
             qty = int(add_match.group(1))
             product_query = add_match.group(2).strip()
-            matched = next((v for k, v in inv_map.items() if product_query.lower() in k), None)
+            matched = _find_best_inventory_match(product_query, inv_data)
             if matched and skill:
                 new_stock = matched["current_stock"] + qty
                 await skill.update_stock(matched["sku"], new_stock)
@@ -967,7 +1703,7 @@ Open RetailOS for details."""
             qty = int(sell_match.group(1))
             product_query = sell_match.group(2).strip()
             customer_name = (sell_match.group(3) or "").strip()
-            matched = next((v for k, v in inv_map.items() if product_query.lower() in k), None)
+            matched = _find_best_inventory_match(product_query, inv_data)
             if matched:
                 return {"action": "sale_ready", "product": matched["product_name"], "sku": matched["sku"], "qty": qty, "customer": customer_name, "message": f"Ready to sell {qty}x {matched['product_name']}" + (f" to {customer_name}" if customer_name else "")}
             return {"action": "not_found", "message": f"Could not find product matching '{product_query}'"}
@@ -1032,6 +1768,40 @@ Open RetailOS for details."""
             }
 
         return {**parsed, "executed": False}
+
+    @app.post("/api/customer-assistant/query")
+    async def customer_assistant_query(payload: CustomerAssistantPayload):
+        inventory_skill = _get_skill("inventory")
+        inventory = _inventory_snapshot(inventory_skill)
+        shelf_data = _hydrate_shelf_assignments(
+            _read_json("mock_shelf_zones.json", {"zones": [], "ai_suggestions": []}),
+            persist=True,
+        )
+        store_profile = _load_store_profile()
+        assistant_config = _load_assistant_config()
+        response = await _answer_customer_assistant_query(payload.text, inventory, shelf_data, store_profile, assistant_config)
+        _log_customer_assistant_query(payload.text, _normalize_customer_query(payload.text), response)
+        return response
+
+    @app.post("/api/customer-assistant/whatsapp-link")
+    async def customer_assistant_whatsapp_link(payload: CustomerAssistantPayload):
+        inventory_skill = _get_skill("inventory")
+        inventory = _inventory_snapshot(inventory_skill)
+        shelf_data = _hydrate_shelf_assignments(
+            _read_json("mock_shelf_zones.json", {"zones": [], "ai_suggestions": []}),
+            persist=True,
+        )
+        store_profile = _load_store_profile()
+        assistant_config = _load_assistant_config()
+        response = await _answer_customer_assistant_query(payload.text, inventory, shelf_data, store_profile, assistant_config)
+        _log_customer_assistant_query(payload.text, _normalize_customer_query(payload.text), response)
+        whatsapp_number = assistant_config.get("whatsapp_number") or store_profile.get("phone", "")
+        message = response.get("answer", "")
+        return {
+            "status": "ready",
+            "answer": message,
+            "whatsapp_link": f"https://wa.me/{str(whatsapp_number).replace('+', '').replace(' ', '')}?text={quote(message[:500])}",
+        }
 
     # ══════════════════════════════════════════════════════════
     # DELIVERY REQUESTS (connected: delivered → creates order → deducts inventory)
@@ -1109,8 +1879,10 @@ Open RetailOS for details."""
 
     @app.get("/api/shelf-zones")
     async def get_shelf_zones():
+        from brain.velocity_analyzer import classify_velocity
         data = _read_json("mock_shelf_zones.json", {"zones": [], "ai_suggestions": []})
-        # Enrich with live stock data
+        data = _hydrate_shelf_assignments(data, persist=True)
+        # Enrich with live stock data and velocity classification
         skill = _get_skill("inventory")
         if skill:
             inv_map = {i["sku"]: i for i in skill.inventory_data}
@@ -1120,7 +1892,139 @@ Open RetailOS for details."""
                     if inv:
                         product["current_stock"] = inv["current_stock"]
                         product["daily_sales_rate"] = inv["daily_sales_rate"]
+                        product["velocity_classification"] = classify_velocity(inv["daily_sales_rate"])
         return data
+
+    @app.get("/api/shelf-zones/velocity")
+    async def get_shelf_velocity():
+        from brain.velocity_analyzer import get_velocity_report
+        return get_velocity_report()
+
+    @app.post("/api/shelf-zones/zones")
+    async def create_shelf_zone(payload: dict):
+        data = _read_json("mock_shelf_zones.json", {"zones": [], "ai_suggestions": []})
+        # Generate next zone ID
+        existing_ids = [z["zone_id"] for z in data["zones"]]
+        max_num = 0
+        for zid in existing_ids:
+            try:
+                max_num = max(max_num, int(zid.split("-")[1]))
+            except (IndexError, ValueError):
+                pass
+        new_id = f"Z-{max_num + 1:02d}"
+
+        zone_type = payload.get("zone_type", "standard")
+        if zone_type not in ("high_traffic", "refrigerated", "freezer", "standard"):
+            raise HTTPException(status_code=400, detail="Invalid zone_type")
+
+        new_zone = {
+            "zone_id": new_id,
+            "zone_name": payload.get("zone_name", f"Zone {new_id}"),
+            "zone_type": zone_type,
+            "total_slots": payload.get("total_slots", 6),
+            "shelves": payload.get("shelves", []),
+            "products": [],
+        }
+        data["zones"].append(new_zone)
+        _write_json("mock_shelf_zones.json", data)
+        return new_zone
+
+    @app.put("/api/shelf-zones/zones/{zone_id}")
+    async def update_shelf_zone(zone_id: str, payload: dict):
+        data = _read_json("mock_shelf_zones.json", {"zones": [], "ai_suggestions": []})
+        for zone in data["zones"]:
+            if zone["zone_id"] == zone_id:
+                if "zone_name" in payload:
+                    zone["zone_name"] = payload["zone_name"]
+                if "zone_type" in payload:
+                    if payload["zone_type"] not in ("high_traffic", "refrigerated", "freezer", "standard"):
+                        raise HTTPException(status_code=400, detail="Invalid zone_type")
+                    zone["zone_type"] = payload["zone_type"]
+                if "total_slots" in payload:
+                    if payload["total_slots"] < len(zone["products"]):
+                        raise HTTPException(status_code=400, detail="Cannot reduce slots below current product count")
+                    zone["total_slots"] = payload["total_slots"]
+                if "shelves" in payload:
+                    zone["shelves"] = payload["shelves"]
+                _write_json("mock_shelf_zones.json", data)
+                return zone
+        raise HTTPException(status_code=404, detail="Zone not found")
+
+    @app.delete("/api/shelf-zones/zones/{zone_id}")
+    async def delete_shelf_zone(zone_id: str):
+        data = _read_json("mock_shelf_zones.json", {"zones": [], "ai_suggestions": []})
+        for i, zone in enumerate(data["zones"]):
+            if zone["zone_id"] == zone_id:
+                if zone["products"]:
+                    raise HTTPException(status_code=400, detail="Cannot delete zone with products. Remove products first.")
+                data["zones"].pop(i)
+                _write_json("mock_shelf_zones.json", data)
+                return {"status": "deleted", "zone_id": zone_id}
+        raise HTTPException(status_code=404, detail="Zone not found")
+
+    @app.post("/api/shelf-zones/zones/{zone_id}/assign")
+    async def assign_product_to_zone(zone_id: str, payload: dict):
+        data = _read_json("mock_shelf_zones.json", {"zones": [], "ai_suggestions": []})
+        data = _hydrate_shelf_assignments(data)
+        sku = payload.get("sku")
+        if not sku:
+            raise HTTPException(status_code=400, detail="sku is required")
+
+        # Check if product already placed in any zone
+        for zone in data["zones"]:
+            for p in zone["products"]:
+                if p["sku"] == sku:
+                    raise HTTPException(status_code=409, detail=f"Product {sku} already placed in {zone['zone_id']}")
+
+        for zone in data["zones"]:
+            if zone["zone_id"] == zone_id:
+                if len(zone["products"]) >= zone["total_slots"]:
+                    raise HTTPException(status_code=400, detail="Zone is full")
+
+                shelf_level = payload.get("shelf_level", "lower")
+                shelf = _resolve_zone_shelf(zone, shelf_level, payload.get("shelf_id"))
+
+                # Get daily_sales_rate from inventory
+                daily_rate = 0
+                skill = _get_skill("inventory")
+                if skill:
+                    inv_map = {i["sku"]: i for i in skill.inventory_data}
+                    inv = inv_map.get(sku)
+                    if inv:
+                        daily_rate = inv["daily_sales_rate"]
+
+                new_product = {
+                    "sku": sku,
+                    "product_name": payload.get("product_name", sku),
+                    "placed_date": date.today().isoformat(),
+                    "days_here": 0,
+                    "daily_sales_rate": daily_rate,
+                    "shelf_level": shelf_level,
+                    "shelf_id": shelf.get("shelf_id") if shelf else None,
+                    "shelf_name": shelf.get("shelf_name") if shelf else None,
+                }
+                zone["products"].append(new_product)
+                _write_json("mock_shelf_zones.json", data)
+                return new_product
+        raise HTTPException(status_code=404, detail="Zone not found")
+
+    @app.delete("/api/shelf-zones/zones/{zone_id}/products/{sku}")
+    async def remove_product_from_zone(zone_id: str, sku: str):
+        data = _read_json("mock_shelf_zones.json", {"zones": [], "ai_suggestions": []})
+        for zone in data["zones"]:
+            if zone["zone_id"] == zone_id:
+                for i, p in enumerate(zone["products"]):
+                    if p["sku"] == sku:
+                        removed = zone["products"].pop(i)
+                        _write_json("mock_shelf_zones.json", data)
+                        return {"status": "removed", "product": removed}
+                raise HTTPException(status_code=404, detail="Product not found in zone")
+        raise HTTPException(status_code=404, detail="Zone not found")
+
+    @app.post("/api/shelf-zones/optimize")
+    async def trigger_shelf_optimization():
+        await orchestrator.emit_event({"type": "shelf_optimization", "data": {}})
+        return {"status": "optimization_triggered", "message": "AI shelf optimization started. Check approvals queue for suggestions."}
 
     # ══════════════════════════════════════════════════════════
     # SUPPLIERS

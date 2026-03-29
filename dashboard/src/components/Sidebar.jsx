@@ -17,7 +17,8 @@ import {
   Receipt,
   IndianRupee,
   LayoutGrid,
-  Bike
+  Bike,
+  MessageSquare
 } from 'lucide-react';
 
 export default function Sidebar({ activeTab, setActiveTab, approvalCount, isConnected }) {
@@ -26,6 +27,7 @@ export default function Sidebar({ activeTab, setActiveTab, approvalCount, isConn
     { id: 'customers', label: 'Customers', icon: UserCircle2 },
     { id: 'orders', label: 'Orders', icon: Receipt },
     { id: 'financials', label: 'Financials', icon: IndianRupee },
+    { id: 'assistant', label: 'Customer Bot', icon: MessageSquare },
     { id: 'inventory', label: 'Inventory', icon: Package },
     { id: 'cart', label: 'Cart', icon: ShoppingCart },
     { id: 'shelves', label: 'Shelves', icon: LayoutGrid },

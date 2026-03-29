@@ -26,6 +26,7 @@ Available skills:
 - customer: Segments customers and sends personalized offers
 - analytics: Analyzes patterns in audit logs and purchase data
 - scheduling: Manages staff shifts, reviews schedules, and optimizes staffing levels
+- shelf_manager: Analyzes shelf placements and suggests optimizations based on sales velocity
 
 You must respond with valid JSON only:
 {
@@ -344,6 +345,15 @@ Decide which skill(s) to run and why."""
                 {"skill": "customer", "params": {**event.get("data", {}), "discount": "20% off (Flash Sale!)"}, "reason": "Fallback: chain targeted promotion for expiring product"},
             ]
 
+        elif event_type == "shelf_optimization":
+            actions = [
+                {"skill": "shelf_manager", "params": event.get("data", {}), "reason": "Fallback: shelf optimization requested"},
+            ]
+        elif event_type == "shelf_placement_approved":
+            actions = [
+                {"skill": "shelf_manager", "params": event.get("data", {}), "reason": "Fallback: apply approved shelf changes"},
+            ]
+
         return {"actions": actions, "overall_reasoning": "Fallback rule-based routing (Gemini unavailable)"}
 
     async def _execute_skill(
@@ -493,10 +503,11 @@ Decide which skill(s) to run and why."""
 
         # Trigger any follow-up events
         follow_up = approval["result"].get("on_approval_event")
+        follow_up_result = None
         if follow_up:
-            await self.emit_event(follow_up)
+            follow_up_result = await self._process_event(follow_up)
 
-        return {"status": "approved", "approval_id": approval_id}
+        return {"status": "approved", "approval_id": approval_id, "follow_up_result": follow_up_result}
 
     async def reject(self, approval_id: str, reason: str = "") -> dict[str, Any]:
         """Owner rejects a pending action."""
@@ -504,6 +515,10 @@ Decide which skill(s) to run and why."""
             return {"error": "Approval not found"}
 
         approval = self.pending_approvals.pop(approval_id)
+        if approval["skill"] == "shelf_manager":
+            shelf_skill = self.skills.get("shelf_manager")
+            if shelf_skill and hasattr(shelf_skill, "clear_suggestions"):
+                await shelf_skill.clear_suggestions()
         
         from brain.decision_logger import log_decision
         details = approval["result"].get("approval_details", {})

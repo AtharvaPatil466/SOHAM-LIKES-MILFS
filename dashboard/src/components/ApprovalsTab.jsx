@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Check, 
-  X, 
-  MessageCircle, 
-  ChevronDown, 
+import {
+  Check,
+  X,
+  MessageCircle,
+  ChevronDown,
   ChevronUp,
   AlertTriangle,
   ArrowRight,
   TrendingUp,
   Clock,
-  ShieldCheck
+  ShieldCheck,
+  LayoutGrid,
+  MoveRight,
+  Sparkles
 } from 'lucide-react';
 
 const PRODUCT_ICONS = {
@@ -84,10 +87,14 @@ export default function ApprovalsTab({ approvals, onRefresh }) {
         {approvals.map((approval, i) => {
           const result = approval.result || {};
           const isInventory = approval.skill === "inventory";
+          const isShelfOpt = result.approval_details?.type === "shelf_optimization" || approval.skill === "shelf_manager";
           const topSupplier = result.top_supplier || result.parsed || {};
-          
+
           let sku, productName;
-          if (isInventory) {
+          if (isShelfOpt) {
+              sku = null;
+              productName = "Shelf Optimization";
+          } else if (isInventory) {
               const alert = result.alerts && result.alerts.length > 0 ? result.alerts[0] : {};
               sku = alert.sku;
               productName = alert.product_name || "Unknown Product";
@@ -95,8 +102,8 @@ export default function ApprovalsTab({ approvals, onRefresh }) {
               sku = result.sku || (approval.event?.data?.sku);
               productName = result.product || result.product_name || "Unknown Product";
           }
-          
-          const icon = PRODUCT_ICONS[sku] || '📦';
+
+          const icon = isShelfOpt ? '🗂️' : (PRODUCT_ICONS[sku] || '📦');
           const negId = result.negotiation_id;
           const thread = negotiations[negId]?.thread || [];
           const approvalReason = approval.reason || result.approval_reason || "I found a better price for this item!";
@@ -119,7 +126,61 @@ export default function ApprovalsTab({ approvals, onRefresh }) {
                 </div>
               </div>
 
-              {isInventory ? (
+              {isShelfOpt ? (
+                <div className="flex-1 space-y-4 border-b border-black/5 p-5">
+                  <div className="flex items-center gap-2 text-violet-700">
+                    <Sparkles size={16} />
+                    <span className="text-xs font-black uppercase tracking-widest">AI Shelf Optimization</span>
+                  </div>
+                  <div className="text-sm font-medium leading-relaxed text-stone-700">
+                    {result.approval_details?.reasoning || "AI analyzed 30-day sales velocity and recommends these placement changes."}
+                  </div>
+                  <div className="space-y-2">
+                    {(result.approval_details?.suggestions || []).map((s, si) => {
+                      const prioColors = { high: 'border-red-200 bg-red-50', medium: 'border-amber-200 bg-amber-50', low: 'border-stone-200 bg-stone-50' };
+                      const prioText = { high: 'text-red-700', medium: 'text-amber-700', low: 'text-stone-600' };
+                      return (
+                        <div key={si} className={`rounded-xl border p-3 ${prioColors[s.priority] || prioColors.low}`}>
+                          <div className="flex items-center gap-2">
+                            <MoveRight size={12} className="text-teal-600" />
+                            <span className="text-sm font-bold text-stone-900">{s.product_name}</span>
+                            <span className={`ml-auto rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${prioText[s.priority] || ''}`}>
+                              {s.priority}
+                            </span>
+                          </div>
+                          <div className="mt-1 flex items-center gap-1.5 text-xs text-stone-500">
+                            <span>{s.from_zone}</span>
+                            <ArrowRight size={10} />
+                            <span className="font-semibold text-teal-700">{s.to_zone}</span>
+                            {s.suggested_shelf_level && (
+                              <span className="ml-2 rounded-full bg-violet-100 px-1.5 py-0.5 text-[8px] font-bold text-violet-700">
+                                {s.suggested_shelf_level === 'eye_level' ? 'Eye Level' : s.suggested_shelf_level}
+                              </span>
+                            )}
+                          </div>
+                          <p className="mt-1 text-[11px] leading-snug text-stone-600">{s.reason}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {result.approval_details?.velocity_summary && (
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="rounded-xl border border-black/5 bg-white/85 p-2.5 text-center shadow-sm">
+                        <span className="text-[9px] font-black uppercase tracking-tighter leading-none text-stone-500">Fast</span>
+                        <div className="mt-0.5 text-[12px] font-black leading-none text-emerald-700">{result.approval_details.velocity_summary.fast_movers}</div>
+                      </div>
+                      <div className="rounded-xl border border-black/5 bg-white/85 p-2.5 text-center shadow-sm">
+                        <span className="text-[9px] font-black uppercase tracking-tighter leading-none text-stone-500">Moderate</span>
+                        <div className="mt-0.5 text-[12px] font-black leading-none text-amber-700">{result.approval_details.velocity_summary.moderate}</div>
+                      </div>
+                      <div className="rounded-xl border border-black/5 bg-white/85 p-2.5 text-center shadow-sm">
+                        <span className="text-[9px] font-black uppercase tracking-tighter leading-none text-stone-500">Slow</span>
+                        <div className="mt-0.5 text-[12px] font-black leading-none text-red-700">{result.approval_details.velocity_summary.slow_movers}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : isInventory ? (
                 <div className="flex-1 space-y-4 border-b border-black/5 p-5">
                   <div className="flex items-center gap-2 text-amber-700">
                     <AlertTriangle size={16} />
@@ -129,7 +190,7 @@ export default function ApprovalsTab({ approvals, onRefresh }) {
                     Stock limit breached. Would you like to launch the autonomous agents to restock this?
                   </div>
                   <div className="rounded-xl border border-black/5 bg-white/85 p-3 text-xs italic text-stone-600 shadow-sm">
-                    <span className="mr-1 font-bold not-italic text-emerald-700">Action:</span> 
+                    <span className="mr-1 font-bold not-italic text-emerald-700">Action:</span>
                     {result.approval_details?.action_plan || "Trigger autonomous procurement flow to find the best supplier."}
                   </div>
                 </div>
@@ -222,14 +283,14 @@ export default function ApprovalsTab({ approvals, onRefresh }) {
                   className="btn-success w-full flex items-center justify-center gap-2"
                 >
                   <Check size={20} strokeWidth={3} />
-                  <span>YES, ORDER IT</span>
+                  <span>{isShelfOpt ? 'APPLY CHANGES' : 'YES, ORDER IT'}</span>
                 </motion.button>
                 <motion.button
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleAction(approval.id, 'reject')}
                   className="rounded-xl p-3 text-xs font-black uppercase tracking-widest text-red-700 transition-all hover:bg-red-50 lg:w-auto"
                 >
-                  ❌ No, skip
+                  {isShelfOpt ? '❌ Dismiss' : '❌ No, skip'}
                 </motion.button>
               </div>
             </motion.div>

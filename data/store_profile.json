@@ -1,0 +1,15 @@
+{
+  "store_name": "Soham Supermart",
+  "phone": "+91 98765 43210",
+  "address": "MG Road, Pune",
+  "hours": {
+    "monday": "8:00 AM - 10:00 PM",
+    "tuesday": "8:00 AM - 10:00 PM",
+    "wednesday": "8:00 AM - 10:00 PM",
+    "thursday": "8:00 AM - 10:00 PM",
+    "friday": "8:00 AM - 10:30 PM",
+    "saturday": "8:00 AM - 10:30 PM",
+    "sunday": "9:00 AM - 9:00 PM"
+  },
+  "holiday_note": "Holiday timings may vary on major festivals."
+}

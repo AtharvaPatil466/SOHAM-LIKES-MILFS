@@ -17,7 +17,8 @@ import {
   Receipt,
   IndianRupee,
   LayoutGrid,
-  Bike
+  Bike,
+  MessageSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from './components/Sidebar';
@@ -36,10 +37,16 @@ import OrdersTab from './components/OrdersTab';
 import FinancialsTab from './components/FinancialsTab';
 import ShelfTrackerTab from './components/ShelfTrackerTab';
 import DeliveryQueueTab from './components/DeliveryQueueTab';
+import CustomerAssistantTab from './components/CustomerAssistantTab';
 
 export default function App() {
   const [refreshTick, setRefreshTick] = useState(0);
-  const [activeTab, setActiveTab] = useState('home');
+  const [isKioskMode] = useState(() => new URLSearchParams(window.location.search).get('mode') === 'kiosk');
+  const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('mode') === 'kiosk') return 'assistant';
+    return params.get('tab') || 'home';
+  });
   const [logs, setLogs] = useState([]);
   const [approvals, setApprovals] = useState([]);
   const [agents, setAgents] = useState([]);
@@ -114,6 +121,7 @@ export default function App() {
     { id: 'customers', label: 'Customers', icon: UserCircle2 },
     { id: 'orders', label: 'Orders', icon: Receipt },
     { id: 'financials', label: 'Financials', icon: IndianRupee },
+    { id: 'assistant', label: 'Customer Bot', icon: MessageSquare },
     { id: 'inventory', label: 'Inventory', icon: Package },
     { id: 'cart', label: 'Cart', icon: ShoppingCart },
     { id: 'shelves', label: 'Shelves', icon: LayoutGrid },
@@ -132,10 +140,16 @@ export default function App() {
       setRefreshTick((prev) => prev + 1);
       fetchData();
     };
+    const handleNavigate = (event) => {
+      const nextTab = event.detail?.tab;
+      if (nextTab) setActiveTab(nextTab);
+    };
     window.addEventListener('retailos:data-changed', handleDataChanged);
+    window.addEventListener('retailos:navigate', handleNavigate);
     return () => {
       clearInterval(interval);
       window.removeEventListener('retailos:data-changed', handleDataChanged);
+      window.removeEventListener('retailos:navigate', handleNavigate);
       if (ws.current) ws.current.close();
     };
   }, []);
@@ -230,6 +244,10 @@ export default function App() {
       title: 'Financials',
       subtitle: 'Revenue, procurement costs, profit margins, and outstanding balances',
     },
+    assistant: {
+      title: 'Customer Bot',
+      subtitle: 'Customer-facing product lookup for shelves, stock, and store hours',
+    },
     plans: {
       title: 'Execution Plans',
       subtitle: 'Track the UI upgrade and custom user workspace rollout',
@@ -274,14 +292,16 @@ export default function App() {
 
   return (
     <div className="min-h-screen text-stone-900">
-      <Sidebar 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        approvalCount={approvals.length}
-        isConnected={isConnected}
-      />
+      {!isKioskMode ? (
+        <Sidebar 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab} 
+          approvalCount={approvals.length}
+          isConnected={isConnected}
+        />
+      ) : null}
 
-      <header className="sticky top-0 z-40 border-b border-black/5 bg-[rgba(244,239,230,0.82)] backdrop-blur-xl">
+      <header className={`sticky top-0 z-40 border-b border-black/5 backdrop-blur-xl ${isKioskMode ? 'bg-[rgba(255,252,247,0.88)]' : 'bg-[rgba(244,239,230,0.82)]'}`}>
         <div className="mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-10">
           <div className="flex min-h-[84px] items-center justify-between gap-6">
             <div className="flex items-center gap-4">
@@ -291,40 +311,48 @@ export default function App() {
               <div>
                 <div className="font-display text-2xl font-bold tracking-tight">RetailOS</div>
                 <div className="text-xs font-semibold uppercase tracking-[0.28em] text-stone-500">
-                  Retail command center
+                  {isKioskMode ? 'Customer kiosk' : 'Retail command center'}
                 </div>
               </div>
             </div>
 
-            <div className="hidden xl:flex items-center gap-2 rounded-full border border-black/5 bg-white/50 px-2 py-2 shadow-sm">
-              {navItems.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
-                    activeTab === tab.id
-                      ? 'bg-stone-900 text-white shadow-sm'
-                      : 'text-stone-600 hover:bg-black/[0.04] hover:text-stone-900'
-                  }`}
-                >
-                  <tab.icon size={16} />
-                  <span>{tab.label}</span>
-                  {tab.badge > 0 && (
-                    <span className="rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-bold text-white">
-                      {tab.badge}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
+            {!isKioskMode ? (
+              <div className="hidden xl:flex items-center gap-2 rounded-full border border-black/5 bg-white/50 px-2 py-2 shadow-sm">
+                {navItems.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`relative flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                      activeTab === tab.id
+                        ? 'bg-stone-900 text-white shadow-sm'
+                        : 'text-stone-600 hover:bg-black/[0.04] hover:text-stone-900'
+                    }`}
+                  >
+                    <tab.icon size={16} />
+                    <span>{tab.label}</span>
+                    {tab.badge > 0 && (
+                      <span className="rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-bold text-white">
+                        {tab.badge}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-full border border-black/5 bg-white/70 px-4 py-2 text-sm font-semibold text-stone-600">
+                Ask about shelves, stock, and recipes
+              </div>
+            )}
 
             <div className="flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-2 rounded-full border border-black/5 bg-white/55 px-4 py-2 text-sm">
-                <div className={`h-2.5 w-2.5 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                <span className="font-medium text-stone-700">
-                  {isConnected ? 'Live updates active' : 'Reconnecting'}
-                </span>
-              </div>
+              {!isKioskMode ? (
+                <div className="hidden sm:flex items-center gap-2 rounded-full border border-black/5 bg-white/55 px-4 py-2 text-sm">
+                  <div className={`h-2.5 w-2.5 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                  <span className="font-medium text-stone-700">
+                    {isConnected ? 'Live updates active' : 'Reconnecting'}
+                  </span>
+                </div>
+              ) : null}
               <button 
                 onClick={fetchData}
                 className="rounded-full border border-black/5 bg-white/55 p-3 text-stone-600 transition-all hover:bg-white hover:text-stone-900"
@@ -332,77 +360,85 @@ export default function App() {
               >
                 <RefreshCw size={16} />
               </button>
-              <div className="relative">
-                <button
-                  onClick={() => setShowAlerts(!showAlerts)}
-                  className="rounded-full border border-black/5 bg-white/55 p-3 text-stone-600 transition-all hover:bg-white hover:text-stone-900"
-                >
-                  <Bell size={16} />
-                </button>
-                {alertCount > 0 && (
-                  <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
-                    {alertCount}
-                  </span>
-                )}
-              </div>
-              <div className="xl:hidden rounded-full border border-black/5 bg-white/55 p-3 text-stone-600">
+              {!isKioskMode ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowAlerts(!showAlerts)}
+                    className="rounded-full border border-black/5 bg-white/55 p-3 text-stone-600 transition-all hover:bg-white hover:text-stone-900"
+                  >
+                    <Bell size={16} />
+                  </button>
+                  {alertCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+                      {alertCount}
+                    </span>
+                  )}
+                </div>
+              ) : null}
+              <div className={`xl:hidden rounded-full border border-black/5 bg-white/55 p-3 text-stone-600 ${isKioskMode ? 'hidden' : ''}`}>
                 <Menu size={16} />
               </div>
             </div>
           </div>
 
-          <div className="xl:hidden overflow-x-auto pb-4 scrollbar-hide">
-            <div className="flex min-w-max items-center gap-2">
-              {navItems.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
-                    activeTab === tab.id
-                      ? 'border-stone-900 bg-stone-900 text-white'
-                      : 'border-black/5 bg-white/55 text-stone-600 hover:bg-white'
-                  }`}
-                >
-                  <tab.icon size={15} />
-                  <span>{tab.label}</span>
-                  {tab.badge > 0 && (
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${activeTab === tab.id ? 'bg-white/15 text-white' : 'bg-red-600 text-white'}`}>
-                      {tab.badge}
-                    </span>
-                  )}
-                </button>
-              ))}
+          {!isKioskMode ? (
+            <div className="xl:hidden overflow-x-auto pb-4 scrollbar-hide">
+              <div className="flex min-w-max items-center gap-2">
+                {navItems.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
+                      activeTab === tab.id
+                        ? 'border-stone-900 bg-stone-900 text-white'
+                        : 'border-black/5 bg-white/55 text-stone-600 hover:bg-white'
+                    }`}
+                  >
+                    <tab.icon size={15} />
+                    <span>{tab.label}</span>
+                    {tab.badge > 0 && (
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${activeTab === tab.id ? 'bg-white/15 text-white' : 'bg-red-600 text-white'}`}>
+                        {tab.badge}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1500px] px-4 py-8 sm:px-6 lg:px-10">
-        <div className="grid gap-8 xl:grid-cols-[260px_minmax(0,1fr)]">
-          <aside className="hidden xl:block">
-            <div className="sticky top-28">
-              <div className="mb-6 rounded-[28px] border border-black/5 bg-white/55 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.06)]">
+      <main className={`mx-auto max-w-[1500px] px-4 py-8 sm:px-6 lg:px-10 ${isKioskMode ? 'max-w-7xl' : ''}`}>
+        <div className={`grid gap-8 ${isKioskMode ? '' : 'xl:grid-cols-[260px_minmax(0,1fr)]'}`}>
+          {!isKioskMode ? (
+            <aside className="hidden xl:block">
+              <div className="sticky top-28">
+                <div className="mb-6 rounded-[28px] border border-black/5 bg-white/55 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.06)]">
+                  <div className="text-xs font-black uppercase tracking-[0.22em] text-stone-500">Current View</div>
+                  <h2 className="font-display mt-3 text-3xl font-bold tracking-tight text-stone-900">
+                    {headerMap[activeTab]?.title || 'Dashboard'}
+                  </h2>
+                  <p className="mt-3 text-sm leading-relaxed text-stone-600">
+                    {headerMap[activeTab]?.subtitle || 'Real-time overview of your store operations'}
+                  </p>
+                </div>
+              </div>
+            </aside>
+          ) : null}
+
+          <div className="min-w-0">
+            {!isKioskMode ? (
+              <div className="mb-8 xl:hidden">
                 <div className="text-xs font-black uppercase tracking-[0.22em] text-stone-500">Current View</div>
-                <h2 className="font-display mt-3 text-3xl font-bold tracking-tight text-stone-900">
+                <h2 className="font-display mt-2 text-3xl font-bold tracking-tight text-stone-900">
                   {headerMap[activeTab]?.title || 'Dashboard'}
                 </h2>
-                <p className="mt-3 text-sm leading-relaxed text-stone-600">
+                <p className="mt-2 text-sm text-stone-600">
                   {headerMap[activeTab]?.subtitle || 'Real-time overview of your store operations'}
                 </p>
               </div>
-            </div>
-          </aside>
-
-          <div className="min-w-0">
-            <div className="mb-8 xl:hidden">
-              <div className="text-xs font-black uppercase tracking-[0.22em] text-stone-500">Current View</div>
-              <h2 className="font-display mt-2 text-3xl font-bold tracking-tight text-stone-900">
-                {headerMap[activeTab]?.title || 'Dashboard'}
-              </h2>
-              <p className="mt-2 text-sm text-stone-600">
-                {headerMap[activeTab]?.subtitle || 'Real-time overview of your store operations'}
-              </p>
-            </div>
+            ) : null}
             
             <AnimatePresence mode="wait">
               <motion.div
@@ -412,7 +448,10 @@ export default function App() {
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
               >
-                {activeTab === 'home' && (
+                {isKioskMode && (
+                  <CustomerAssistantTab kioskMode />
+                )}
+                {!isKioskMode && activeTab === 'home' && (
                   <HomeTab 
                     stats={stats} 
                     logs={logs} 
@@ -425,51 +464,54 @@ export default function App() {
                     onGoToWorkspace={() => setActiveTab('workspace')}
                   />
                 )}
-                {activeTab === 'plans' && (
+                {!isKioskMode && activeTab === 'plans' && (
                   <PlansTab plans={plans} />
                 )}
-                {activeTab === 'approvals' && (
+                {!isKioskMode && activeTab === 'approvals' && (
                   <ApprovalsTab 
                     approvals={approvals} 
                     onRefresh={fetchData}
                   />
                 )}
-                {activeTab === 'history' && (
+                {!isKioskMode && activeTab === 'history' && (
                   <WhatHappenedTab 
                     logs={logs} 
                   />
                 )}
-                {activeTab === 'agents' && (
+                {!isKioskMode && activeTab === 'agents' && (
                   <AgentsTab 
                     agents={agents} 
                     onRefresh={fetchData}
                   />
                 )}
-                {activeTab === 'customers' && (
+                {!isKioskMode && activeTab === 'customers' && (
                   <CustomersTab refreshTick={refreshTick} />
                 )}
-                {activeTab === 'orders' && (
+                {!isKioskMode && activeTab === 'orders' && (
                   <OrdersTab refreshTick={refreshTick} />
                 )}
-                {activeTab === 'financials' && (
+                {!isKioskMode && activeTab === 'financials' && (
                   <FinancialsTab refreshTick={refreshTick} />
                 )}
-                {activeTab === 'inventory' && (
+                {!isKioskMode && activeTab === 'assistant' && (
+                  <CustomerAssistantTab kioskMode={false} />
+                )}
+                {!isKioskMode && activeTab === 'inventory' && (
                   <InventoryTab />
                 )}
-                {activeTab === 'shelves' && (
+                {!isKioskMode && activeTab === 'shelves' && (
                   <ShelfTrackerTab />
                 )}
-                {activeTab === 'delivery' && (
+                {!isKioskMode && activeTab === 'delivery' && (
                   <DeliveryQueueTab refreshTick={refreshTick} />
                 )}
-                {activeTab === 'cart' && (
+                {!isKioskMode && activeTab === 'cart' && (
                   <CartTab refreshTick={refreshTick} />
                 )}
-                {activeTab === 'suppliers' && (
+                {!isKioskMode && activeTab === 'suppliers' && (
                   <SuppliersTab />
                 )}
-                {activeTab === 'workspace' && (
+                {!isKioskMode && activeTab === 'workspace' && (
                   <WorkspaceTab
                     plans={plans}
                     workspaceProfile={workspaceProfile}
@@ -481,12 +523,14 @@ export default function App() {
         </div>
       </main>
 
-      <AlertsPanel
-        open={showAlerts}
-        onClose={() => setShowAlerts(false)}
-        onNavigate={(tab) => { setActiveTab(tab); setShowAlerts(false); }}
-        onAlertCountChange={setAlertCount}
-      />
+      {!isKioskMode ? (
+        <AlertsPanel
+          open={showAlerts}
+          onClose={() => setShowAlerts(false)}
+          onNavigate={(tab) => { setActiveTab(tab); setShowAlerts(false); }}
+          onAlertCountChange={setAlertCount}
+        />
+      ) : null}
     </div>
   );
 }

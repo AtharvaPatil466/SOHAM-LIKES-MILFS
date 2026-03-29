@@ -165,6 +165,31 @@ export default function CartTab({ refreshTick = 0 }) {
     setPhone(customer.phone);
   }, [selectedCustomerId, customers]);
 
+  useEffect(() => {
+    const handleAssistantCartDraft = (event) => {
+      const draftItems = event.detail?.items || [];
+      if (!draftItems.length) return;
+
+      let addedCount = 0;
+      for (const draftItem of draftItems) {
+        const match = inventory.find((entry) => entry.sku === draftItem.sku);
+        if (!match || Number(match.current_stock || 0) <= 0) continue;
+        addToCart(match, Math.max(1, Number(draftItem.qty || 1)));
+        addedCount += 1;
+      }
+
+      if (addedCount > 0) {
+        const source = event.detail?.source ? ` from ${event.detail.source}` : '';
+        setToast(`Added ${addedCount} item${addedCount === 1 ? '' : 's'}${source}.`);
+      } else {
+        setToast('No requested assistant items are in stock right now.');
+      }
+    };
+
+    window.addEventListener('retailos:assistant-cart-draft', handleAssistantCartDraft);
+    return () => window.removeEventListener('retailos:assistant-cart-draft', handleAssistantCartDraft);
+  }, [inventory]);
+
   const filtered = useMemo(() => {
     return inventory.filter((item) => {
       const matchesSearch =

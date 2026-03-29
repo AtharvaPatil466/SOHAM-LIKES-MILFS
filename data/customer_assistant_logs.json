@@ -1,0 +1,110 @@
+[
+  {
+    "timestamp": 1774803623.001621,
+    "query": "Where is Amul butter?",
+    "normalized_query": "where is amul butter?",
+    "intent": "shelf_location",
+    "dish_name": null,
+    "availability_status": "in_stock",
+    "missing_ingredients": [],
+    "not_carried_ingredients": []
+  },
+  {
+    "timestamp": 1774803623.008825,
+    "query": "chai ke liye kya chahiye",
+    "normalized_query": "chai what do i need for",
+    "intent": "recipe_assistant",
+    "dish_name": "Masala Chai",
+    "availability_status": null,
+    "missing_ingredients": [],
+    "not_carried_ingredients": [
+      "sugar",
+      "ginger",
+      "cardamom"
+    ]
+  },
+  {
+    "timestamp": 1774803623.012686,
+    "query": "I want to make pasta",
+    "normalized_query": "i want to make pasta",
+    "intent": "recipe_clarification",
+    "dish_name": null,
+    "availability_status": null,
+    "missing_ingredients": [],
+    "not_carried_ingredients": []
+  },
+  {
+    "timestamp": 1774803623.016829,
+    "query": "Do you have Maggi?",
+    "normalized_query": "do you have maggi?",
+    "intent": "product_availability",
+    "dish_name": null,
+    "availability_status": "in_stock",
+    "missing_ingredients": [],
+    "not_carried_ingredients": []
+  },
+  {
+    "timestamp": 1774803752.160964,
+    "query": "Where is Amul butter?",
+    "normalized_query": "where is amul butter?",
+    "intent": "shelf_location",
+    "dish_name": null,
+    "availability_status": "in_stock",
+    "missing_ingredients": [],
+    "not_carried_ingredients": []
+  },
+  {
+    "timestamp": 1774803752.166039,
+    "query": "Do you have Maggi?",
+    "normalized_query": "do you have maggi?",
+    "intent": "product_availability",
+    "dish_name": null,
+    "availability_status": "in_stock",
+    "missing_ingredients": [],
+    "not_carried_ingredients": []
+  },
+  {
+    "timestamp": 1774803752.1726458,
+    "query": "chai ke liye kya chahiye",
+    "normalized_query": "chai what do i need for",
+    "intent": "recipe_assistant",
+    "dish_name": "Masala Chai",
+    "availability_status": null,
+    "missing_ingredients": [],
+    "not_carried_ingredients": [
+      "sugar",
+      "ginger",
+      "cardamom"
+    ]
+  },
+  {
+    "timestamp": 1774803752.17682,
+    "query": "I want to make pasta",
+    "normalized_query": "i want to make pasta",
+    "intent": "recipe_clarification",
+    "dish_name": null,
+    "availability_status": null,
+    "missing_ingredients": [],
+    "not_carried_ingredients": []
+  },
+  {
+    "timestamp": 1774803752.181963,
+    "query": "What time do you close?",
+    "normalized_query": "what time do you close?",
+    "intent": "store_info",
+    "dish_name": null,
+    "availability_status": null,
+    "missing_ingredients": [],
+    "not_carried_ingredients": []
+  },
+  {
+    "timestamp": 1774803752.186757,
+    "query": "Do you have Maggi?",
+    "normalized_query": "do you have maggi?",
+    "intent": "product_availability",
+    "dish_name": null,
+    "availability_status": "in_stock",
+    "missing_ingredients": [],
+    "not_carried_ingredients": []
+  }
+]

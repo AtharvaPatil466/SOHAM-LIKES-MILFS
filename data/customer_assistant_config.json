@@ -1,0 +1,91 @@
+{
+  "whatsapp_number": "+91 98765 43210",
+  "supported_languages": [
+    "English",
+    "Hindi / Hinglish"
+  ],
+  "default_voice_language": "en-IN",
+  "enable_substitutes": true,
+  "enable_recipe_clarifications": true,
+  "recipe_bundles": [
+    {
+      "id": "chai-pack",
+      "name": "Chai Pack",
+      "prompt": "What do I need for chai?",
+      "description": "Daily tea essentials",
+      "inventory_queries": [
+        "tea",
+        "milk"
+      ]
+    },
+    {
+      "id": "pasta-night",
+      "name": "Pasta Night",
+      "prompt": "I want to make spaghetti tomato",
+      "description": "Check a simple tomato pasta ingredient set",
+      "inventory_queries": [
+        "cooking oil",
+        "salt"
+      ]
+    },
+    {
+      "id": "paneer-night",
+      "name": "Paneer Night",
+      "prompt": "I want to make paneer butter masala",
+      "description": "Paneer gravy essentials",
+      "inventory_queries": [
+        "paneer",
+        "butter"
+      ]
+    }
+  ],
+  "substitution_rules": {
+    "cooking oil": [
+      {
+        "query": "sunflower oil",
+        "label": "Fortune Sunflower Oil (1L)",
+        "reason": "Closest stocked cooking oil"
+      }
+    ],
+    "spaghetti pasta": [
+      {
+        "query": "maggi",
+        "label": "Maggi 2-Minute Noodles",
+        "reason": "Not the same pasta shape, but closest quick noodle substitute in store"
+      }
+    ],
+    "cream": [
+      {
+        "query": "milk",
+        "label": "Amul Taaza Full Cream Milk (1L)",
+        "reason": "Works as a lighter substitute in some gravies"
+      }
+    ]
+  },
+  "clarification_rules": [
+    {
+      "keyword": "pasta",
+      "question": "Do you want red sauce pasta or white sauce pasta?",
+      "options": [
+        "Red sauce pasta",
+        "White sauce pasta"
+      ]
+    },
+    {
+      "keyword": "sandwich",
+      "question": "Do you want a veg sandwich or a grilled cheese sandwich?",
+      "options": [
+        "Veg sandwich",
+        "Grilled cheese sandwich"
+      ]
+    },
+    {
+      "keyword": "curry",
+      "question": "Do you want a tomato-based curry or a creamy curry?",
+      "options": [
+        "Tomato-based curry",
+        "Creamy curry"
+      ]
+    }
+  ]
+}

@@ -11,6 +11,8 @@ EVENT_MEMORY_MAP = {
     "procurement_needed": ["supplier:*:history", "orchestrator:daily_summary"],
     "customer_offer": ["customer:*:purchases", "customer:*:last_offer"],
     "daily_analytics": ["orchestrator:daily_summary", "supplier:*:history", "product:*:restock_history"],
+    "shelf_optimization": ["shelf:*:placement_history", "orchestrator:daily_summary"],
+    "shelf_placement_approved": ["shelf:*:placement_history"],
 }
 
 

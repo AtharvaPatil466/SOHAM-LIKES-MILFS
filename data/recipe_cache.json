@@ -1,0 +1,131 @@
+{
+  "spaghetti tomato": {
+    "timestamp": 1774802632.652092,
+    "data": {
+      "dish_name": "Spaghetti with tomato sauce",
+      "notes": "Using a basic tomato spaghetti recipe.",
+      "ingredients": [
+        {
+          "name": "spaghetti pasta",
+          "quantity_hint": "1 pack",
+          "category_hint": "Grocery",
+          "is_optional": false
+        },
+        {
+          "name": "tomato",
+          "quantity_hint": "4 to 5",
+          "category_hint": "Produce",
+          "is_optional": false
+        },
+        {
+          "name": "onion",
+          "quantity_hint": "1 medium",
+          "category_hint": "Produce",
+          "is_optional": false
+        },
+        {
+          "name": "garlic",
+          "quantity_hint": "4 cloves",
+          "category_hint": "Produce",
+          "is_optional": false
+        },
+        {
+          "name": "cooking oil",
+          "quantity_hint": "2 tbsp",
+          "category_hint": "Grocery",
+          "is_optional": false
+        },
+        {
+          "name": "salt",
+          "quantity_hint": "to taste",
+          "category_hint": "Grocery",
+          "is_optional": false
+        },
+        {
+          "name": "chilli flakes",
+          "quantity_hint": "1 tsp",
+          "category_hint": "Grocery",
+          "is_optional": true
+        }
+      ]
+    }
+  },
+  "chai": {
+    "timestamp": 1774802632.6556501,
+    "data": {
+      "dish_name": "Masala Chai",
+      "notes": "Using a simple daily chai version.",
+      "ingredients": [
+        {
+          "name": "tea",
+          "quantity_hint": "1 pack",
+          "category_hint": "Beverages",
+          "is_optional": false
+        },
+        {
+          "name": "milk",
+          "quantity_hint": "1 litre",
+          "category_hint": "Dairy",
+          "is_optional": false
+        },
+        {
+          "name": "sugar",
+          "quantity_hint": "to taste",
+          "category_hint": "Grocery",
+          "is_optional": false
+        },
+        {
+          "name": "ginger",
+          "quantity_hint": "small piece",
+          "category_hint": "Produce",
+          "is_optional": true
+        },
+        {
+          "name": "cardamom",
+          "quantity_hint": "2 pods",
+          "category_hint": "Grocery",
+          "is_optional": true
+        }
+      ]
+    }
+  },
+  "chai what do i need for": {
+    "timestamp": 1774803623.006615,
+    "data": {
+      "dish_name": "Masala Chai",
+      "notes": "Using a simple daily chai version.",
+      "ingredients": [
+        {
+          "name": "tea",
+          "quantity_hint": "1 pack",
+          "category_hint": "Beverages",
+          "is_optional": false
+        },
+        {
+          "name": "milk",
+          "quantity_hint": "1 litre",
+          "category_hint": "Dairy",
+          "is_optional": false
+        },
+        {
+          "name": "sugar",
+          "quantity_hint": "to taste",
+          "category_hint": "Grocery",
+          "is_optional": false
+        },
+        {
+          "name": "ginger",
+          "quantity_hint": "small piece",
+          "category_hint": "Produce",
+          "is_optional": true
+        },
+        {
+          "name": "cardamom",
+          "quantity_hint": "2 pods",
+          "category_hint": "Grocery",
+          "is_optional": true
+        }
+      ]
+    }
+  }
+}
