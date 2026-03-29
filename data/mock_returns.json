@@ -1,0 +1,73 @@
+[
+  {
+    "return_id": "RET-001",
+    "order_id": "ORD-C002",
+    "customer_id": "CUST-002",
+    "customer_name": "Priya Nair",
+    "items": [
+      { "sku": "SKU-015", "product_name": "Britannia Marie Gold Biscuits", "qty": 1, "unit_price": 35, "reason": "Expired on shelf", "action": "wastage" }
+    ],
+    "refund_amount": 35,
+    "refund_method": "Cash",
+    "status": "processed",
+    "timestamp": 1711580000,
+    "processed_at": 1711582000
+  },
+  {
+    "return_id": "RET-002",
+    "order_id": "ORD-C003",
+    "customer_id": "CUST-003",
+    "customer_name": "Amit Verma",
+    "items": [
+      { "sku": "SKU-004", "product_name": "Maggi 2-Minute Noodles (Pack of 12)", "qty": 1, "unit_price": 144, "reason": "Damaged packaging", "action": "wastage" }
+    ],
+    "refund_amount": 144,
+    "refund_method": "UPI",
+    "status": "processed",
+    "timestamp": 1711520000,
+    "processed_at": 1711525000
+  },
+  {
+    "return_id": "RET-003",
+    "order_id": "ORD-C005",
+    "customer_id": "CUST-005",
+    "customer_name": "Vikram Reddy",
+    "items": [
+      { "sku": "SKU-048", "product_name": "Tropicana Orange Juice (1L)", "qty": 1, "unit_price": 130, "reason": "Wrong product delivered", "action": "restock" },
+      { "sku": "SKU-012", "product_name": "Lay's Classic Salted Chips", "qty": 2, "unit_price": 20, "reason": "Changed mind", "action": "restock" }
+    ],
+    "refund_amount": 170,
+    "refund_method": "UPI",
+    "status": "processed",
+    "timestamp": 1711500000,
+    "processed_at": 1711505000
+  },
+  {
+    "return_id": "RET-004",
+    "order_id": "ORD-C006",
+    "customer_id": "CUST-006",
+    "customer_name": "Ananya Iyer",
+    "items": [
+      { "sku": "SKU-028", "product_name": "Amul Chocolate Ice Cream Bar", "qty": 2, "unit_price": 30, "reason": "Melted during delivery", "action": "wastage" }
+    ],
+    "refund_amount": 60,
+    "refund_method": "Credit",
+    "status": "pending",
+    "timestamp": 1711680000,
+    "processed_at": null
+  },
+  {
+    "return_id": "RET-005",
+    "order_id": "ORD-C007",
+    "customer_id": "CUST-008",
+    "customer_name": "Deepa Menon",
+    "items": [
+      { "sku": "SKU-025", "product_name": "Pampers Baby Diapers (Large, 28-pack)", "qty": 1, "unit_price": 999, "reason": "Wrong size ordered", "action": "restock" }
+    ],
+    "refund_amount": 999,
+    "refund_method": "UPI",
+    "status": "pending",
+    "timestamp": 1711690000,
+    "processed_at": null
+  }
+]

@@ -131,6 +131,7 @@ function AnalyticsSummarySection() {
 export default function HomeTab({
   stats,
   logs,
+  refreshTick,
   approvalCount,
   plans,
   workspaceProfile,
@@ -178,10 +179,10 @@ export default function HomeTab({
   };
 
   const statCards = [
-    { label: 'Money Saved', value: `₹${stats.moneySaved.toLocaleString()}`, icon: TrendingUp, color: 'text-emerald-700', bg: 'bg-emerald-100' },
-    { label: 'Orders Placed', value: stats.ordersPlaced, icon: Package, color: 'text-teal-700', bg: 'bg-teal-100' },
-    { label: 'Offers Sent', value: stats.offersSent, icon: Megaphone, color: 'text-amber-700', bg: 'bg-amber-100' },
-    { label: 'Hours Saved', value: `${stats.hoursSaved} hrs`, icon: Clock, color: 'text-stone-800', bg: 'bg-stone-200' },
+    { label: 'Revenue Snapshot', value: `₹${Math.round(stats.revenue || 0).toLocaleString()}`, icon: TrendingUp, color: 'text-emerald-700', bg: 'bg-emerald-100' },
+    { label: 'Open Approvals', value: stats.approvalsOpen, icon: Package, color: 'text-teal-700', bg: 'bg-teal-100' },
+    { label: 'Udhaar Outstanding', value: `₹${Math.round(stats.udhaarOutstanding || 0).toLocaleString()}`, icon: Megaphone, color: 'text-amber-700', bg: 'bg-amber-100' },
+    { label: 'Payables Due', value: `₹${Math.round(stats.payablesDue || 0).toLocaleString()}`, icon: Clock, color: 'text-stone-800', bg: 'bg-stone-200' },
   ];
 
   return (
@@ -361,7 +362,7 @@ export default function HomeTab({
         <div className="space-y-3">
           {logs.slice(0, 20).map((log, i) => (
             <motion.div
-              key={log.id}
+              key={`${log.id || i}-${refreshTick}`}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.03 }}

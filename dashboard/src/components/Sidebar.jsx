@@ -12,17 +12,25 @@ import {
   FolderKanban,
   Briefcase,
   ShoppingCart,
-  Truck
+  Truck,
+  UserCircle2,
+  Receipt,
+  IndianRupee,
+  LayoutGrid,
+  Bike
 } from 'lucide-react';
 
 export default function Sidebar({ activeTab, setActiveTab, approvalCount, isConnected }) {
   const navItems = [
     { id: 'home', label: 'Overview', icon: LayoutDashboard },
-    { id: 'plans', label: 'Plans', icon: FolderKanban },
+    { id: 'customers', label: 'Customers', icon: UserCircle2 },
+    { id: 'orders', label: 'Orders', icon: Receipt },
+    { id: 'financials', label: 'Financials', icon: IndianRupee },
     { id: 'inventory', label: 'Inventory', icon: Package },
     { id: 'cart', label: 'Cart', icon: ShoppingCart },
+    { id: 'shelves', label: 'Shelves', icon: LayoutGrid },
+    { id: 'delivery', label: 'Delivery', icon: Bike },
     { id: 'suppliers', label: 'Suppliers', icon: Truck },
-    { id: 'workspace', label: 'Workspace', icon: Briefcase },
     { id: 'approvals', label: 'Approvals', icon: CheckCircle2, badge: approvalCount },
     { id: 'history', label: 'Activity', icon: History },
     { id: 'agents', label: 'Agents', icon: Users },

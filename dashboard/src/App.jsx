@@ -12,7 +12,12 @@ import {
   FolderKanban,
   Menu,
   ShoppingCart,
-  Truck
+  Truck,
+  UserCircle2,
+  Receipt,
+  IndianRupee,
+  LayoutGrid,
+  Bike
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from './components/Sidebar';
@@ -26,17 +31,23 @@ import PlansTab from './components/PlansTab';
 import WorkspaceTab from './components/WorkspaceTab';
 import SuppliersTab from './components/SuppliersTab';
 import AlertsPanel from './components/AlertsPanel';
+import CustomersTab from './components/CustomersTab';
+import OrdersTab from './components/OrdersTab';
+import FinancialsTab from './components/FinancialsTab';
+import ShelfTrackerTab from './components/ShelfTrackerTab';
+import DeliveryQueueTab from './components/DeliveryQueueTab';
 
 export default function App() {
+  const [refreshTick, setRefreshTick] = useState(0);
   const [activeTab, setActiveTab] = useState('home');
   const [logs, setLogs] = useState([]);
   const [approvals, setApprovals] = useState([]);
   const [agents, setAgents] = useState([]);
   const [stats, setStats] = useState({
-    moneySaved: 8400,
-    ordersPlaced: 6,
-    offersSent: 147,
-    hoursSaved: 12
+    revenue: 0,
+    approvalsOpen: 0,
+    udhaarOutstanding: 0,
+    payablesDue: 0,
   });
   const [plans] = useState([
     {
@@ -100,10 +111,13 @@ export default function App() {
   const ws = useRef(null);
   const navItems = [
     { id: 'home', label: 'Overview', icon: LayoutDashboard },
-    { id: 'plans', label: 'Plans', icon: FolderKanban },
-    { id: 'workspace', label: 'Workspace', icon: Briefcase },
+    { id: 'customers', label: 'Customers', icon: UserCircle2 },
+    { id: 'orders', label: 'Orders', icon: Receipt },
+    { id: 'financials', label: 'Financials', icon: IndianRupee },
     { id: 'inventory', label: 'Inventory', icon: Package },
     { id: 'cart', label: 'Cart', icon: ShoppingCart },
+    { id: 'shelves', label: 'Shelves', icon: LayoutGrid },
+    { id: 'delivery', label: 'Delivery', icon: Bike },
     { id: 'suppliers', label: 'Suppliers', icon: Truck },
     { id: 'approvals', label: 'Approvals', icon: CheckCircle2, badge: approvals.length },
     { id: 'history', label: 'Activity', icon: History },
@@ -114,8 +128,14 @@ export default function App() {
     fetchData();
     connectWebSocket();
     const interval = setInterval(fetchData, 30000);
+    const handleDataChanged = () => {
+      setRefreshTick((prev) => prev + 1);
+      fetchData();
+    };
+    window.addEventListener('retailos:data-changed', handleDataChanged);
     return () => {
       clearInterval(interval);
+      window.removeEventListener('retailos:data-changed', handleDataChanged);
       if (ws.current) ws.current.close();
     };
   }, []);
@@ -135,6 +155,30 @@ export default function App() {
       setAgents(statusData.skills || []);
       setApprovals(approvalsData || []);
       setLogs(logsData || []);
+
+      try {
+        const [ordersRes, dailySummaryRes, vendorSummaryRes, udhaarRes] = await Promise.all([
+          fetch('/api/orders'),
+          fetch('/api/daily-summary'),
+          fetch('/api/vendor-payments'),
+          fetch('/api/udhaar'),
+        ]);
+        const [ordersData, dailySummaryData, vendorSummaryData, udhaarData] = await Promise.all([
+          ordersRes.json(),
+          dailySummaryRes.json(),
+          vendorSummaryRes.json(),
+          udhaarRes.json(),
+        ]);
+
+        setStats({
+          revenue: dailySummaryData?.metrics?.revenue ?? ordersData?.customer_orders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) ?? 0,
+          approvalsOpen: approvalsData?.length || 0,
+          udhaarOutstanding: dailySummaryData?.metrics?.udhaar_outstanding ?? udhaarData?.reduce((sum, ledger) => sum + (ledger.balance || 0), 0) ?? 0,
+          payablesDue: vendorSummaryData?.total_unpaid ?? 0,
+        });
+      } catch {
+        // ignore summary card failures so the rest of the dashboard still loads
+      }
 
       try {
         const alertsRes = await fetch('/api/alerts?limit=20');
@@ -174,6 +218,18 @@ export default function App() {
       title: 'Dashboard',
       subtitle: 'Real-time overview of your store operations',
     },
+    customers: {
+      title: 'Customers',
+      subtitle: 'Personalized profiles, purchase history, and recommendations',
+    },
+    orders: {
+      title: 'Orders',
+      subtitle: 'Track all customer and vendor orders with itemized pricing',
+    },
+    financials: {
+      title: 'Financials',
+      subtitle: 'Revenue, procurement costs, profit margins, and outstanding balances',
+    },
     plans: {
       title: 'Execution Plans',
       subtitle: 'Track the UI upgrade and custom user workspace rollout',
@@ -185,6 +241,14 @@ export default function App() {
     cart: {
       title: 'Cart',
       subtitle: 'Record in-store sales and update stock in one flow',
+    },
+    shelves: {
+      title: 'Shelf Tracker',
+      subtitle: 'Zone occupancy, product placement, and AI shelf suggestions',
+    },
+    delivery: {
+      title: 'Delivery Queue',
+      subtitle: 'Customer delivery requests — direct, no middleman fees',
     },
     suppliers: {
       title: 'Suppliers',
@@ -352,6 +416,7 @@ export default function App() {
                   <HomeTab 
                     stats={stats} 
                     logs={logs} 
+                    refreshTick={refreshTick}
                     approvalCount={approvals.length}
                     plans={plans}
                     workspaceProfile={workspaceProfile}
@@ -380,11 +445,26 @@ export default function App() {
                     onRefresh={fetchData}
                   />
                 )}
+                {activeTab === 'customers' && (
+                  <CustomersTab refreshTick={refreshTick} />
+                )}
+                {activeTab === 'orders' && (
+                  <OrdersTab refreshTick={refreshTick} />
+                )}
+                {activeTab === 'financials' && (
+                  <FinancialsTab refreshTick={refreshTick} />
+                )}
                 {activeTab === 'inventory' && (
                   <InventoryTab />
                 )}
+                {activeTab === 'shelves' && (
+                  <ShelfTrackerTab />
+                )}
+                {activeTab === 'delivery' && (
+                  <DeliveryQueueTab refreshTick={refreshTick} />
+                )}
                 {activeTab === 'cart' && (
-                  <CartTab />
+                  <CartTab refreshTick={refreshTick} />
                 )}
                 {activeTab === 'suppliers' && (
                   <SuppliersTab />
