@@ -104,7 +104,22 @@ class InventorySkill(BaseSkill):
                 )
 
         result = {"alerts": alerts, "total_checked": len(self.inventory_data)}
-        
+
+        # Auto-cascade: push alerts into orchestrator so procurement picks them up
+        if self._emit_callback and alerts and event.get("type") in ["stock_update", "inventory_check"]:
+            for alert in alerts:
+                await self._emit_to_orchestrator({
+                    "type": "low_stock",
+                    "data": {
+                        "product_name": alert["product_name"],
+                        "sku": alert["sku"],
+                        "category": alert.get("category", ""),
+                        "current_stock": alert["current_stock"],
+                        "daily_sales_rate": alert.get("daily_sales_rate", 0),
+                        "severity": alert["severity"],
+                    },
+                })
+
         # Only create approval if explicitly updated, to prevent infinite loops of auto-checks
         if alerts and event.get("type") in ["stock_update", "inventory_check"]:
             main_alert = alerts[0]

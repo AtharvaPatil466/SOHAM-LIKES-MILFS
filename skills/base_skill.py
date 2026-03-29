@@ -27,6 +27,16 @@ class BaseSkill(ABC):
         self.last_run = None
         self.last_error = None
         self.run_count = 0
+        self._emit_callback = None
+
+    def set_emit_callback(self, callback) -> None:
+        """Register a callback to push events back into the orchestrator queue."""
+        self._emit_callback = callback
+
+    async def _emit_to_orchestrator(self, event: dict) -> None:
+        """Push an event into the orchestrator's event queue."""
+        if self._emit_callback:
+            await self._emit_callback(event)
 
     @abstractmethod
     async def init(self) -> None:

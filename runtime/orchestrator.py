@@ -72,6 +72,11 @@ class Orchestrator:
     async def start(self) -> None:
         """Start the orchestrator event loop."""
         self.running = True
+
+        # Wire up emit callbacks so skills can push events back into the queue
+        for skill in self.skills.values():
+            skill.set_emit_callback(self.emit_event)
+
         await self.audit.log(
             skill="orchestrator",
             event_type="runtime_start",
