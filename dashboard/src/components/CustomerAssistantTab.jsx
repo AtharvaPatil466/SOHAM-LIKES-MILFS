@@ -578,7 +578,7 @@ export default function CustomerAssistantTab({ kioskMode = false }) {
         </div>
       ) : null}
 
-      <div className={`grid gap-6 ${kioskMode ? 'xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]' : 'xl:grid-cols-[minmax(0,1.3fr)_minmax(360px,0.7fr)]'}`}>
+      <div className={`grid gap-6 ${kioskMode ? 'xl:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)]' : 'xl:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)]'}`}>
         <section className="space-y-5">
           <div className={`rounded-[32px] border border-black/5 p-6 shadow-[0_24px_60px_rgba(0,0,0,0.06)] ${kioskMode ? 'bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.18),_rgba(255,252,247,0.96)_60%)]' : 'bg-[rgba(255,252,247,0.94)]'}`}>
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -680,7 +680,7 @@ export default function CustomerAssistantTab({ kioskMode = false }) {
           )}
         </section>
 
-        <aside className="space-y-5 xl:sticky xl:top-28 xl:self-start">
+        <aside className="min-w-0 space-y-5 xl:sticky xl:top-28 xl:self-start">
           <div className="rounded-[30px] border border-black/5 bg-stone-900 p-5 text-stone-50 shadow-[0_20px_55px_rgba(0,0,0,0.14)]">
             <div className="flex items-center gap-2">
               <ChefHat size={16} className="text-amber-300" />

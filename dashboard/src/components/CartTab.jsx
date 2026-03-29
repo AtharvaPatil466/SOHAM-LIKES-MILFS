@@ -338,7 +338,7 @@ export default function CartTab({ refreshTick = 0 }) {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(360px,1fr)]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <section className="space-y-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="relative flex-1 max-w-xl">
@@ -393,7 +393,7 @@ export default function CartTab({ refreshTick = 0 }) {
           </div>
         </section>
 
-        <aside className="space-y-5 xl:sticky xl:top-28 xl:self-start">
+        <aside className="min-w-0 space-y-5 xl:sticky xl:top-28 xl:self-start">
           <div className="rounded-[30px] border border-black/5 bg-[rgba(255,252,247,0.94)] p-5 shadow-[0_20px_55px_rgba(0,0,0,0.06)]">
             <div className="mb-5 flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-100 text-teal-700">

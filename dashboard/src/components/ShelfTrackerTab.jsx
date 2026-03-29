@@ -281,7 +281,7 @@ function ZoneCard({ zone, expanded, onToggle, velocityMap, onEdit, onDelete, onA
         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
           className="border-t border-black/5 px-5 pb-5">
           {/* Zone action buttons */}
-          <div className="mt-3 flex gap-2">
+          <div className="mt-3 flex flex-wrap gap-2">
             <button onClick={(e) => { e.stopPropagation(); onEdit(zone); }}
               className="flex items-center gap-1.5 rounded-xl border border-stone-200 px-3 py-1.5 text-[10px] font-bold text-stone-600 hover:bg-stone-50">
               <Pencil size={10} /> Edit Zone
@@ -298,52 +298,54 @@ function ZoneCard({ zone, expanded, onToggle, velocityMap, onEdit, onDelete, onA
             )}
           </div>
 
-          <div className="mt-3 space-y-2">
-            <div className="grid grid-cols-[1fr_55px_55px_60px_55px_30px] gap-2 px-2 text-[10px] font-black uppercase tracking-[0.12em] text-stone-400">
-              <span>Product</span>
-              <span className="text-center">Level</span>
-              <span className="text-center">Days</span>
-              <span className="text-center">Sales/d</span>
-              <span className="text-center">Speed</span>
-              <span></span>
-            </div>
-            {zone.products.map((product) => {
-              const vc = product.velocity_classification || velocityMap[product.sku];
-              const isStale = product.days_here > 20;
-              const isFast = product.daily_sales_rate >= 15;
-              return (
-                <div key={product.sku} className="grid grid-cols-[1fr_55px_55px_60px_55px_30px] items-center gap-2 rounded-xl border border-black/5 bg-white/70 px-2 py-2.5">
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold text-stone-900 truncate">{product.product_name}</div>
-                    <div className="text-[10px] text-stone-400">{product.sku}</div>
-                  </div>
-                  <div className="text-center">
-                    <ShelfLevelBadge level={product.shelf_level || 'lower'} />
-                  </div>
-                  <div className={`text-center text-sm font-bold ${isStale ? 'text-red-600' : 'text-stone-700'}`}>
-                    {product.days_here}d
-                  </div>
-                  <div className={`text-center text-sm font-bold ${isFast ? 'text-emerald-600' : 'text-stone-600'}`}>
-                    {product.daily_sales_rate}
-                  </div>
-                  <div className="text-center">
-                    <VelocityBadge classification={vc} />
-                  </div>
-                  <div className="text-center">
-                    <button onClick={(e) => { e.stopPropagation(); onRemoveProduct(zone.zone_id, product.sku); }}
-                      className="rounded-lg p-1 text-stone-400 hover:bg-red-50 hover:text-red-600 transition-colors">
-                      <X size={12} />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-            {empty > 0 && Array.from({ length: Math.min(empty, 2) }).map((_, i) => (
-              <div key={`empty-${i}`} className="grid grid-cols-[1fr_55px_55px_60px_55px_30px] items-center gap-2 rounded-xl border border-dashed border-black/10 bg-white/40 px-2 py-2.5">
-                <div className="text-sm text-stone-400 italic">Empty slot</div>
-                <div /><div /><div /><div /><div />
+          <div className="mt-3 overflow-x-auto">
+            <div className="min-w-[430px] space-y-2">
+              <div className="grid grid-cols-[1fr_55px_55px_60px_55px_30px] gap-2 px-2 text-[10px] font-black uppercase tracking-[0.12em] text-stone-400">
+                <span>Product</span>
+                <span className="text-center">Level</span>
+                <span className="text-center">Days</span>
+                <span className="text-center">Sales/d</span>
+                <span className="text-center">Speed</span>
+                <span></span>
               </div>
-            ))}
+              {zone.products.map((product) => {
+                const vc = product.velocity_classification || velocityMap[product.sku];
+                const isStale = product.days_here > 20;
+                const isFast = product.daily_sales_rate >= 15;
+                return (
+                  <div key={product.sku} className="grid grid-cols-[1fr_55px_55px_60px_55px_30px] items-center gap-2 rounded-xl border border-black/5 bg-white/70 px-2 py-2.5">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-semibold text-stone-900">{product.product_name}</div>
+                      <div className="text-[10px] text-stone-400">{product.sku}</div>
+                    </div>
+                    <div className="text-center">
+                      <ShelfLevelBadge level={product.shelf_level || 'lower'} />
+                    </div>
+                    <div className={`text-center text-sm font-bold ${isStale ? 'text-red-600' : 'text-stone-700'}`}>
+                      {product.days_here}d
+                    </div>
+                    <div className={`text-center text-sm font-bold ${isFast ? 'text-emerald-600' : 'text-stone-600'}`}>
+                      {product.daily_sales_rate}
+                    </div>
+                    <div className="text-center">
+                      <VelocityBadge classification={vc} />
+                    </div>
+                    <div className="text-center">
+                      <button onClick={(e) => { e.stopPropagation(); onRemoveProduct(zone.zone_id, product.sku); }}
+                        className="rounded-lg p-1 text-stone-400 transition-colors hover:bg-red-50 hover:text-red-600">
+                        <X size={12} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              {empty > 0 && Array.from({ length: Math.min(empty, 2) }).map((_, i) => (
+                <div key={`empty-${i}`} className="grid grid-cols-[1fr_55px_55px_60px_55px_30px] items-center gap-2 rounded-xl border border-dashed border-black/10 bg-white/40 px-2 py-2.5">
+                  <div className="text-sm text-stone-400 italic">Empty slot</div>
+                  <div /><div /><div /><div /><div />
+                </div>
+              ))}
+            </div>
           </div>
         </motion.div>
       )}

@@ -291,7 +291,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen text-stone-900">
+    <div className="min-h-screen overflow-x-hidden text-stone-900">
       {!isKioskMode ? (
         <Sidebar 
           activeTab={activeTab} 
@@ -317,26 +317,28 @@ export default function App() {
             </div>
 
             {!isKioskMode ? (
-              <div className="hidden xl:flex items-center gap-2 rounded-full border border-black/5 bg-white/50 px-2 py-2 shadow-sm">
-                {navItems.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`relative flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
-                      activeTab === tab.id
-                        ? 'bg-stone-900 text-white shadow-sm'
-                        : 'text-stone-600 hover:bg-black/[0.04] hover:text-stone-900'
-                    }`}
-                  >
-                    <tab.icon size={16} />
-                    <span>{tab.label}</span>
-                    {tab.badge > 0 && (
-                      <span className="rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-bold text-white">
-                        {tab.badge}
-                      </span>
-                    )}
-                  </button>
-                ))}
+              <div className="hidden min-w-0 flex-1 xl:flex xl:justify-center">
+                <div className="scrollbar-hide flex max-w-full items-center gap-2 overflow-x-auto rounded-full border border-black/5 bg-white/50 px-2 py-2 shadow-sm">
+                  {navItems.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`relative flex flex-shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                        activeTab === tab.id
+                          ? 'bg-stone-900 text-white shadow-sm'
+                          : 'text-stone-600 hover:bg-black/[0.04] hover:text-stone-900'
+                      }`}
+                    >
+                      <tab.icon size={16} />
+                      <span>{tab.label}</span>
+                      {tab.badge > 0 && (
+                        <span className="rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-bold text-white">
+                          {tab.badge}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="rounded-full border border-black/5 bg-white/70 px-4 py-2 text-sm font-semibold text-stone-600">
@@ -409,7 +411,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className={`mx-auto max-w-[1500px] px-4 py-8 sm:px-6 lg:px-10 ${isKioskMode ? 'max-w-7xl' : ''}`}>
+      <main className={`mx-auto max-w-[1500px] overflow-x-hidden px-4 py-8 sm:px-6 lg:px-10 ${isKioskMode ? 'max-w-7xl' : ''}`}>
         <div className={`grid gap-8 ${isKioskMode ? '' : 'xl:grid-cols-[260px_minmax(0,1fr)]'}`}>
           {!isKioskMode ? (
             <aside className="hidden xl:block">

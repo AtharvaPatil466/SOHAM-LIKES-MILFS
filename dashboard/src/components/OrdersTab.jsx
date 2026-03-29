@@ -87,24 +87,26 @@ function OrderCard({ order, type, onPay, paying }) {
 
       {expanded && (
         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="border-t border-black/5 px-4 pb-4">
-          <div className="mt-3 space-y-2">
-            <div className="grid grid-cols-[1fr_60px_90px_90px] gap-2 px-2 text-[10px] font-black uppercase tracking-[0.15em] text-stone-400">
-              <span>Product</span>
-              <span className="text-center">Qty</span>
-              <span className="text-right">Unit Price</span>
-              <span className="text-right">Total</span>
-            </div>
-            {order.items.map((item, index) => (
-              <div key={`${item.sku}-${index}`} className="grid grid-cols-[1fr_60px_90px_90px] items-center gap-2 rounded-xl border border-black/5 bg-white/70 px-2 py-2.5">
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold text-stone-900">{item.product_name}</div>
-                  <div className="text-[10px] text-stone-400">{item.sku}</div>
-                </div>
-                <div className="text-center text-sm font-bold text-stone-700">{item.qty}</div>
-                <div className="text-right text-sm text-stone-600">{formatCurrency(item.unit_price)}</div>
-                <div className="text-right text-sm font-bold text-stone-900">{formatCurrency(item.total)}</div>
+          <div className="mt-3 overflow-x-auto">
+            <div className="min-w-[420px] space-y-2">
+              <div className="grid grid-cols-[1fr_60px_90px_90px] gap-2 px-2 text-[10px] font-black uppercase tracking-[0.15em] text-stone-400">
+                <span>Product</span>
+                <span className="text-center">Qty</span>
+                <span className="text-right">Unit Price</span>
+                <span className="text-right">Total</span>
               </div>
-            ))}
+              {order.items.map((item, index) => (
+                <div key={`${item.sku}-${index}`} className="grid grid-cols-[1fr_60px_90px_90px] items-center gap-2 rounded-xl border border-black/5 bg-white/70 px-2 py-2.5">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold text-stone-900">{item.product_name}</div>
+                    <div className="text-[10px] text-stone-400">{item.sku}</div>
+                  </div>
+                  <div className="text-center text-sm font-bold text-stone-700">{item.qty}</div>
+                  <div className="text-right text-sm text-stone-600">{formatCurrency(item.unit_price)}</div>
+                  <div className="text-right text-sm font-bold text-stone-900">{formatCurrency(item.total)}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="mt-4 grid gap-3 md:grid-cols-3">
