@@ -4,7 +4,7 @@ Uses co-occurrence counting from order history.
 """
 
 import json
-from collections import Counter, defaultdict
+from collections import Counter
 from itertools import combinations
 from pathlib import Path
 
@@ -68,7 +68,7 @@ def compute_co_occurrences(min_support: int = 2) -> list[dict]:
 def get_recommendations_for(sku: str, top_n: int = 5) -> list[dict]:
     """Given a product, recommend what to buy with it."""
     all_pairs = compute_co_occurrences(min_support=1)
-    inv = _load_inventory()
+    _load_inventory()
 
     recommendations = []
     for pair in all_pairs:

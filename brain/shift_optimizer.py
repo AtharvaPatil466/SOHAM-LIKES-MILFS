@@ -13,7 +13,7 @@ def _get_connection():
 def get_current_shifts(shift_date: str) -> dict:
     """Returns a dict of hour -> assigned staff density for a given date."""
     coverage = {h: 0 for h in range(24)}
-    
+
     with _get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT start_hour, end_hour FROM staff_shifts WHERE shift_date = ?", (shift_date,))
@@ -21,43 +21,43 @@ def get_current_shifts(shift_date: str) -> dict:
         for start_h, end_h in rows:
             for h in range(start_h, end_h):
                 coverage[h] += 1
-                
+
     return coverage
 
 def calculate_adequacy(target_date: date) -> dict:
     target_date_str = target_date.strftime("%Y-%m-%d")
     day_of_week = target_date.weekday()
-    
+
     # Extract prediction
     base_pattern = get_footfall_pattern(day_of_week)
     total_base = sum(base_pattern.values())
-    
+
     # Assess contextual surges
     festival = check_upcoming_festival(target_date)
     multiplier = festival["multiplier"] if festival else 1.0
-    
+
     predicted_pattern = {h: int(count * multiplier) for h, count in base_pattern.items()}
     total_predicted = sum(predicted_pattern.values())
-    
+
     coverage = get_current_shifts(target_date_str)
-    
+
     hourly_eval = {}
     for h in range(24):
         footfall = predicted_pattern.get(h, 0)
         # Skip empty inactive hours
         if footfall == 0 and coverage[h] == 0:
             continue
-            
+
         required_staff = (footfall + CUSTOMERS_PER_STAFF_HOUR - 1) // CUSTOMERS_PER_STAFF_HOUR # ceiling
         actual_staff = coverage[h]
-        
+
         status = "Adequate"
         gap = actual_staff - required_staff
         if gap < 0:
             status = "Understaffed"
         elif gap > 1:
             status = "Overstaffed" # Tolerate exactly 1 spare member safely
-            
+
         hourly_eval[h] = {
             "predicted_footfall": footfall,
             "required_staff": required_staff,
@@ -65,7 +65,7 @@ def calculate_adequacy(target_date: date) -> dict:
             "status": status,
             "gap": gap
         }
-    
+
     # Group contiguous sequences explicitly mapping the hours cleanly
     grouped_blocks = []
     if hourly_eval:
@@ -75,7 +75,7 @@ def calculate_adequacy(target_date: date) -> dict:
         avg_footfall_agg = [hourly_eval[active_hours[0]]["predicted_footfall"]]
         staff_vol = hourly_eval[active_hours[0]]["actual_staff"]
         sum_gap_agg = hourly_eval[active_hours[0]]["gap"]
-        
+
         for h in active_hours[1:]:
             eval_h = hourly_eval[h]
             # Group if exact same block type logic matches
@@ -97,7 +97,7 @@ def calculate_adequacy(target_date: date) -> dict:
                 staff_vol = eval_h["actual_staff"]
                 avg_footfall_agg = [eval_h["predicted_footfall"]]
                 sum_gap_agg = eval_h["gap"]
-                
+
         # Mount the tail block automatically
         grouped_blocks.append({
             "start": start_h,

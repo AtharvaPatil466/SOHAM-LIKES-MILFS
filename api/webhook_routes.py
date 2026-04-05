@@ -3,8 +3,6 @@
 Register URLs to receive event notifications when things happen in RetailOS.
 """
 
-import asyncio
-import json
 import logging
 import time
 from typing import Any

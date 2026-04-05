@@ -69,7 +69,7 @@ async def list_promotions(
     query = select(Promotion).order_by(Promotion.created_at.desc())
     if active_only:
         now = time.time()
-        query = query.where(Promotion.is_active == True, Promotion.starts_at <= now, Promotion.ends_at >= now)
+        query = query.where(Promotion.is_active, Promotion.starts_at <= now, Promotion.ends_at >= now)
 
     result = await db.execute(query)
     promos = result.scalars().all()

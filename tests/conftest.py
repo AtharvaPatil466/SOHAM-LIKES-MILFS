@@ -9,7 +9,7 @@ import pytest_asyncio
 # Force test database
 os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///data/test_retailos.db"
 
-from db.session import Base, async_session_factory, engine, init_db
+from db.session import Base, async_session_factory, engine
 
 
 @pytest.fixture(scope="session")

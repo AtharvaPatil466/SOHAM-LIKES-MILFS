@@ -4,11 +4,11 @@ import time
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth.dependencies import require_role
-from db.models import AttendanceRecord, Order, StaffMember, StaffShift, User
+from db.models import AttendanceRecord, StaffMember, User
 from db.session import get_db
 
 router = APIRouter(prefix="/api/v2/staff", tags=["staff-management"])
@@ -51,7 +51,7 @@ async def list_staff(
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(StaffMember).where(StaffMember.store_id == user.store_id, StaffMember.is_active == True)
+        select(StaffMember).where(StaffMember.store_id == user.store_id, StaffMember.is_active)
     )
     staff = result.scalars().all()
     return {

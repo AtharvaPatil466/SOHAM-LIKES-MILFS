@@ -128,7 +128,6 @@ async def startup():
 
 def main():
     """Entry point — starts the RetailOS runtime."""
-    import sys
 
     async def run():
         global app

@@ -1,5 +1,4 @@
 # brain/footfall_analyzer.py
-import sqlite3
 from datetime import datetime
 from pathlib import Path
 
@@ -25,12 +24,12 @@ def get_footfall_pattern(day_of_week: int) -> dict:
         return {h: 0.0 for h in range(24)}
 
     hourly_averages = {h: 0.0 for h in range(24)}
-    
+
     with _get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT date, hour, customer_count FROM footfall_logs")
         rows = cursor.fetchall()
-        
+
         hour_buckets = {h: [] for h in range(24)}
         for row in rows:
             row_date_str = row[0]
@@ -40,11 +39,11 @@ def get_footfall_pattern(day_of_week: int) -> dict:
                     hour_buckets[row[1]].append(row[2])
             except ValueError:
                 pass
-                
+
         for h, counts in hour_buckets.items():
             if counts:
                 hourly_averages[h] = sum(counts) / len(counts)
-                
+
     return hourly_averages
 
 def get_total_predicted_footfall(day_of_week: int) -> int:

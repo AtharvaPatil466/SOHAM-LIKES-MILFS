@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 import time
 from pathlib import Path
 from typing import Any
@@ -50,19 +49,19 @@ class CustomerSkill(BaseSkill):
     async def run(self, event: dict[str, Any]) -> dict[str, Any]:
         if not event:
             return {"status": "error", "message": "Event is None"}
-        
+
         event_type = event.get("type", "")
-        
+
         # Handle churn risk re-engagement
         if event_type == "churn_risk":
             return await self._handle_churn_risk(event.get("data", {}))
-            
+
         data = event.get("data", event.get("params", {}))
         if not data:
             data = {}
         product_name = data.get("product_name", "Unknown")
         category = data.get("category", "")
-        sku = data.get("sku", "")
+        data.get("sku", "")
         deal = data.get("deal", {})
         discount = deal.get("discount", data.get("discount", "special pricing"))
 
@@ -97,15 +96,15 @@ class CustomerSkill(BaseSkill):
         messages = []
         for customer in segment[:10]:  # Cap at 10 for demo
             message = await self._write_message(customer, product_name, discount)
-            
+
             customer_id = customer.get("phone", customer.get("id", ""))
             message_id = f"msg_{customer_id}_{int(time.time())}"
-            
+
             # Track the outbound message
             from brain.message_tracker import log_message_sent
             template_used = self._detect_template(message)
             log_message_sent(customer_id, message_id, template_used)
-            
+
             msg_entry = {
                 "customer_name": customer.get("name", "Customer"),
                 "phone": customer.get("phone", ""),
@@ -129,7 +128,7 @@ class CustomerSkill(BaseSkill):
                 skill=self.name,
                 event_type="offers_sent",
                 decision=f"Sent {len(messages)} personalized offers for {product_name}",
-                reasoning=f"Each message personalized using customer purchase history via Gemini",
+                reasoning="Each message personalized using customer purchase history via Gemini",
                 outcome=json.dumps([{"customer": m["customer_name"], "message": m["message"][:100]} for m in messages], default=str),
                 status="success",
             )

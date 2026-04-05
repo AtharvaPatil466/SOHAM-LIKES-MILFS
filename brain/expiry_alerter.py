@@ -28,7 +28,7 @@ def get_expiry_risks(inventory_items: list[dict], current_date: date | None = No
         sku = item.get("sku")
         if not sku or sku not in metadata_map:
             continue
-            
+
         meta = metadata_map[sku]
         shelf_life = meta["shelf_life_days"]
         restock_date_str = meta["last_restock_date"] or item.get("last_restock_date")
@@ -49,7 +49,7 @@ def get_expiry_risks(inventory_items: list[dict], current_date: date | None = No
 
         current_stock = item.get("current_stock", 0)
         daily_rate = item.get("daily_sales_rate", 0)
-        
+
         # Will it expire before we sell all of it?
         days_to_sellout = (current_stock / daily_rate) if daily_rate > 0 else float('inf')
 

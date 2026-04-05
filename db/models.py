@@ -4,9 +4,6 @@ from typing import Optional
 
 from sqlalchemy import (
     Boolean,
-    Column,
-    DateTime,
-    Enum,
     Float,
     ForeignKey,
     Index,
@@ -14,7 +11,6 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
-    func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 

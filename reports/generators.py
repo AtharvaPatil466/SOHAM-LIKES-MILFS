@@ -1,9 +1,7 @@
 """Report generators for PDF and Excel exports."""
 
 import io
-import time
-from datetime import date, datetime, timedelta
-from typing import Any
+from datetime import date, datetime
 
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill

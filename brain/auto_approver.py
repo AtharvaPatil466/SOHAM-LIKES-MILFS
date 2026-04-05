@@ -8,10 +8,10 @@ def should_auto_approve(supplier_id: str, amount: float) -> bool:
         amt = float(amount)
     except (ValueError, TypeError):
         return False
-        
+
     trust_data = get_trust_score(supplier_id)
-    
+
     if trust_data.get("is_new"):
         return False
-        
+
     return trust_data.get("score", 0) >= TRUST_THRESHOLD and amt <= AMOUNT_CEILING

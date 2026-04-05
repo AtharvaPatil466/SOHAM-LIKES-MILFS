@@ -14,7 +14,7 @@ def get_template_rankings() -> list[dict]:
         cursor = conn.cursor()
         try:
             cursor.execute('''
-                SELECT 
+                SELECT
                     template_used,
                     COUNT(*) as total_sent,
                     SUM(CASE WHEN converted_at IS NOT NULL THEN 1 ELSE 0 END) as conversions,

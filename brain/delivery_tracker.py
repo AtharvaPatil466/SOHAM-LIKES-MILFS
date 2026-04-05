@@ -13,11 +13,11 @@ def get_delivery_score(supplier_id: str) -> int:
 
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
-        
+
         try:
             cursor.execute('''
-                SELECT expected_date, actual_date 
-                FROM deliveries 
+                SELECT expected_date, actual_date
+                FROM deliveries
                 WHERE supplier_id = ?
             ''', (supplier_id,))
             rows = cursor.fetchall()
@@ -44,5 +44,5 @@ def get_delivery_score(supplier_id: str) -> int:
                 # very dumb fallback if formats are weird - assume it counts if it's identical
                 if actual.startswith(expected):
                     on_time += 1
-                
+
     return int((on_time / len(rows)) * 100)

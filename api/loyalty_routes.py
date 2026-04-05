@@ -1,14 +1,11 @@
 """Loyalty program & customer-facing features: points, tiers, digital receipts, online catalog."""
 
-import json
-import time
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.dependencies import get_current_user, require_role
+from auth.dependencies import require_role
 from db.models import Customer, LoyaltyAccount, LoyaltyTransaction, Order, OrderItem, Product, User
 from db.session import get_db
 
@@ -207,7 +204,7 @@ async def get_catalog(
     search: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
-    query = select(Product).where(Product.is_active == True, Product.current_stock > 0)
+    query = select(Product).where(Product.is_active, Product.current_stock > 0)
     if category:
         query = query.where(Product.category == category)
 
@@ -237,7 +234,7 @@ async def get_catalog(
 @router.get("/api/catalog/categories")
 async def get_categories(db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(Product.category).where(Product.is_active == True).distinct()
+        select(Product.category).where(Product.is_active).distinct()
     )
     categories = [row[0] for row in result.all() if row[0]]
     return {"categories": sorted(categories)}

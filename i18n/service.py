@@ -3,7 +3,7 @@
 import re
 from typing import Optional
 
-from i18n.translations import TRANSLATIONS, DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES
+from i18n.translations import TRANSLATIONS, DEFAULT_LANGUAGE
 
 
 def translate(key: str, lang: str = DEFAULT_LANGUAGE, **kwargs) -> str:

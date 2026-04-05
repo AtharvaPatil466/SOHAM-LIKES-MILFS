@@ -1,5 +1,4 @@
 # runtime/dashboard_api.py
-from typing import Optional
 
 def _get_connection():
     from brain.decision_logger import _get_connection as _get_main_conn
@@ -18,10 +17,10 @@ def get_product_dashboard_stats(product_id: str) -> dict:
     """Provides a read-only price comparison dashboard view data."""
     from brain.price_monitor import get_market_reference
     market = get_market_reference(product_id)
-    
+
     # Normally fetch last purchase price from history, mock for now
     last_purchase_price = 105.0 if "PROD" not in product_id else None
-    
+
     delta = None
     if market.get("median_price") and last_purchase_price:
         delta = round(((last_purchase_price - market["median_price"]) / market["median_price"]) * 100, 1)

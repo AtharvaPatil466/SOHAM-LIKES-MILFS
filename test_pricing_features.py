@@ -1,4 +1,3 @@
-import sqlite3
 import time
 from pathlib import Path
 import os
@@ -8,7 +7,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from brain.decision_logger import _get_connection
-from brain.price_monitor import log_manual_price, fetch_agmarknet_prices, get_market_reference
+from brain.price_monitor import log_manual_price, get_market_reference
 from brain.price_analyzer import analyze_quote, format_supplier_verdict
 from skills.negotiation import NegotiationSkill
 import asyncio

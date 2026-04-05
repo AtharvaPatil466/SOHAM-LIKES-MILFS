@@ -141,9 +141,9 @@ class AuditLogger:
         else:
             logs = self._fallback_logs[:]
             if skill:
-                logs = [l for l in logs if l["skill"] == skill]
+                logs = [entry for entry in logs if entry["skill"] == skill]
             if event_type:
-                logs = [l for l in logs if l["event_type"] == event_type]
+                logs = [entry for entry in logs if entry["event_type"] == event_type]
             logs.sort(key=lambda x: x["timestamp"], reverse=True)
             return logs[offset : offset + limit]
 

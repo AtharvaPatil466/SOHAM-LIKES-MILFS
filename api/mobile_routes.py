@@ -3,7 +3,6 @@
 Barcode lookup, offline sync status, and mobile-optimized endpoints.
 """
 
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
@@ -46,7 +45,7 @@ async def lookup_barcode(
 ):
     """Look up a product by barcode. Used by phone camera scanner."""
     result = await db.execute(
-        select(Product).where(Product.barcode == barcode, Product.is_active == True)
+        select(Product).where(Product.barcode == barcode, Product.is_active)
     )
     product = result.scalar_one_or_none()
 
@@ -97,7 +96,7 @@ async def search_by_barcode_or_name(
     """Quick product search by barcode or name — optimized for mobile POS."""
     # Try exact barcode match first
     result = await db.execute(
-        select(Product).where(Product.barcode == q, Product.is_active == True)
+        select(Product).where(Product.barcode == q, Product.is_active)
     )
     product = result.scalar_one_or_none()
     if product:
@@ -116,7 +115,7 @@ async def search_by_barcode_or_name(
     # Fall back to name search
     result = await db.execute(
         select(Product)
-        .where(Product.product_name.ilike(f"%{q}%"), Product.is_active == True)
+        .where(Product.product_name.ilike(f"%{q}%"), Product.is_active)
         .limit(10)
     )
     products = result.scalars().all()
@@ -182,7 +181,7 @@ async def mobile_dashboard(
     # Product stats
     total_products = (
         await db.execute(
-            select(func.count()).where(Product.store_id == store_id, Product.is_active == True)
+            select(func.count()).where(Product.store_id == store_id, Product.is_active)
         )
     ).scalar() or 0
 
@@ -190,7 +189,7 @@ async def mobile_dashboard(
         await db.execute(
             select(func.count()).where(
                 Product.store_id == store_id,
-                Product.is_active == True,
+                Product.is_active,
                 Product.current_stock <= Product.reorder_threshold,
                 Product.current_stock > 0,
             )
@@ -201,7 +200,7 @@ async def mobile_dashboard(
         await db.execute(
             select(func.count()).where(
                 Product.store_id == store_id,
-                Product.is_active == True,
+                Product.is_active,
                 Product.current_stock == 0,
             )
         )
@@ -226,7 +225,7 @@ async def mobile_dashboard(
         await db.execute(
             select(func.count()).where(
                 Notification.store_id == store_id,
-                Notification.is_read == False,
+                not Notification.is_read,
             )
         )
     ).scalar() or 0

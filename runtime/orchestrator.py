@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 from runtime.audit import AuditLogger
 from runtime.memory import Memory
 from skills.base_skill import BaseSkill, SkillState
-from skills.scheduling import SchedulingSkill
 
 
 ROUTING_SYSTEM_PROMPT = """You are the RetailOS orchestrator — an autonomous agent runtime for retail operations.
@@ -148,7 +147,7 @@ class Orchestrator:
                 data.get("actual_date", "")
             )
             return {"status": "success", "message": "Delivery logged in brain"}
-            
+
         if event_type == "quality_issue":
             from brain.decision_logger import log_quality_flag
             data = event.get("data", {})
@@ -174,7 +173,7 @@ class Orchestrator:
                     asyncio.create_task(self.emit_event(ce))
             except Exception as e:
                 logger.error(f"Churn detection failed: {e}")
-                
+
             # Expiry Alerter
             from brain.expiry_alerter import get_expiry_risks
             try:
@@ -185,13 +184,13 @@ class Orchestrator:
                     asyncio.create_task(self.emit_event(ee))
             except Exception as e:
                 logger.error(f"Expiry detection failed: {e}")
-                
+
             # Competitor Price Monitor Auto-Fetch
             try:
                 from brain.price_monitor import fetch_agmarknet_prices
                 with open(base_dir / "data" / "mock_inventory.json", "r") as f:
                     inv_items = json.load(f)
-                
+
                 # Fetch top 20 items by sales volume
                 sorted_items = sorted(inv_items, key=lambda x: x.get("daily_sales_rate", 0), reverse=True)
                 top_20_skus = [i["sku"] for i in sorted_items[:20]]
@@ -199,7 +198,7 @@ class Orchestrator:
                     fetch_agmarknet_prices(top_20_skus)
             except Exception as e:
                 logger.error(f"Price fetching failed: {e}")
-                
+
             # --- Staff Scheduling Auto-Review ---
             # Automatically push a shift_review event for tomorrow into the system natively
             try:
@@ -208,7 +207,7 @@ class Orchestrator:
                 if "scheduling" in self.skills:
                     # Fire directly synchronously to prevent complex queue drops in testing
                     sched_result = await self.skills["scheduling"].run({
-                        "type": "shift_review", 
+                        "type": "shift_review",
                         "data": {"target_date": tomorrow.isoformat()}
                     })
                     if sched_result.get("needs_approval"):
@@ -255,7 +254,7 @@ Decide which skill(s) to run and why."""
             try:
                 if not self.client:
                     raise ValueError("API key not configured")
-                
+
                 response = await self.client.aio.models.generate_content(
                     model="gemini-2.0-flash",
                     contents=prompt
@@ -392,7 +391,7 @@ Decide which skill(s) to run and why."""
 
                 await self.audit.log(
                     skill=skill_name,
-                    event_type=f"skill_executed",
+                    event_type="skill_executed",
                     decision=reason,
                     reasoning=f"Executed on attempt {attempt + 1}",
                     outcome=json.dumps(result, default=str)[:2000],
@@ -406,19 +405,17 @@ Decide which skill(s) to run and why."""
                     supplier_id = details.get("supplier_id") or (details.get("top_supplier", {}).get("supplier_id") if details.get("top_supplier") else None)
                     amount = details.get("amount") or details.get("price") or details.get("total_cost") or (details.get("top_supplier", {}).get("price_per_unit", 0) * details.get("top_supplier", {}).get("min_order_qty", 1) if details.get("top_supplier") else None)
 
-                    auto_approved = False
                     if supplier_id and amount is not None:
                         from brain.auto_approver import should_auto_approve
                         from brain.decision_logger import log_decision
-                        
+
                         if should_auto_approve(supplier_id, amount):
-                            auto_approved = True
                             log_decision(supplier_id, amount, "approved")
-                            
+
                             follow_up = result.get("on_approval_event")
                             if follow_up:
                                 asyncio.create_task(self.emit_event(follow_up))
-                                
+
                             await self.audit.log(
                                 skill=skill_name,
                                 event_type="auto_approved",
@@ -484,14 +481,14 @@ Decide which skill(s) to run and why."""
             return {"error": "Approval not found"}
 
         approval = self.pending_approvals.pop(approval_id)
-        
+
         from brain.decision_logger import log_decision
         details = approval["result"].get("approval_details", {})
         supplier_id = details.get("supplier_id") or (details.get("top_supplier", {}).get("supplier_id") if details.get("top_supplier") else None)
         amount = details.get("amount") or details.get("price") or details.get("total_cost") or (details.get("top_supplier", {}).get("price_per_unit", 0) * details.get("top_supplier", {}).get("min_order_qty", 1) if details.get("top_supplier") else None)
         if supplier_id and amount is not None:
             log_decision(supplier_id, amount, "approved")
-            
+
         await self.audit.log(
             skill=approval["skill"],
             event_type="owner_approved",
@@ -519,7 +516,7 @@ Decide which skill(s) to run and why."""
             shelf_skill = self.skills.get("shelf_manager")
             if shelf_skill and hasattr(shelf_skill, "clear_suggestions"):
                 await shelf_skill.clear_suggestions()
-        
+
         from brain.decision_logger import log_decision
         details = approval["result"].get("approval_details", {})
         supplier_id = details.get("supplier_id") or (details.get("top_supplier", {}).get("supplier_id") if details.get("top_supplier") else None)

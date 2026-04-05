@@ -1,8 +1,5 @@
-import sqlite3
-import time
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta
 from pathlib import Path
-import os
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -10,7 +7,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from brain.decision_logger import _get_connection
 from brain.footfall_analyzer import log_footfall
 from brain.shift_optimizer import calculate_adequacy
-from brain.festival_detector import check_upcoming_festival
 from skills.scheduling import SchedulingSkill
 import asyncio
 
@@ -99,15 +95,15 @@ skill.client = MockClient()
 
 async def run_test():
     result = await skill._review_shifts({"target_date": next_sat_str})
-    
+
     print(f"Needs approval flag: {result.get('needs_approval')}")
     assert result.get("needs_approval") is True, "Test 4 Failed (Should never auto-approve!)"
     assert result.get("status") == "pending_manager_review", "Test 4 Failed"
-    
+
     # We will purposely kill the client to guarantee it falls back to raw data to prove Test 5 formatting physically builds the output text required.
     skill.client = None
     result_fallback = await skill._review_shifts({"target_date": next_sat_str})
-    
+
     body = result_fallback["report"]
     assert "Tomorrow —" in body, "Test 5 Failed"
     assert "Hour-by-hour adequacy:" in body, "Test 5 Failed"

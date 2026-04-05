@@ -76,7 +76,7 @@ class NotificationService:
     ) -> list[Notification]:
         """Send a notification to all users with a given role in a store."""
         result = await db.execute(
-            select(User).where(User.store_id == store_id, User.role == role, User.is_active == True)
+            select(User).where(User.store_id == store_id, User.role == role, User.is_active)
         )
         users = result.scalars().all()
         notifications = []
@@ -98,7 +98,7 @@ class NotificationService:
     async def get_unread(self, db: AsyncSession, user_id: str, limit: int = 50) -> list[Notification]:
         result = await db.execute(
             select(Notification)
-            .where(Notification.user_id == user_id, Notification.is_read == False)
+            .where(Notification.user_id == user_id, not Notification.is_read)
             .order_by(Notification.sent_at.desc())
             .limit(limit)
         )
@@ -115,7 +115,7 @@ class NotificationService:
 
     async def mark_all_read(self, db: AsyncSession, user_id: str) -> int:
         result = await db.execute(
-            select(Notification).where(Notification.user_id == user_id, Notification.is_read == False)
+            select(Notification).where(Notification.user_id == user_id, not Notification.is_read)
         )
         notifications = result.scalars().all()
         now = time.time()

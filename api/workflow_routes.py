@@ -114,7 +114,7 @@ async def update_approval_chain(
     config = _load_approval_config()
     config["chains"][chain_name] = {
         "description": body.description,
-        "levels": [l.model_dump() for l in body.levels],
+        "levels": [lvl.model_dump() for lvl in body.levels],
     }
     _save_approval_config(config)
     return {"status": "ok", "chain": chain_name}
@@ -159,25 +159,25 @@ async def search_audit_logs(
     if q:
         q_lower = q.lower()
         logs = [
-            l for l in logs
-            if q_lower in (l.decision or "").lower()
-            or q_lower in (l.reasoning or "").lower()
-            or q_lower in (l.outcome or "").lower()
+            entry for entry in logs
+            if q_lower in (entry.decision or "").lower()
+            or q_lower in (entry.reasoning or "").lower()
+            or q_lower in (entry.outcome or "").lower()
         ]
 
     return {
         "logs": [
             {
-                "id": l.id,
-                "timestamp": l.timestamp,
-                "skill": l.skill,
-                "event_type": l.event_type,
-                "decision": l.decision,
-                "reasoning": l.reasoning,
-                "outcome": l.outcome[:500],
-                "status": l.status,
+                "id": entry.id,
+                "timestamp": entry.timestamp,
+                "skill": entry.skill,
+                "event_type": entry.event_type,
+                "decision": entry.decision,
+                "reasoning": entry.reasoning,
+                "outcome": entry.outcome[:500],
+                "status": entry.status,
             }
-            for l in logs
+            for entry in logs
         ],
         "count": len(logs),
     }

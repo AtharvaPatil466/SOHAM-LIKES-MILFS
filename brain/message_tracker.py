@@ -1,5 +1,4 @@
 # brain/message_tracker.py
-import sqlite3
 import time
 import uuid
 from pathlib import Path

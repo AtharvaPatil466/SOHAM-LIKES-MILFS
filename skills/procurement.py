@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 import time
 from pathlib import Path
 from typing import Any, cast
@@ -66,11 +65,11 @@ class ProcurementSkill(BaseSkill):
     async def run(self, event: dict[str, Any]) -> dict[str, Any]:
         if not event:
             return {"status": "error", "message": "Event is None"}
-            
+
         data = event.get("data", event.get("params", {}))
         if not data:
             data = {}
-            
+
         product_name = data.get("product_name", "Unknown Product")
         sku = data.get("sku", "")
         category = data.get("category", "")
@@ -80,7 +79,7 @@ class ProcurementSkill(BaseSkill):
         # Fetch wastage context
         from brain.reorder_optimizer import get_optimized_reorder_quantity
         opt_data = get_optimized_reorder_quantity(sku, daily_sales, lead_time)
-        
+
         wastage_context = (
             f"--- SYSTEM OPTIMIZATION DATA ---\n"
             f"Product: {product_name} ({sku})\n"
@@ -91,17 +90,17 @@ class ProcurementSkill(BaseSkill):
             f"Take this adjusted suggestion strongly into account.\n"
             f"--------------------------------"
         )
-        
+
         # Find suppliers that carry this product/category
         matching_suppliers = self._find_suppliers(product_name, category)
 
         # Analyze Quotes vs Market Data
         from brain.price_monitor import get_market_reference
         from brain.price_analyzer import format_supplier_verdict
-        
+
         market_ref = get_market_reference(sku)
         market_context_str = ""
-        
+
         if market_ref.get("median_price"):
             market_context_str += (
                 f"--- MARKET INTELLIGENCE ---\n"
@@ -132,10 +131,10 @@ class ProcurementSkill(BaseSkill):
                         history = json.loads(history)
                     except Exception:
                         history = {}
-                
+
                 from brain.context_builder import get_supplier_context
                 trust_context = get_supplier_context(sid)
-                
+
                 if history and isinstance(history, dict):
                     history["trust_data"] = trust_context
                     memory_context[sid] = history

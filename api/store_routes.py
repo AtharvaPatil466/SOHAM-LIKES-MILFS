@@ -5,7 +5,6 @@ All data is tenant-scoped via store_id on the user.
 """
 
 import uuid
-import time
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -13,16 +12,14 @@ from pydantic import BaseModel
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.dependencies import require_role, get_store_id
+from auth.dependencies import require_role
 from db.models import (
     User,
     StoreProfile,
     Product,
     Customer,
     Order,
-    OrderItem,
     UdhaarLedger,
-    StaffMember,
 )
 from db.session import get_db
 
@@ -132,7 +129,7 @@ async def get_store(
         await db.execute(select(func.count()).where(Customer.store_id == store_id))
     ).scalar() or 0
     user_count = (
-        await db.execute(select(func.count()).where(User.store_id == store_id, User.is_active == True))
+        await db.execute(select(func.count()).where(User.store_id == store_id, User.is_active))
     ).scalar() or 0
 
     return {
@@ -242,7 +239,7 @@ async def cross_store_summary(
 
         # Staff count
         staff_count = (
-            await db.execute(select(func.count()).where(User.store_id == sid, User.is_active == True))
+            await db.execute(select(func.count()).where(User.store_id == sid, User.is_active))
         ).scalar() or 0
 
         summaries.append({
@@ -338,7 +335,7 @@ async def stock_transfer_opportunities(
             Product.reorder_threshold,
             Product.daily_sales_rate,
         )
-        .where(Product.store_id.isnot(None), Product.is_active == True)
+        .where(Product.store_id.isnot(None), Product.is_active)
         .order_by(Product.sku)
     )
     rows = result.all()

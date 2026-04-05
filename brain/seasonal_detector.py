@@ -19,10 +19,10 @@ def detect_seasonal_spikes(current_date: datetime.date, historical_orders: list[
             d = datetime.date.fromisoformat(date_str)
         except ValueError:
             continue
-            
+
         product = order.get("product_name")
         qty = order.get("quantity", 0)
-        
+
         if product not in monthly_volumes:
             monthly_volumes[product] = {}
         monthly_volumes[product][d.month] = monthly_volumes[product].get(d.month, 0) + qty
@@ -31,15 +31,15 @@ def detect_seasonal_spikes(current_date: datetime.date, historical_orders: list[
     for product, volumes in monthly_volumes.items():
         if target_month not in volumes:
             continue
-            
+
         target_vol = volumes[target_month]
         other_vols = [v for m, v in volumes.items() if m != target_month]
-        
+
         if not other_vols:
             continue
-            
+
         avg_other = sum(other_vols) / len(other_vols)
-        
+
         # Identify a spike if target month volume is > 2x the average of other months
         if target_vol > (avg_other * 2):
             events.append({
@@ -51,5 +51,5 @@ def detect_seasonal_spikes(current_date: datetime.date, historical_orders: list[
                     "expected_increase": target_vol - avg_other
                 }
             })
-            
+
     return events

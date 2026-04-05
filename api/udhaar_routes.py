@@ -48,19 +48,19 @@ async def list_udhaar_ledgers(
     return {
         "ledgers": [
             {
-                "udhaar_id": l.udhaar_id,
-                "customer_name": l.customer_name,
-                "phone": l.phone,
-                "total_credit": l.total_credit,
-                "total_paid": l.total_paid,
-                "balance": l.balance,
-                "credit_limit": l.credit_limit,
-                "utilization_pct": round(l.balance / l.credit_limit * 100, 1) if l.credit_limit > 0 else 0,
-                "last_reminder_sent": l.last_reminder_sent,
+                "udhaar_id": ledger.udhaar_id,
+                "customer_name": ledger.customer_name,
+                "phone": ledger.phone,
+                "total_credit": ledger.total_credit,
+                "total_paid": ledger.total_paid,
+                "balance": ledger.balance,
+                "credit_limit": ledger.credit_limit,
+                "utilization_pct": round(ledger.balance / ledger.credit_limit * 100, 1) if ledger.credit_limit > 0 else 0,
+                "last_reminder_sent": ledger.last_reminder_sent,
             }
-            for l in ledgers
+            for ledger in ledgers
         ],
-        "total_outstanding": sum(l.balance for l in ledgers),
+        "total_outstanding": sum(ledger.balance for ledger in ledgers),
     }
 
 

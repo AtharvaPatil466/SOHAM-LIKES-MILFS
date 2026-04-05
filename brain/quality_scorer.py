@@ -12,7 +12,7 @@ def get_quality_score(supplier_id: str) -> int:
 
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
-        
+
         try:
             # Getting total orders. We assume deliveries count as fulfilled orders.
             cursor.execute('SELECT COUNT(DISTINCT order_id) FROM deliveries WHERE supplier_id = ?', (supplier_id,))
@@ -29,12 +29,12 @@ def get_quality_score(supplier_id: str) -> int:
             cursor = conn.cursor()
             cursor.execute("SELECT COUNT(*) FROM decisions WHERE supplier_id = ? AND status = 'approved'", (supplier_id,))
             total_orders = cursor.fetchone()[0]
-             
+
     if total_orders == 0:
         return 50
 
     ratio = total_complaints / total_orders
-    
+
     # Sharp penalty mapping:
     # A 10% complaint ratio is disastrous in retail.
     # 1% complaints = -5 points. 10% complaints = -50 points. >=20% = 0.

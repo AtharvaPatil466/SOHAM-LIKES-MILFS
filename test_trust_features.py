@@ -1,6 +1,5 @@
-import sqlite3
 import time
-from datetime import datetime, date
+from datetime import date
 from pathlib import Path
 import os
 import sys

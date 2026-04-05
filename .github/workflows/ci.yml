@@ -47,4 +47,4 @@ jobs:
         with:
           python-version: "3.13"
       - run: pip install ruff
-      - run: ruff check . --select E,W,F --ignore E501
+      - run: ruff check . --select E,W,F --ignore E501,E402 --exclude .claude

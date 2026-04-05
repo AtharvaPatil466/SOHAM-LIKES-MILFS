@@ -1,6 +1,5 @@
-import sqlite3
 import time
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 from pathlib import Path
 import os
 import sys
@@ -19,7 +18,6 @@ if DB_PATH.exists():
     os.remove(DB_PATH)
 
 print("Starting tests...\n")
-from brain.decision_logger import _get_connection
 # Force create tables
 _get_connection().close()
 time.sleep(1)

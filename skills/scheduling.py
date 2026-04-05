@@ -2,7 +2,6 @@
 import time
 import json
 from typing import Any
-import math
 from google import genai
 from .base_skill import BaseSkill, SkillState
 
@@ -19,31 +18,34 @@ Hour-by-hour adequacy:
 
 Recommendation:
   [Specific suggestions to add/remove staff during understaffed/overstaffed gaps]
-  
+
 Output ONLY the fully structured markdown report. Do not add any extra prefaces."""
 
 class SchedulingSkill(BaseSkill):
     """Sixth autonomous module targeting physical resourcing management dynamically."""
-    
+
     def __init__(self, memory=None, audit=None):
         super().__init__(name="scheduling", memory=memory, audit=audit)
         self.client = None
-    
+
     async def init(self) -> None:
         self.state = SkillState.RUNNING
 
     async def run(self, event: dict[str, Any]) -> dict[str, Any]:
         event_type = event.get("type", "")
         data = event.get("data", {})
-        
+
         if event_type in ["shift_review", "festival_alert"]:
             return await self._review_shifts(data)
         return {"status": "ignored"}
 
     def _format_am_pm(self, hour: int) -> str:
-        if hour == 0: return "12am"
-        if hour == 12: return "12pm"
-        if hour > 12: return f"{hour-12}pm"
+        if hour == 0:
+            return "12am"
+        if hour == 12:
+            return "12pm"
+        if hour > 12:
+            return f"{hour-12}pm"
         return f"{hour}am"
 
     def _build_raw_fallback(self, target_date, adequacy) -> str:
@@ -51,7 +53,7 @@ class SchedulingSkill(BaseSkill):
         for b in adequacy["hourly_blocks"]:
             icon = "✓" if b["status"] == "Adequate" else "✗"
             blocks_text += f"  {self._format_am_pm(b['start'])}-{self._format_am_pm(b['end'])}   {icon} {b['status']}   ({b['staff']} staff, ~{b['avg_footfall']} customers/hr)\n"
-            
+
         return f"""Tomorrow — {target_date.strftime('%A')} {target_date.strftime('%d %b')}
 Predicted footfall: {adequacy['predicted_footfall']} customers ({adequacy['increase_pct']}% vs normal)
 Reason: Fallback standard pipeline formatting
@@ -64,23 +66,23 @@ Recommendation:
     async def _review_shifts(self, data: dict[str, Any]) -> dict[str, Any]:
         from datetime import date
         from brain.shift_optimizer import calculate_adequacy
-        
+
         target_date_str = data.get("target_date")
         if target_date_str:
             target_date = date.fromisoformat(target_date_str)
         else:
             return {"status": "error", "message": "Missing target_date"}
-            
+
         adequacy = calculate_adequacy(target_date)
-        
+
         reason = "Standard baseline prediction"
         if adequacy["festival"]:
             reason = f"Proximity to {adequacy['festival']['festival_name']} surge multiplier"
-            
+
         blocks_text = ""
         for b in adequacy["hourly_blocks"]:
             blocks_text += f"{self._format_am_pm(b['start'])}-{self._format_am_pm(b['end'])} | {b['status']} | {b['staff']} staff (~{b['avg_footfall']} customers/hr)\n"
-            
+
         prompt = FORMAT_PROMPT.format(
             day=target_date.strftime("%A"),
             date=target_date.strftime("%d %b"),
@@ -89,13 +91,13 @@ Recommendation:
             reason=reason
         )
         prompt += f"\nRaw Mapped Hourly Data Blocks:\n{blocks_text}"
-        
+
         if not self.client:
             import os
             api_key = os.environ.get("GEMINI_API_KEY", "")
             if api_key:
                 self.client = genai.Client(api_key=api_key)
-                
+
         if self.client:
             try:
                 response = await self.client.aio.models.generate_content(
@@ -103,11 +105,11 @@ Recommendation:
                     contents=prompt
                 )
                 report = response.text.strip()
-            except Exception as e:
+            except Exception:
                 report = self._build_raw_fallback(target_date, adequacy)
         else:
             report = self._build_raw_fallback(target_date, adequacy)
-            
+
         # PUSH TO APPROVAL QUEUE (NEVER AUTO-APPROVE)
         result = {
             "status": "pending_manager_review",
@@ -123,7 +125,7 @@ Recommendation:
                 "data": {"target_date": target_date_str}
             }
         }
-        
+
         if self.audit:
             await self.audit.log(
                 skill=self.name,
@@ -133,5 +135,5 @@ Recommendation:
                 outcome=json.dumps({"blocks": len(adequacy["hourly_blocks"])}),
                 status="pending_approval"
             )
-            
+
         return result

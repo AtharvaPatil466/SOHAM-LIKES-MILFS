@@ -62,7 +62,6 @@ def exponential_smoothing_forecast(series: list[float], alpha: float = 0.3, hori
     last_smoothed = smoothed[-1]
 
     # Double exponential smoothing for trend
-    beta = 0.2
     level = smoothed[-1]
     trend_val = (smoothed[-1] - smoothed[-2]) if len(smoothed) >= 2 else 0
 

@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 import time
 from pathlib import Path
 from typing import Any
@@ -74,7 +73,7 @@ class AnalyticsSkill(BaseSkill):
                 "insights": analysis.get("insights", []),
                 "recommendations": analysis.get("system_recommendations", []),
             })
-            
+
             from brain.insight_writer import write_daily_insight
             await write_daily_insight(self.memory)
 
@@ -177,8 +176,8 @@ Identify patterns, issues, and recommendations."""
             return self._fallback_analysis(logs, inventory)
 
     def _fallback_analysis(self, logs: list[dict], inventory: dict) -> dict[str, Any]:
-        error_count = sum(1 for l in logs if l.get("status") == "error")
-        success_count = sum(1 for l in logs if l.get("status") == "success")
+        error_count = sum(1 for entry in logs if entry.get("status") == "error")
+        success_count = sum(1 for entry in logs if entry.get("status") == "success")
 
         insights = []
         if error_count > 5:

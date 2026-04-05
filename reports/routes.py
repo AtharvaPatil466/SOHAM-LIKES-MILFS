@@ -1,15 +1,11 @@
 import json
-import time
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth.dependencies import require_role
-from db.models import Order, OrderItem, Product, Return, User
-from db.session import get_db
+from db.models import User
 from reports.generators import (
     generate_gst_excel,
     generate_inventory_excel,

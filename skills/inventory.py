@@ -33,7 +33,7 @@ class InventorySkill(BaseSkill):
     async def run(self, event: dict[str, Any]) -> dict[str, Any]:
         if not event:
             return {"status": "error", "message": "Event is None"}
-            
+
         """Check inventory levels, return alerts for items crossing threshold."""
         alerts = []
 
@@ -67,7 +67,7 @@ class InventorySkill(BaseSkill):
             if item:
                 old_qty = item["current_stock"]
                 qty_change = new_quantity - old_qty
-                
+
                 # Log the movement
                 if qty_change != 0:
                     movement_type = event["data"].get("movement_type")
@@ -143,7 +143,7 @@ class InventorySkill(BaseSkill):
                     }
                 }
             })
-            
+
         return result
 
     def _find_item(self, sku: str) -> dict | None:
@@ -231,13 +231,13 @@ class InventorySkill(BaseSkill):
             return {"error": f"SKU {sku} not found"}
         old_stock = item["current_stock"]
         qty_change = quantity - old_stock
-        
+
         # Log the movement
         if qty_change != 0:
             derived_type = movement_type if movement_type else ("restock" if qty_change > 0 else "sale")
             from brain.wastage_tracker import log_movement
             log_movement(sku, qty_change, derived_type)
-            
+
         item["current_stock"] = quantity
         if unit_price is not None:
             item["unit_price"] = float(unit_price)

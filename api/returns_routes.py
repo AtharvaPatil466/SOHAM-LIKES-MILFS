@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth.dependencies import require_role
-from db.models import Customer, Order, Return, ReturnItem, User
+from db.models import Customer, Return, ReturnItem, User
 from db.session import get_db
 
 router = APIRouter(prefix="/api/v2/returns", tags=["returns"])

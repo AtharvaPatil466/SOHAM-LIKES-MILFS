@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 import time
 from typing import Any
 
@@ -64,7 +63,7 @@ class NegotiationSkill(BaseSkill):
     async def run(self, event: dict[str, Any]) -> dict[str, Any]:
         if not event:
             return {"status": "error", "message": "Event is None"}
-            
+
         event_type = event.get("type", "")
         data = event.get("data", event.get("params", {}))
         if not data:
@@ -383,23 +382,26 @@ Parse this reply and identify what information is present and what's missing."""
     def _fallback_parse(self, raw_reply: str) -> dict[str, Any]:
         """Simple regex-based extraction when Gemini is unavailable."""
         import re
-        
+
         reply_lower = raw_reply.lower()
-        
+
         # Simple extraction logic
         price_match = re.search(r'(?:rs|inr|₹)\s*(\d+)', reply_lower)
         qty_match = re.search(r'(\d+)\s*units?', reply_lower)
         days_match = re.search(r'(\d+)\s*days?', reply_lower)
-        
+
         price = int(price_match.group(1)) if price_match else None
         qty = int(qty_match.group(1)) if qty_match else None
         days = int(days_match.group(1)) if days_match else None
-        
+
         missing = []
-        if price is None: missing.append("price_per_unit")
-        if qty is None: missing.append("min_order_qty")
-        if days is None: missing.append("delivery_days")
-        
+        if price is None:
+            missing.append("price_per_unit")
+        if qty is None:
+            missing.append("min_order_qty")
+        if days is None:
+            missing.append("delivery_days")
+
         return {
             "parsed": {
                 "price_per_unit": price,
@@ -448,7 +450,7 @@ Parse this reply and identify what information is present and what's missing."""
                 skill=self.name,
                 event_type="supplier_timeout",
                 decision=f"Moving to next supplier: {next_supplier.get('supplier_name', 'Unknown')}",
-                reasoning=f"Previous supplier did not respond within timeout window",
+                reasoning="Previous supplier did not respond within timeout window",
                 outcome=f"Contacting supplier #{idx + 1}",
                 status="rerouted",
             )
