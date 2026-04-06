@@ -30,6 +30,7 @@ from api.i18n_routes import router as i18n_router
 from api.mobile_routes import router as mobile_router
 from api.payment_routes import router as payment_router
 from api.whatsapp_routes import router as whatsapp_router
+from api.backup_routes import router as backup_router
 
 
 # ── Helpers ────────────────────────────────────────────────
@@ -1190,6 +1191,7 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
     app.include_router(mobile_router)
     app.include_router(payment_router)
     app.include_router(whatsapp_router)
+    app.include_router(backup_router)
 
     # ── Load plugins ──
     from plugins.loader import load_plugins
