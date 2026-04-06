@@ -1,0 +1,91 @@
+"""Request logging middleware with correlation IDs."""
+
+import logging
+import time
+from typing import Callable
+
+from fastapi import Request, Response
+from starlette.middleware.base import BaseHTTPMiddleware
+
+from runtime.logging_config import (
+    generate_request_id,
+    request_id_var,
+    user_id_var,
+    store_id_var,
+)
+
+logger = logging.getLogger("retailos.access")
+
+
+class RequestLoggingMiddleware(BaseHTTPMiddleware):
+    """Log all HTTP requests with timing and correlation IDs."""
+
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        # Generate and set request ID
+        req_id = request.headers.get("X-Request-ID", generate_request_id())
+        request_id_var.set(req_id)
+
+        # Extract user context from JWT if available
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            try:
+                from jose import jwt
+                import os
+                token = auth_header[7:]
+                payload = jwt.decode(
+                    token,
+                    os.environ.get("JWT_SECRET_KEY", ""),
+                    algorithms=["HS256"],
+                    options={"verify_exp": False},
+                )
+                user_id_var.set(payload.get("sub", ""))
+                store_id_var.set(payload.get("store_id", ""))
+            except Exception:
+                pass
+
+        start = time.time()
+        client_ip = request.client.host if request.client else "unknown"
+
+        try:
+            response = await call_next(request)
+            duration_ms = round((time.time() - start) * 1000, 1)
+
+            # Add correlation headers to response
+            response.headers["X-Request-ID"] = req_id
+
+            # Log the request
+            logger.info(
+                "%s %s %d %.1fms",
+                request.method,
+                request.url.path,
+                response.status_code,
+                duration_ms,
+                extra={
+                    "method": request.method,
+                    "path": request.url.path,
+                    "status_code": response.status_code,
+                    "duration_ms": duration_ms,
+                    "client_ip": client_ip,
+                },
+            )
+
+            return response
+
+        except Exception as e:
+            duration_ms = round((time.time() - start) * 1000, 1)
+            logger.error(
+                "%s %s ERROR %.1fms: %s",
+                request.method,
+                request.url.path,
+                duration_ms,
+                str(e),
+                extra={
+                    "method": request.method,
+                    "path": request.url.path,
+                    "status_code": 500,
+                    "duration_ms": duration_ms,
+                    "client_ip": client_ip,
+                },
+                exc_info=True,
+            )
+            raise

@@ -1012,6 +1012,12 @@ def _latest_business_date(
     return max(dates) if dates else date.today()
 
 
+def _init_logging():
+    """Initialize structured logging."""
+    from runtime.logging_config import setup_logging
+    setup_logging()
+
+
 def _init_sentry():
     """Initialize Sentry error tracking if DSN is configured."""
     import os
@@ -1028,6 +1034,7 @@ def _init_sentry():
 
 
 def create_app(orchestrator: Orchestrator) -> FastAPI:
+    _init_logging()
     _init_sentry()
 
     app = FastAPI(
@@ -1177,6 +1184,10 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Logging middleware
+    from runtime.logging_middleware import RequestLoggingMiddleware
+    app.add_middleware(RequestLoggingMiddleware)
 
     # Security middleware
     from auth.middleware import RateLimitMiddleware, SecurityHeadersMiddleware
