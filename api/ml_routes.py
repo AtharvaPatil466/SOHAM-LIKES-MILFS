@@ -111,3 +111,33 @@ async def get_basket_recommendations(
 ):
     from brain.basket_analyzer import get_recommendations_for
     return {"sku": sku, "recommendations": get_recommendations_for(sku, top_n=top_n)}
+
+
+@router.get("/basket/categories")
+async def get_category_affinities(
+    min_support: int = 2,
+    user: User = Depends(require_role("staff")),
+):
+    """Get category-level purchase affinities."""
+    from brain.basket_analyzer import get_category_affinities
+    return {"affinities": get_category_affinities(min_support=min_support)}
+
+
+@router.get("/basket/summary")
+async def get_basket_summary(
+    user: User = Depends(require_role("staff")),
+):
+    """Get overall basket analysis summary stats."""
+    from brain.basket_analyzer import get_basket_summary
+    return get_basket_summary()
+
+
+@router.post("/basket/cross-sell")
+async def get_cross_sell(
+    cart_skus: list[str],
+    top_n: int = 5,
+    user: User = Depends(require_role("cashier")),
+):
+    """Get cross-sell recommendations for current cart."""
+    from brain.basket_analyzer import get_cross_sell_scores
+    return {"recommendations": get_cross_sell_scores(cart_skus, top_n=top_n)}
