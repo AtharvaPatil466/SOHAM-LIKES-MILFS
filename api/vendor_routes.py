@@ -233,3 +233,128 @@ async def update_supplier_profile(
 
     await db.flush()
     return {"status": "updated", "supplier_id": supplier_code}
+
+
+class SupplierCatalogItem(BaseModel):
+    sku: str
+    product_name: str
+    unit_price: float
+    min_qty: int = 1
+    available: bool = True
+
+
+@router.post("/suppliers/{supplier_code}/catalog")
+async def update_supplier_catalog(
+    supplier_code: str,
+    items: list[SupplierCatalogItem],
+    db: AsyncSession = Depends(get_db),
+):
+    """Supplier self-service: update product catalog and pricing."""
+    result = await db.execute(select(Supplier).where(Supplier.supplier_id == supplier_code))
+    supplier = result.scalar_one_or_none()
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+
+    catalog = [item.model_dump() for item in items]
+    supplier.products_json = json.dumps(catalog)
+    await db.flush()
+    return {"status": "catalog_updated", "items_count": len(catalog)}
+
+
+@router.get("/suppliers/{supplier_code}/orders")
+async def get_supplier_orders(
+    supplier_code: str,
+    status: str | None = None,
+    limit: int = 50,
+    db: AsyncSession = Depends(get_db),
+):
+    """Supplier self-service: view their purchase orders."""
+    result = await db.execute(select(Supplier).where(Supplier.supplier_id == supplier_code))
+    supplier = result.scalar_one_or_none()
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+
+    query = select(PurchaseOrder).where(PurchaseOrder.supplier_id == supplier.id).order_by(PurchaseOrder.created_at.desc())
+    if status:
+        query = query.where(PurchaseOrder.status == status)
+
+    result = await db.execute(query.limit(limit))
+    pos = result.scalars().all()
+
+    output = []
+    for po in pos:
+        items_result = await db.execute(select(PurchaseOrderItem).where(PurchaseOrderItem.po_id == po.id))
+        items = items_result.scalars().all()
+        output.append({
+            "po_number": po.po_number,
+            "status": po.status,
+            "payment_status": po.payment_status,
+            "total_amount": po.total_amount,
+            "expected_delivery": po.expected_delivery,
+            "created_at": po.created_at,
+            "items": [{"sku": i.sku, "product_name": i.product_name, "qty": i.qty, "unit_price": i.unit_price} for i in items],
+        })
+
+    return {"supplier": supplier.supplier_name, "orders": output, "count": len(output)}
+
+
+@router.get("/suppliers/{supplier_code}/performance")
+async def get_supplier_performance(
+    supplier_code: str,
+    user: User = Depends(require_role("manager")),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get supplier performance metrics."""
+    result = await db.execute(select(Supplier).where(Supplier.supplier_id == supplier_code))
+    supplier = result.scalar_one_or_none()
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+
+    pos_result = await db.execute(select(PurchaseOrder).where(PurchaseOrder.supplier_id == supplier.id))
+    all_pos = pos_result.scalars().all()
+
+    total_orders = len(all_pos)
+    delivered = [po for po in all_pos if po.status == "received"]
+    paid = [po for po in all_pos if po.payment_status == "paid"]
+
+    on_time = 0
+    for po in delivered:
+        if po.expected_delivery and po.actual_delivery and po.actual_delivery <= po.expected_delivery:
+            on_time += 1
+
+    return {
+        "supplier_id": supplier.supplier_id,
+        "supplier_name": supplier.supplier_name,
+        "reliability_score": supplier.reliability_score,
+        "total_orders": total_orders,
+        "delivered": len(delivered),
+        "pending": sum(1 for po in all_pos if po.status in ("draft", "sent", "confirmed")),
+        "on_time_delivery_pct": round(on_time / len(delivered) * 100, 1) if delivered else 0,
+        "total_spend": round(sum(po.total_amount for po in paid), 2),
+        "avg_order_value": round(sum(po.total_amount for po in all_pos) / total_orders, 2) if total_orders else 0,
+    }
+
+
+@router.get("/suppliers")
+async def list_all_suppliers(
+    user: User = Depends(require_role("staff")),
+    db: AsyncSession = Depends(get_db),
+):
+    """List all active suppliers with basic info."""
+    result = await db.execute(select(Supplier).where(Supplier.is_active).order_by(Supplier.supplier_name))
+    suppliers = result.scalars().all()
+
+    return {
+        "suppliers": [
+            {
+                "supplier_id": s.supplier_id,
+                "supplier_name": s.supplier_name,
+                "contact_phone": s.contact_phone,
+                "reliability_score": s.reliability_score,
+                "delivery_days": s.delivery_days,
+                "categories": json.loads(s.categories_json) if s.categories_json else [],
+            }
+            for s in suppliers
+        ],
+        "count": len(suppliers),
+    }
