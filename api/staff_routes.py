@@ -200,3 +200,160 @@ async def get_staff_performance(
             "gross_pay": round(total_hours * staff.hourly_rate, 2),
         },
     }
+
+
+# ── Payroll Calculation ──
+
+class PayrollConfig(BaseModel):
+    overtime_multiplier: float = 1.5
+    overtime_threshold_hours: float = 8.0
+    pf_rate: float = 0.12  # 12% EPF
+    esi_rate: float = 0.0075  # 0.75% ESI (employee share)
+    professional_tax: float = 200  # Monthly PT
+    bonus_pct: float = 0  # Optional bonus
+
+
+@router.post("/payroll/calculate")
+async def calculate_payroll(
+    month: str,  # YYYY-MM format
+    config: PayrollConfig = PayrollConfig(),
+    user: User = Depends(require_role("owner")),
+    db: AsyncSession = Depends(get_db),
+):
+    """Calculate monthly payroll for all staff members.
+
+    Includes overtime, PF, ESI, professional tax deductions.
+    """
+    # Get all active staff
+    staff_result = await db.execute(
+        select(StaffMember).where(StaffMember.is_active, StaffMember.store_id == user.store_id)
+    )
+    all_staff = staff_result.scalars().all()
+
+    payroll_entries = []
+    total_gross = 0
+    total_deductions = 0
+    total_net = 0
+
+    for staff in all_staff:
+        # Get attendance for the month
+        att_result = await db.execute(
+            select(AttendanceRecord).where(
+                AttendanceRecord.staff_id == staff.id,
+                AttendanceRecord.date.like(f"{month}%"),
+            )
+        )
+        attendance = att_result.scalars().all()
+
+        present_days = sum(1 for a in attendance if a.status in ("present", "late"))
+        half_days = sum(1 for a in attendance if a.status == "half_day")
+        total_hours = sum(a.hours_worked for a in attendance)
+
+        # Calculate regular and overtime hours
+        regular_hours = 0
+        overtime_hours = 0
+        for a in attendance:
+            if a.hours_worked > config.overtime_threshold_hours:
+                regular_hours += config.overtime_threshold_hours
+                overtime_hours += a.hours_worked - config.overtime_threshold_hours
+            else:
+                regular_hours += a.hours_worked
+
+        # Gross pay calculation
+        regular_pay = regular_hours * staff.hourly_rate
+        overtime_pay = overtime_hours * staff.hourly_rate * config.overtime_multiplier
+        bonus = (regular_pay + overtime_pay) * config.bonus_pct / 100
+        gross_pay = regular_pay + overtime_pay + bonus
+
+        # Deductions
+        pf_deduction = gross_pay * config.pf_rate
+        esi_deduction = gross_pay * config.esi_rate
+        professional_tax = config.professional_tax
+        total_deduction = pf_deduction + esi_deduction + professional_tax
+
+        net_pay = gross_pay - total_deduction
+
+        entry = {
+            "staff_code": staff.staff_code,
+            "name": staff.name,
+            "role": staff.role,
+            "hourly_rate": staff.hourly_rate,
+            "days_present": present_days,
+            "half_days": half_days,
+            "total_hours": round(total_hours, 1),
+            "regular_hours": round(regular_hours, 1),
+            "overtime_hours": round(overtime_hours, 1),
+            "regular_pay": round(regular_pay, 2),
+            "overtime_pay": round(overtime_pay, 2),
+            "bonus": round(bonus, 2),
+            "gross_pay": round(gross_pay, 2),
+            "deductions": {
+                "pf": round(pf_deduction, 2),
+                "esi": round(esi_deduction, 2),
+                "professional_tax": professional_tax,
+                "total": round(total_deduction, 2),
+            },
+            "net_pay": round(net_pay, 2),
+        }
+        payroll_entries.append(entry)
+
+        total_gross += gross_pay
+        total_deductions += total_deduction
+        total_net += net_pay
+
+    return {
+        "month": month,
+        "staff_count": len(payroll_entries),
+        "payroll": payroll_entries,
+        "totals": {
+            "gross_pay": round(total_gross, 2),
+            "total_deductions": round(total_deductions, 2),
+            "net_pay": round(total_net, 2),
+        },
+    }
+
+
+@router.get("/attendance/summary")
+async def attendance_summary(
+    month: str = "",  # YYYY-MM
+    user: User = Depends(require_role("manager")),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get monthly attendance summary for all staff."""
+    if not month:
+        month = time.strftime("%Y-%m")
+
+    staff_result = await db.execute(
+        select(StaffMember).where(StaffMember.is_active, StaffMember.store_id == user.store_id)
+    )
+    all_staff = staff_result.scalars().all()
+
+    summaries = []
+    for staff in all_staff:
+        att_result = await db.execute(
+            select(AttendanceRecord).where(
+                AttendanceRecord.staff_id == staff.id,
+                AttendanceRecord.date.like(f"{month}%"),
+            )
+        )
+        records = att_result.scalars().all()
+
+        present = sum(1 for r in records if r.status == "present")
+        late = sum(1 for r in records if r.status == "late")
+        absent = sum(1 for r in records if r.status == "absent")
+        half_day = sum(1 for r in records if r.status == "half_day")
+        total_hours = sum(r.hours_worked for r in records)
+
+        summaries.append({
+            "staff_code": staff.staff_code,
+            "name": staff.name,
+            "role": staff.role,
+            "present": present,
+            "late": late,
+            "absent": absent,
+            "half_day": half_day,
+            "total_hours": round(total_hours, 1),
+            "attendance_rate": round((present + late) / max(len(records), 1) * 100, 1),
+        })
+
+    return {"month": month, "staff_count": len(summaries), "summaries": summaries}
