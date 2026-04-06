@@ -181,3 +181,183 @@ async def send_reminder(
         "balance": ledger.balance,
         "message": f"Hi {ledger.customer_name}, you have an outstanding balance of ₹{ledger.balance:.0f} at RetailOS Supermart. Please settle at your convenience.",
     }
+
+
+# ── Interest & Late Fee Calculation ──
+
+INTEREST_RATE_MONTHLY = 0.02  # 2% per month
+LATE_FEE_THRESHOLD_DAYS = 30  # After 30 days, late fee applies
+LATE_FEE_FLAT = 50  # Flat ₹50 late fee
+
+
+class InterestConfig(BaseModel):
+    monthly_rate: float = 0.02
+    late_fee_threshold_days: int = 30
+    late_fee_flat: float = 50
+
+
+@router.get("/{udhaar_id}/interest")
+async def calculate_interest(
+    udhaar_id: str,
+    user: User = Depends(require_role("staff")),
+    db: AsyncSession = Depends(get_db),
+):
+    """Calculate accrued interest and late fees on an outstanding balance."""
+    result = await db.execute(select(UdhaarLedger).where(UdhaarLedger.udhaar_id == udhaar_id))
+    ledger = result.scalar_one_or_none()
+    if not ledger:
+        raise HTTPException(status_code=404, detail="Ledger not found")
+
+    if ledger.balance <= 0:
+        return {"udhaar_id": udhaar_id, "balance": 0, "interest": 0, "late_fee": 0, "total_due": 0}
+
+    # Get oldest unpaid credit entry
+    entries_result = await db.execute(
+        select(UdhaarEntry)
+        .where(UdhaarEntry.ledger_id == ledger.id, UdhaarEntry.entry_type == "credit")
+        .order_by(UdhaarEntry.timestamp.asc())
+    )
+    entries = entries_result.scalars().all()
+
+    days_outstanding = 0
+    if entries:
+        oldest_ts = entries[0].timestamp
+        days_outstanding = int((time.time() - oldest_ts) / 86400)
+
+    # Calculate monthly interest
+    months = max(0, days_outstanding / 30)
+    interest = round(ledger.balance * INTEREST_RATE_MONTHLY * months, 2)
+
+    # Late fee
+    late_fee = LATE_FEE_FLAT if days_outstanding > LATE_FEE_THRESHOLD_DAYS else 0
+
+    total_due = round(ledger.balance + interest + late_fee, 2)
+
+    return {
+        "udhaar_id": udhaar_id,
+        "customer_name": ledger.customer_name,
+        "principal_balance": ledger.balance,
+        "days_outstanding": days_outstanding,
+        "interest_rate": f"{INTEREST_RATE_MONTHLY * 100}% per month",
+        "accrued_interest": interest,
+        "late_fee": late_fee,
+        "total_due": total_due,
+    }
+
+
+@router.post("/{udhaar_id}/apply-interest")
+async def apply_interest(
+    udhaar_id: str,
+    user: User = Depends(require_role("owner")),
+    db: AsyncSession = Depends(get_db),
+):
+    """Apply accrued interest and late fees to the ledger balance."""
+    result = await db.execute(select(UdhaarLedger).where(UdhaarLedger.udhaar_id == udhaar_id))
+    ledger = result.scalar_one_or_none()
+    if not ledger:
+        raise HTTPException(status_code=404, detail="Ledger not found")
+
+    if ledger.balance <= 0:
+        return {"status": "no_balance", "udhaar_id": udhaar_id}
+
+    entries_result = await db.execute(
+        select(UdhaarEntry)
+        .where(UdhaarEntry.ledger_id == ledger.id, UdhaarEntry.entry_type == "credit")
+        .order_by(UdhaarEntry.timestamp.asc())
+    )
+    entries = entries_result.scalars().all()
+    days_outstanding = 0
+    if entries:
+        days_outstanding = int((time.time() - entries[0].timestamp) / 86400)
+
+    months = max(0, days_outstanding / 30)
+    interest = round(ledger.balance * INTEREST_RATE_MONTHLY * months, 2)
+    late_fee = LATE_FEE_FLAT if days_outstanding > LATE_FEE_THRESHOLD_DAYS else 0
+    total_charges = interest + late_fee
+
+    if total_charges > 0:
+        ledger.total_credit += total_charges
+        ledger.balance += total_charges
+
+        entry = UdhaarEntry(
+            ledger_id=ledger.id,
+            entry_type="credit",
+            amount=total_charges,
+            note=f"Interest: ₹{interest}, Late fee: ₹{late_fee} ({days_outstanding} days outstanding)",
+            date=time.strftime("%Y-%m-%d"),
+        )
+        db.add(entry)
+        await db.flush()
+
+    return {
+        "udhaar_id": udhaar_id,
+        "interest_applied": interest,
+        "late_fee_applied": late_fee,
+        "new_balance": ledger.balance,
+    }
+
+
+@router.get("/{udhaar_id}/history")
+async def get_ledger_history(
+    udhaar_id: str,
+    user: User = Depends(require_role("staff")),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get full transaction history for a credit ledger."""
+    result = await db.execute(select(UdhaarLedger).where(UdhaarLedger.udhaar_id == udhaar_id))
+    ledger = result.scalar_one_or_none()
+    if not ledger:
+        raise HTTPException(status_code=404, detail="Ledger not found")
+
+    entries_result = await db.execute(
+        select(UdhaarEntry)
+        .where(UdhaarEntry.ledger_id == ledger.id)
+        .order_by(UdhaarEntry.timestamp.desc())
+    )
+    entries = entries_result.scalars().all()
+
+    return {
+        "udhaar_id": udhaar_id,
+        "customer_name": ledger.customer_name,
+        "balance": ledger.balance,
+        "credit_limit": ledger.credit_limit,
+        "entries": [
+            {
+                "type": e.entry_type,
+                "amount": e.amount,
+                "date": e.date,
+                "order_id": e.order_id,
+                "note": e.note,
+                "timestamp": e.timestamp,
+            }
+            for e in entries
+        ],
+    }
+
+
+@router.get("/stats/summary")
+async def udhaar_stats(
+    user: User = Depends(require_role("manager")),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get credit management summary statistics."""
+    result = await db.execute(select(UdhaarLedger))
+    all_ledgers = result.scalars().all()
+
+    total = len(all_ledgers)
+    active = [l for l in all_ledgers if l.balance > 0]
+    total_outstanding = sum(l.balance for l in active)
+    total_credit = sum(l.total_credit for l in all_ledgers)
+    total_paid = sum(l.total_paid for l in all_ledgers)
+    over_limit = [l for l in active if l.balance > l.credit_limit]
+
+    return {
+        "total_accounts": total,
+        "active_accounts": len(active),
+        "total_outstanding": round(total_outstanding, 2),
+        "total_credit_issued": round(total_credit, 2),
+        "total_paid": round(total_paid, 2),
+        "recovery_rate": round(total_paid / total_credit * 100, 1) if total_credit > 0 else 0,
+        "accounts_over_limit": len(over_limit),
+        "avg_outstanding": round(total_outstanding / len(active), 2) if active else 0,
+    }
