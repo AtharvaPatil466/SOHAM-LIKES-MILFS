@@ -20,6 +20,7 @@ from reports.generators import (
     generate_sales_excel,
 )
 from reports.gst_invoice import generate_gst_invoice
+from reports.gst_returns import generate_gstr1_excel, generate_gstr3b_excel, generate_pnl_excel
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
@@ -206,6 +207,94 @@ async def export_daily_summary_pdf(
         buf,
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename=daily_summary_{date_str}.pdf"},
+    )
+
+
+@router.get("/pnl/excel")
+async def export_pnl_excel(
+    date_from: str = Query(..., description="YYYY-MM-DD"),
+    date_to: str = Query(..., description="YYYY-MM-DD"),
+    user: User = Depends(require_role("owner")),
+):
+    """Export detailed P&L statement as Excel with expense breakdown."""
+    from datetime import datetime
+    orders = _read_json("mock_orders.json", {"customer_orders": []})
+    all_orders = orders.get("customer_orders", [])
+    ts_from = datetime.strptime(date_from, "%Y-%m-%d").timestamp()
+    ts_to = datetime.strptime(date_to, "%Y-%m-%d").timestamp() + 86400
+    filtered = [o for o in all_orders if ts_from <= o.get("timestamp", 0) < ts_to]
+
+    revenue = sum(o.get("total_amount", 0) for o in filtered)
+    gst_collected = sum(o.get("gst_amount", 0) for o in filtered)
+    cost_of_goods = revenue * 0.70
+    returns = _read_json("mock_returns.json", [])
+    returns_amount = sum(r.get("refund_amount", 0) for r in returns if ts_from <= r.get("timestamp", 0) < ts_to)
+
+    buf = generate_pnl_excel(revenue, cost_of_goods, gst_collected, returns_amount, period=f"{date_from} to {date_to}")
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename=pnl_{date_from}_{date_to}.xlsx"},
+    )
+
+
+@router.get("/gstr1/excel")
+async def export_gstr1(
+    date_from: str = Query(..., description="YYYY-MM-DD"),
+    date_to: str = Query(..., description="YYYY-MM-DD"),
+    user: User = Depends(require_role("owner")),
+):
+    """Export GSTR-1 format Excel for GST filing."""
+    orders = _read_json("mock_orders.json", {"customer_orders": []})
+    all_orders = orders.get("customer_orders", [])
+    from datetime import datetime
+    ts_from = datetime.strptime(date_from, "%Y-%m-%d").timestamp()
+    ts_to = datetime.strptime(date_to, "%Y-%m-%d").timestamp() + 86400
+    filtered = [o for o in all_orders if ts_from <= o.get("timestamp", 0) < ts_to]
+
+    invoices = []
+    for o in filtered:
+        invoices.append({
+            "invoice_number": o.get("order_id", ""),
+            "invoice_date": datetime.fromtimestamp(o.get("timestamp", 0)).strftime("%d-%m-%Y"),
+            "total_amount": o.get("total_amount", 0),
+            "gst_rate": 18,
+            "buyer_gstin": o.get("buyer_gstin", ""),
+            "items": o.get("items", []),
+        })
+
+    buf = generate_gstr1_excel(invoices, date_from, date_to)
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename=gstr1_{date_from}_{date_to}.xlsx"},
+    )
+
+
+@router.get("/gstr3b/excel")
+async def export_gstr3b(
+    date_from: str = Query(..., description="YYYY-MM-DD"),
+    date_to: str = Query(..., description="YYYY-MM-DD"),
+    user: User = Depends(require_role("owner")),
+):
+    """Export GSTR-3B format Excel for monthly GST filing."""
+    from datetime import datetime
+    orders = _read_json("mock_orders.json", {"customer_orders": []})
+    all_orders = orders.get("customer_orders", [])
+    ts_from = datetime.strptime(date_from, "%Y-%m-%d").timestamp()
+    ts_to = datetime.strptime(date_to, "%Y-%m-%d").timestamp() + 86400
+    filtered = [o for o in all_orders if ts_from <= o.get("timestamp", 0) < ts_to]
+
+    revenue = sum(o.get("total_amount", 0) for o in filtered)
+    gst = sum(o.get("gst_amount", 0) for o in filtered)
+    sales_data = {"taxable_value": revenue - gst, "gst_collected": gst}
+    purchase_data = {"gst_paid": gst * 0.7}  # estimate ITC
+
+    buf = generate_gstr3b_excel(sales_data, purchase_data, date_from, date_to)
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename=gstr3b_{date_from}_{date_to}.xlsx"},
     )
 
 
