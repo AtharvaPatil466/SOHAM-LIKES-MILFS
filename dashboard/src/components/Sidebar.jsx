@@ -18,7 +18,10 @@ import {
   IndianRupee,
   LayoutGrid,
   Bike,
-  MessageSquare
+  MessageSquare,
+  Award,
+  CreditCard,
+  ClipboardList,
 } from 'lucide-react';
 
 export default function Sidebar({ activeTab, setActiveTab, approvalCount, isConnected }) {
@@ -33,6 +36,9 @@ export default function Sidebar({ activeTab, setActiveTab, approvalCount, isConn
     { id: 'shelves', label: 'Shelves', icon: LayoutGrid },
     { id: 'delivery', label: 'Delivery', icon: Bike },
     { id: 'suppliers', label: 'Suppliers', icon: Truck },
+    { id: 'staff', label: 'Staff', icon: ClipboardList },
+    { id: 'payments', label: 'Payments', icon: CreditCard },
+    { id: 'loyalty', label: 'Loyalty', icon: Award },
     { id: 'approvals', label: 'Approvals', icon: CheckCircle2, badge: approvalCount },
     { id: 'history', label: 'Activity', icon: History },
     { id: 'agents', label: 'Agents', icon: Users },

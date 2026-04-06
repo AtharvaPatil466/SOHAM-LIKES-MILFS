@@ -38,6 +38,9 @@ import FinancialsTab from './components/FinancialsTab';
 import ShelfTrackerTab from './components/ShelfTrackerTab';
 import DeliveryQueueTab from './components/DeliveryQueueTab';
 import CustomerAssistantTab from './components/CustomerAssistantTab';
+import StaffTab from './components/StaffTab';
+import PaymentsTab from './components/PaymentsTab';
+import LoyaltyTab from './components/LoyaltyTab';
 
 export default function App() {
   const [refreshTick, setRefreshTick] = useState(0);
@@ -512,6 +515,15 @@ export default function App() {
                 )}
                 {!isKioskMode && activeTab === 'suppliers' && (
                   <SuppliersTab />
+                )}
+                {!isKioskMode && activeTab === 'staff' && (
+                  <StaffTab />
+                )}
+                {!isKioskMode && activeTab === 'payments' && (
+                  <PaymentsTab />
+                )}
+                {!isKioskMode && activeTab === 'loyalty' && (
+                  <LoyaltyTab />
                 )}
                 {!isKioskMode && activeTab === 'workspace' && (
                   <WorkspaceTab
