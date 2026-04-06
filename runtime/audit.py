@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 import json
 import time
 import uuid
@@ -7,17 +8,44 @@ from typing import Any, Optional
 import asyncpg
 
 
+def _compute_hash(entry: dict, previous_hash: str = "") -> str:
+    """Compute SHA-256 hash of an audit entry chained to the previous entry.
+
+    This creates a blockchain-like chain where tampering with any entry
+    invalidates all subsequent hashes, making modifications detectable.
+    """
+    # Canonical representation: sorted keys, deterministic JSON
+    canonical = json.dumps({
+        "id": entry.get("id", ""),
+        "timestamp": entry.get("timestamp", 0),
+        "skill": entry.get("skill", ""),
+        "event_type": entry.get("event_type", ""),
+        "decision": entry.get("decision", ""),
+        "reasoning": entry.get("reasoning", ""),
+        "outcome": entry.get("outcome", ""),
+        "status": entry.get("status", ""),
+        "previous_hash": previous_hash,
+    }, sort_keys=True)
+    return hashlib.sha256(canonical.encode()).hexdigest()
+
+
 class AuditLogger:
-    """Append-only audit trail stored in PostgreSQL.
+    """Append-only, tamper-proof audit trail.
 
     Every action the system takes is logged with full reasoning.
     Nothing is ever deleted or modified.
+
+    Tamper-proofing:
+    - Each entry contains a SHA-256 hash chained to the previous entry
+    - Modifying any entry breaks the hash chain, making tampering detectable
+    - Verification endpoint checks the entire chain integrity
     """
 
     def __init__(self, database_url: str):
         self.database_url = database_url
         self.pool: Optional[asyncpg.Pool] = None
         self._fallback_logs: list[dict] = []
+        self._last_hash: str = ""  # Hash of the most recent entry
         self.on_log: Optional[callable] = None
 
     async def init(self) -> None:
@@ -64,6 +92,11 @@ class AuditLogger:
             "status": status,
             "metadata": metadata or {},
         }
+
+        # Compute tamper-proof hash chain
+        entry["previous_hash"] = self._last_hash
+        entry["hash"] = _compute_hash(entry, self._last_hash)
+        self._last_hash = entry["hash"]
 
         if self.pool:
             try:
@@ -152,6 +185,93 @@ class AuditLogger:
             row = await self.pool.fetchrow("SELECT COUNT(*) as cnt FROM audit_log")
             return row["cnt"]
         return len(self._fallback_logs)
+
+    async def verify_chain(self) -> dict[str, Any]:
+        """Verify the integrity of the entire audit log hash chain.
+
+        Returns verification result with any detected tampering.
+        """
+        logs = await self.get_logs(limit=10000)
+        logs.reverse()  # Oldest first for chain verification
+
+        if not logs:
+            return {"status": "ok", "entries_checked": 0, "message": "No entries to verify"}
+
+        errors = []
+        previous_hash = ""
+
+        for i, entry in enumerate(logs):
+            expected_hash = _compute_hash(entry, previous_hash)
+
+            if "hash" in entry and entry["hash"] != expected_hash:
+                errors.append({
+                    "entry_index": i,
+                    "entry_id": entry.get("id", ""),
+                    "timestamp": entry.get("timestamp", 0),
+                    "expected_hash": expected_hash[:16] + "...",
+                    "actual_hash": entry["hash"][:16] + "...",
+                    "issue": "Hash mismatch — entry may have been tampered with",
+                })
+
+            if "previous_hash" in entry and entry["previous_hash"] != previous_hash:
+                errors.append({
+                    "entry_index": i,
+                    "entry_id": entry.get("id", ""),
+                    "issue": "Chain link broken — previous hash mismatch",
+                })
+
+            previous_hash = entry.get("hash", expected_hash)
+
+        if errors:
+            return {
+                "status": "tampered",
+                "entries_checked": len(logs),
+                "errors": errors,
+                "message": f"INTEGRITY VIOLATION: {len(errors)} entries may have been tampered with",
+            }
+
+        return {
+            "status": "ok",
+            "entries_checked": len(logs),
+            "chain_head_hash": self._last_hash[:16] + "..." if self._last_hash else "",
+            "message": "All entries verified — hash chain is intact",
+        }
+
+    async def verify_entry(self, entry_id: str) -> dict[str, Any]:
+        """Verify a single audit entry's integrity."""
+        logs = await self.get_logs(limit=10000)
+        logs.reverse()
+
+        target = None
+        prev_entry = None
+        for i, entry in enumerate(logs):
+            if entry.get("id") == entry_id:
+                target = entry
+                prev_entry = logs[i - 1] if i > 0 else None
+                break
+
+        if not target:
+            return {"status": "not_found", "entry_id": entry_id}
+
+        prev_hash = prev_entry.get("hash", "") if prev_entry else ""
+        expected = _compute_hash(target, prev_hash)
+        actual = target.get("hash", "")
+
+        return {
+            "entry_id": entry_id,
+            "status": "ok" if actual == expected else "tampered",
+            "hash_match": actual == expected,
+            "timestamp": target.get("timestamp", 0),
+        }
+
+    def get_chain_info(self) -> dict[str, Any]:
+        """Get current hash chain status."""
+        return {
+            "chain_length": len(self._fallback_logs),
+            "chain_head_hash": self._last_hash[:16] + "..." if self._last_hash else "",
+            "algorithm": "SHA-256",
+            "chaining": "Each entry hash includes previous entry hash",
+        }
 
     async def close(self) -> None:
         if self.pool:

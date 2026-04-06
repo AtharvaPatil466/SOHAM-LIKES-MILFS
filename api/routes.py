@@ -2268,6 +2268,21 @@ Open RetailOS for details."""
     async def get_audit_count():
         return {"count": await orchestrator.audit.get_log_count()}
 
+    @app.get("/api/audit/verify")
+    async def verify_audit_chain():
+        """Verify the integrity of the entire audit log hash chain."""
+        return await orchestrator.audit.verify_chain()
+
+    @app.get("/api/audit/verify/{entry_id}")
+    async def verify_audit_entry(entry_id: str):
+        """Verify a single audit entry's integrity."""
+        return await orchestrator.audit.verify_entry(entry_id)
+
+    @app.get("/api/audit/chain-info")
+    async def audit_chain_info():
+        """Get hash chain metadata."""
+        return orchestrator.audit.get_chain_info()
+
     @app.get("/api/negotiations")
     async def get_negotiations():
         skill = _get_skill("negotiation")
