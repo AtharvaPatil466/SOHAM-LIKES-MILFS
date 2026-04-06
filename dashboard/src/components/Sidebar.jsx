@@ -22,6 +22,7 @@ import {
   Award,
   CreditCard,
   ClipboardList,
+  ScanLine,
 } from 'lucide-react';
 
 export default function Sidebar({ activeTab, setActiveTab, approvalCount, isConnected }) {
@@ -39,6 +40,7 @@ export default function Sidebar({ activeTab, setActiveTab, approvalCount, isConn
     { id: 'staff', label: 'Staff', icon: ClipboardList },
     { id: 'payments', label: 'Payments', icon: CreditCard },
     { id: 'loyalty', label: 'Loyalty', icon: Award },
+    { id: 'scanner', label: 'Scanner', icon: ScanLine },
     { id: 'approvals', label: 'Approvals', icon: CheckCircle2, badge: approvalCount },
     { id: 'history', label: 'Activity', icon: History },
     { id: 'agents', label: 'Agents', icon: Users },

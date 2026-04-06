@@ -41,6 +41,7 @@ import CustomerAssistantTab from './components/CustomerAssistantTab';
 import StaffTab from './components/StaffTab';
 import PaymentsTab from './components/PaymentsTab';
 import LoyaltyTab from './components/LoyaltyTab';
+import BarcodeScannerTab from './components/BarcodeScannerTab';
 
 export default function App() {
   const [refreshTick, setRefreshTick] = useState(0);
@@ -524,6 +525,9 @@ export default function App() {
                 )}
                 {!isKioskMode && activeTab === 'loyalty' && (
                   <LoyaltyTab />
+                )}
+                {!isKioskMode && activeTab === 'scanner' && (
+                  <BarcodeScannerTab />
                 )}
                 {!isKioskMode && activeTab === 'workspace' && (
                   <WorkspaceTab
