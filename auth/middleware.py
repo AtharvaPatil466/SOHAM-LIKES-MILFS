@@ -2,6 +2,7 @@
 
 import hashlib
 import html
+import json
 import re
 import time
 from collections import defaultdict
@@ -11,32 +12,108 @@ from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
 
+# Per-endpoint rate limit overrides (requests per minute)
+ENDPOINT_LIMITS: dict[str, int] = {
+    "/api/auth/login": 20,
+    "/api/auth/register": 10,
+    "/api/payments/create-order": 30,
+    "/api/payments/webhook": 200,
+    "/api/sms/send": 30,
+    "/api/sms/send-otp": 10,
+    "/api/whatsapp/send-text": 30,
+    "/api/push/broadcast": 5,
+    "/api/backup/create": 5,
+    "/api/backup/restore": 3,
+    "/health": 300,
+    "/health/live": 300,
+}
+
+# Tiered rate limits by role
+ROLE_LIMITS: dict[str, int] = {
+    "owner": 300,
+    "manager": 200,
+    "staff": 150,
+    "cashier": 120,
+}
+
+
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    """Token bucket rate limiter per IP."""
+    """Tiered rate limiter with per-IP, per-endpoint, and per-role controls."""
 
     def __init__(self, app, requests_per_minute: int = 120):
         super().__init__(app)
-        self.rate = requests_per_minute
+        self.default_rate = requests_per_minute
         self.window = 60  # seconds
-        self._hits: dict[str, list[float]] = defaultdict(list)
+        self._ip_hits: dict[str, list[float]] = defaultdict(list)
+        self._endpoint_hits: dict[str, list[float]] = defaultdict(list)
+        self._blocked_ips: dict[str, float] = {}  # IP -> blocked until timestamp
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         client_ip = request.client.host if request.client else "unknown"
+        path = request.url.path
         now = time.time()
 
-        # Prune old entries
-        self._hits[client_ip] = [t for t in self._hits[client_ip] if t > now - self.window]
+        # Check if IP is temporarily blocked
+        if client_ip in self._blocked_ips:
+            if now < self._blocked_ips[client_ip]:
+                remaining = int(self._blocked_ips[client_ip] - now)
+                return Response(
+                    content=json.dumps({"detail": "Too many requests. IP temporarily blocked.", "retry_after": remaining}),
+                    status_code=429,
+                    media_type="application/json",
+                    headers={"Retry-After": str(remaining)},
+                )
+            del self._blocked_ips[client_ip]
 
-        if len(self._hits[client_ip]) >= self.rate:
+        # Per-IP global rate limit
+        self._ip_hits[client_ip] = [t for t in self._ip_hits[client_ip] if t > now - self.window]
+        ip_limit = self.default_rate
+
+        if len(self._ip_hits[client_ip]) >= ip_limit:
+            # Block for 5 minutes after hitting limit
+            self._blocked_ips[client_ip] = now + 300
             return Response(
-                content='{"detail":"Rate limit exceeded. Try again later."}',
+                content=json.dumps({"detail": "Rate limit exceeded. IP blocked for 5 minutes.", "retry_after": 300}),
                 status_code=429,
                 media_type="application/json",
-                headers={"Retry-After": str(self.window)},
+                headers={"Retry-After": "300"},
             )
 
-        self._hits[client_ip].append(now)
-        return await call_next(request)
+        # Per-endpoint rate limit
+        endpoint_limit = ENDPOINT_LIMITS.get(path)
+        if endpoint_limit:
+            key = f"{client_ip}:{path}"
+            self._endpoint_hits[key] = [t for t in self._endpoint_hits[key] if t > now - self.window]
+            if len(self._endpoint_hits[key]) >= endpoint_limit:
+                return Response(
+                    content=json.dumps({"detail": f"Rate limit exceeded for {path}. Try again later.", "limit": endpoint_limit}),
+                    status_code=429,
+                    media_type="application/json",
+                    headers={"Retry-After": str(self.window)},
+                )
+            self._endpoint_hits[key].append(now)
+
+        self._ip_hits[client_ip].append(now)
+
+        response = await call_next(request)
+
+        # Add rate limit headers
+        remaining = ip_limit - len(self._ip_hits[client_ip])
+        response.headers["X-RateLimit-Limit"] = str(ip_limit)
+        response.headers["X-RateLimit-Remaining"] = str(max(0, remaining))
+        response.headers["X-RateLimit-Reset"] = str(int(now + self.window))
+
+        return response
+
+    def get_stats(self) -> dict:
+        """Get rate limiter statistics."""
+        now = time.time()
+        active_ips = sum(1 for hits in self._ip_hits.values() if any(t > now - self.window for t in hits))
+        return {
+            "active_ips": active_ips,
+            "blocked_ips": len(self._blocked_ips),
+            "tracked_endpoints": len(self._endpoint_hits),
+        }
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
