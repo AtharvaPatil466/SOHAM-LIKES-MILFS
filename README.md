@@ -1,3 +1,7 @@
+![CI](https://github.com/AtharvaPatil466/Retailos/actions/workflows/ci.yml/badge.svg)
+![Python](https://img.shields.io/badge/python-3.12%2B-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 # RetailOS — Autonomous Agent Runtime for Retail Operations
 
 > "Most teams built agents. We built the runtime that runs them."

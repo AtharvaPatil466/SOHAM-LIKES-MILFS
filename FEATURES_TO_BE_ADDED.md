@@ -1,113 +1,131 @@
-# Features To Be Added
+# Features Roadmap
 
 ## Authentication & Authorization
-- User login / role-based access (owner, staff, cashier)
-- API key management
-- Session handling
+- [x] User login / role-based access (owner, staff, cashier)
+- [x] API key management (JWT tokens)
+- [x] Session handling
 
 ## Multi-Store / Multi-Tenant
-- Store-level data isolation
-- Cross-store analytics / benchmarking
+- [x] Store-level data isolation (store_id on all models)
+- [ ] Cross-store analytics / benchmarking
 
 ## Real Integrations
-- WhatsApp Business API (Twilio/Gupshup)
-- UPI/payment gateway (Razorpay/PhonePe)
-- GST invoicing / billing compliance
-- POS hardware (barcode scanner, receipt printer)
-- Tally/accounting software sync
+- [x] WhatsApp Business API (Twilio/Gupshup)
+- [x] UPI/payment gateway (Razorpay)
+- [x] GST invoicing / billing compliance
+- [ ] POS hardware (barcode scanner, receipt printer)
+- [x] Tally/accounting software sync
 
 ## Notifications
-- Push notifications (mobile/web)
-- SMS alerts
-- Email digests
+- [x] Push notifications (Web Push / VAPID)
+- [x] SMS alerts (MSG91 / Twilio)
+- [x] Email digests (aiosmtplib)
 
 ## Reporting & Exports
-- PDF/Excel report generation
-- Date-range filtering on all data
-- Profit & loss statements
-- GST returns export
+- [x] PDF/Excel report generation
+- [x] Date-range filtering on all data
+- [x] Profit & loss statements
+- [x] GST returns export (GSTR-1, GSTR-3B)
 
 ## Customer-Facing
-- Customer loyalty / points program
-- Digital receipts (WhatsApp/SMS)
-- Online ordering / catalog
+- [x] Customer loyalty / points program
+- [x] Digital receipts (WhatsApp/SMS)
+- [x] Online ordering / catalog
 
 ## Data & Infrastructure
-- Proper database (not JSON files)
-- Database migrations
-- Backup/restore
-- Offline-first / sync when connected (kirana stores have spotty internet)
-- Rate limiting / API throttling
+- [x] Proper database (SQLAlchemy async + PostgreSQL)
+- [ ] Database migrations (Alembic)
+- [x] Backup/restore
+- [ ] Offline-first / sync when connected
+- [x] Rate limiting / API throttling
 
 ## Ops & Observability
-- Error tracking (Sentry)
-- Metrics dashboard (latency, uptime)
-- Structured logging
-- Health checks
+- [x] Error tracking (Sentry)
+- [x] Metrics dashboard (Prometheus-compatible)
+- [x] Structured logging (JSON + correlation IDs)
+- [x] Health checks (liveness, readiness, startup)
 
 ## ML / Intelligence Upgrades
-- Demand forecasting (time-series, not just velocity)
-- Dynamic pricing engine
-- Basket analysis (frequently bought together)
-- Image-based shelf audit (camera → compliance check)
-- Voice input for stock updates (staff literacy varies)
+- [x] Demand forecasting (exponential smoothing, Holt's double smoothing, seasonality)
+- [x] Dynamic pricing engine
+- [x] Basket analysis (co-occurrence, lift scoring, cross-sell)
+- [x] Image-based shelf audit (Gemini Vision API)
+- [ ] Voice input for stock updates (STT integration)
 
 ## Workflow
-- Configurable approval chains (not just owner)
-- Scheduled reports (daily P&L email)
-- Undo/rollback on actions
-- Audit log search & filtering
+- [x] Configurable approval chains
+- [x] Scheduled reports (daily P&L email)
+- [x] Undo/rollback on actions
+- [x] Audit log search & filtering
 
 ## Mobile
-- Native mobile app (or at least responsive PWA that works offline)
-- Barcode scan from phone camera
+- [ ] Native mobile app (React Native / Flutter)
+- [x] Barcode scan from phone camera (mobile API)
 
 ## Localization
-- Hindi / regional language UI
-- Multilingual voice commands
+- [x] Hindi / regional language UI (hi, mr, ta, te, kn, bn, gu)
+- [x] Multilingual voice commands
 
 ## Returns & Refunds
-- Return processing workflow
-- Refund tracking / credit notes
+- [x] Return processing workflow
+- [x] Refund tracking / credit notes
 
 ## Vendor Portal
-- Supplier self-service (update prices, confirm orders)
-- Digital purchase orders
+- [x] Supplier self-service (update prices, confirm orders)
+- [x] Digital purchase orders
 
 ## Credit Management (Udhaar)
-- Payment reminders (automated WhatsApp)
-- Credit limit enforcement
-- Partial payment tracking
-- Interest/late fee rules
+- [x] Payment reminders (automated WhatsApp)
+- [x] Credit limit enforcement
+- [x] Partial payment tracking
+- [x] Interest/late fee rules
 
 ## Promotions Engine
-- Combo deals / bundle pricing
-- Time-bound flash sales (automated start/end)
-- Coupon codes
+- [x] Combo deals / bundle pricing
+- [x] Time-bound flash sales (automated start/end)
+- [x] Coupon codes
 
 ## Staff Management
-- Attendance tracking
-- Performance metrics per cashier
-- Payroll integration
+- [x] Attendance tracking
+- [x] Performance metrics per cashier
+- [x] Payroll integration (EPF, ESI, Professional Tax)
 
 ## Compliance & Security
-- Data encryption at rest
-- GDPR/DPDP Act compliance (Indian data privacy)
-- Audit log tamper-proofing
-- Input sanitization (XSS/injection hardening)
+- [x] Data encryption at rest (Fernet AES)
+- [x] DPDP Act compliance (India data privacy)
+- [x] Audit log tamper-proofing (SHA-256 hash chain)
+- [x] Input sanitization (XSS/injection hardening)
 
 ## Testing
-- Integration test suite with real DB
-- Load/stress testing
-- E2E browser tests (Playwright)
+- [x] Integration test suite with real DB
+- [x] Load/stress testing (Locust)
+- [x] E2E browser tests (Playwright)
 
 ## Deployment
-- CI/CD pipeline
-- Docker containerization
-- One-click deploy (Railway/Render)
-- Environment management (staging/prod)
+- [x] CI/CD pipeline (GitHub Actions)
+- [x] Docker containerization (multi-stage build)
+- [x] One-click deploy (Railway/Render)
+- [x] Kubernetes manifests + Helm chart
+- [ ] Environment management (staging/prod separation)
 
 ## Developer Experience
-- API documentation (OpenAPI/Swagger)
-- Webhook system for third-party integrations
-- Plugin/extension architecture
+- [x] API documentation (OpenAPI/Swagger with examples)
+- [x] API versioning (/api/v1/ with deprecation headers)
+- [x] Webhook system for third-party integrations
+- [x] Plugin/extension architecture
+- [x] WebSocket real-time dashboard updates
+- [x] OpenAPI TypeScript client SDK
+
+---
+
+## Still Open (Hard Differentiators)
+
+| Feature | Difficulty | Impact |
+|---------|-----------|--------|
+| Cross-store analytics | Medium | Multi-tenant comparison dashboards |
+| Alembic migrations | Medium | Zero-downtime schema evolution |
+| Offline-first sync | Hard | Critical for kirana stores with spotty internet |
+| POS hardware integration | Hard | Barcode scanner + thermal receipt printer |
+| Voice STT input | Medium | Staff with limited literacy can update stock |
+| Native mobile app | Hard | PWA covers basics, but native = better UX |
+| Staging/prod env separation | Easy | Config-based environment switching |
