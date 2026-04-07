@@ -42,6 +42,7 @@ from api.compliance_routes import router as compliance_router
 from api.versioning import router as version_router, APIVersionMiddleware
 from api.websocket_manager import channel_manager
 from api.analytics_routes import router as analytics_router
+from api.voice_routes import router as voice_input_router
 
 
 # ── Helpers ────────────────────────────────────────────────
@@ -1253,6 +1254,7 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
     app.include_router(compliance_router)
     app.include_router(version_router)
     app.include_router(analytics_router)
+    app.include_router(voice_input_router)
 
     # ── Initialize scheduler ──
     from scheduler.engine import Scheduler, register_default_jobs
