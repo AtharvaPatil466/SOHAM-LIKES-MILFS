@@ -39,6 +39,7 @@ from api.tally_routes import router as tally_router
 from api.shelf_audit_routes import router as shelf_audit_router
 from api.encryption_routes import router as encryption_router
 from api.compliance_routes import router as compliance_router
+from api.versioning import router as version_router, APIVersionMiddleware
 
 
 # ── Helpers ────────────────────────────────────────────────
@@ -1054,7 +1055,11 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
             "- **Notifications** — Email, SMS, WhatsApp, push, in-app\n"
             "- **Reports** — PDF/Excel exports (sales, P&L, GST, inventory)\n"
             "- **Webhooks** — Third-party event subscriptions\n"
-            "- **Workflows** — Approval chains, audit logs, undo/rollback"
+            "- **Workflows** — Approval chains, audit logs, undo/rollback\n\n"
+            "## API Versioning\n"
+            "All endpoints are accessible via `/api/v1/` prefix (recommended) or "
+            "legacy `/api/` prefix (deprecated, sunset 2027-06-01).\n"
+            "Example: `/api/v1/auth/login` or `/api/v1/inventory`"
         ),
         version="1.0.0",
         docs_url="/docs",
@@ -1185,6 +1190,9 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
         allow_headers=["*"],
     )
 
+    # API versioning middleware
+    app.add_middleware(APIVersionMiddleware)
+
     # Logging middleware
     from runtime.logging_middleware import RequestLoggingMiddleware
     app.add_middleware(RequestLoggingMiddleware)
@@ -1222,6 +1230,7 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
     app.include_router(shelf_audit_router)
     app.include_router(encryption_router)
     app.include_router(compliance_router)
+    app.include_router(version_router)
 
     # ── Initialize scheduler ──
     from scheduler.engine import Scheduler, register_default_jobs
