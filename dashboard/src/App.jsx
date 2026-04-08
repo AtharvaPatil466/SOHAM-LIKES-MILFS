@@ -18,7 +18,8 @@ import {
   IndianRupee,
   LayoutGrid,
   Bike,
-  MessageSquare
+  MessageSquare,
+  Mic
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from './components/Sidebar';
@@ -42,6 +43,8 @@ import StaffTab from './components/StaffTab';
 import PaymentsTab from './components/PaymentsTab';
 import LoyaltyTab from './components/LoyaltyTab';
 import BarcodeScannerTab from './components/BarcodeScannerTab';
+import VoiceAssistantTab from './components/VoiceAssistantTab';
+import useOfflineSync from './useOfflineSync';
 
 export default function App() {
   const [refreshTick, setRefreshTick] = useState(0);
@@ -120,6 +123,25 @@ export default function App() {
   const [alertCount, setAlertCount] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
   const ws = useRef(null);
+
+  // Offline-first sync engine
+  const {
+    isOnline,
+    isSyncing,
+    pendingCount,
+    queueOperation,
+    forceSync,
+  } = useOfflineSync({
+    onPulledChanges: () => {
+      setRefreshTick((prev) => prev + 1);
+    },
+  });
+
+  // Expose sync utilities to child components via window
+  useEffect(() => {
+    window.retailosSync = { queueOperation, forceSync, isOnline };
+    return () => { delete window.retailosSync; };
+  }, [queueOperation, forceSync, isOnline]);
   const navItems = [
     { id: 'home', label: 'Overview', icon: LayoutDashboard },
     { id: 'customers', label: 'Customers', icon: UserCircle2 },
@@ -131,6 +153,7 @@ export default function App() {
     { id: 'shelves', label: 'Shelves', icon: LayoutGrid },
     { id: 'delivery', label: 'Delivery', icon: Bike },
     { id: 'suppliers', label: 'Suppliers', icon: Truck },
+    { id: 'voice', label: 'Voice Assistant', icon: Mic },
     { id: 'approvals', label: 'Approvals', icon: CheckCircle2, badge: approvals.length },
     { id: 'history', label: 'Activity', icon: History },
     { id: 'agents', label: 'Agents', icon: Users }
@@ -213,7 +236,8 @@ export default function App() {
   const connectWebSocket = () => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.host;
-    ws.current = new WebSocket(`${protocol}//${host}/ws/events`);
+    const token = localStorage.getItem('retailos_token') || '';
+    ws.current = new WebSocket(`${protocol}//${host}/ws/dashboard?token=${encodeURIComponent(token)}&channels=inventory,orders,sales,alerts,audit,notifications`);
 
     ws.current.onopen = () => setIsConnected(true);
     ws.current.onclose = () => {
@@ -221,12 +245,43 @@ export default function App() {
       setTimeout(connectWebSocket, 3000);
     };
     ws.current.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      if (message.type === 'audit_log') {
-        setLogs(prev => [message.data, ...prev].slice(0, 100));
-        if (['owner_approved', 'owner_rejected', 'approval_requested'].includes(message.data.event_type)) {
+      try {
+        const message = JSON.parse(event.data);
+
+        // Channel-based events from /ws/dashboard
+        if (message.channel === 'audit') {
+          setLogs(prev => [message.data, ...prev].slice(0, 100));
+        }
+
+        // Inventory changes — refresh dashboard data
+        if (message.channel === 'inventory') {
+          window.dispatchEvent(new CustomEvent('retailos:data-changed'));
+        }
+
+        // New sale completed — refresh stats
+        if (message.channel === 'sales') {
+          window.dispatchEvent(new CustomEvent('retailos:data-changed'));
+        }
+
+        // Order lifecycle events — refresh orders
+        if (message.channel === 'orders') {
+          window.dispatchEvent(new CustomEvent('retailos:data-changed'));
+        }
+
+        // Approval and alert events — refresh approvals + alerts
+        if (message.channel === 'alerts') {
           fetchData();
         }
+
+        // Legacy format fallback (from /ws/events broadcast_log)
+        if (message.type === 'audit_log') {
+          setLogs(prev => [message.data, ...prev].slice(0, 100));
+          if (['owner_approved', 'owner_rejected', 'approval_requested'].includes(message.data?.event_type)) {
+            fetchData();
+          }
+        }
+      } catch {
+        // ignore malformed messages
       }
     };
   };
@@ -279,6 +334,10 @@ export default function App() {
     workspace: {
       title: 'User Workspace',
       subtitle: 'A custom setup built around how the user actually works',
+    },
+    voice: {
+      title: 'Voice Assistant',
+      subtitle: 'Talk to your store — ask about inventory, sales, suppliers, and more',
     },
     approvals: {
       title: 'Approvals',
@@ -353,10 +412,21 @@ export default function App() {
             <div className="flex items-center gap-3">
               {!isKioskMode ? (
                 <div className="hidden sm:flex items-center gap-2 rounded-full border border-black/5 bg-white/55 px-4 py-2 text-sm">
-                  <div className={`h-2.5 w-2.5 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                  <div className={`h-2.5 w-2.5 rounded-full ${!isOnline ? 'bg-amber-500' : isConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
                   <span className="font-medium text-stone-700">
-                    {isConnected ? 'Live updates active' : 'Reconnecting'}
+                    {!isOnline
+                      ? `Offline${pendingCount > 0 ? ` (${pendingCount} queued)` : ''}`
+                      : isSyncing
+                        ? 'Syncing...'
+                        : isConnected
+                          ? 'Live'
+                          : 'Reconnecting'}
                   </span>
+                  {!isOnline && pendingCount > 0 && (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
+                      {pendingCount}
+                    </span>
+                  )}
                 </div>
               ) : null}
               <button 
@@ -528,6 +598,9 @@ export default function App() {
                 )}
                 {!isKioskMode && activeTab === 'scanner' && (
                   <BarcodeScannerTab />
+                )}
+                {!isKioskMode && activeTab === 'voice' && (
+                  <VoiceAssistantTab />
                 )}
                 {!isKioskMode && activeTab === 'workspace' && (
                   <WorkspaceTab

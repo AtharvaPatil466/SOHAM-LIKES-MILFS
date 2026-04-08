@@ -40,11 +40,18 @@ from api.shelf_audit_routes import router as shelf_audit_router
 from api.encryption_routes import router as encryption_router
 from api.compliance_routes import router as compliance_router
 from api.versioning import router as version_router, APIVersionMiddleware
-from api.websocket_manager import channel_manager
+from api.websocket_manager import (
+    channel_manager,
+    emit_inventory_update,
+    emit_order_event,
+    emit_sale_event,
+    emit_alert,
+)
 from api.analytics_routes import router as analytics_router
 from api.voice_routes import router as voice_input_router
 from api.pos_routes import router as pos_router
 from api.offline_sync import router as sync_router
+from api.assistant_routes import router as assistant_router
 
 
 # ── Helpers ────────────────────────────────────────────────
@@ -1222,8 +1229,9 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
     app.add_middleware(RequestLoggingMiddleware)
 
     # Security middleware
-    from auth.middleware import RateLimitMiddleware, SecurityHeadersMiddleware
+    from auth.middleware import RateLimitMiddleware, SecurityHeadersMiddleware, RBACMiddleware
     app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(RBACMiddleware)
     app.add_middleware(RateLimitMiddleware, requests_per_minute=120)
 
     # ── Auth routes ──
@@ -1259,6 +1267,7 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
     app.include_router(voice_input_router)
     app.include_router(pos_router)
     app.include_router(sync_router)
+    app.include_router(assistant_router)
 
     # ── Initialize scheduler ──
     from scheduler.engine import Scheduler, register_default_jobs
@@ -1293,21 +1302,39 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
 
     @app.websocket("/ws/dashboard")
     async def websocket_dashboard(websocket: WebSocket):
-        """Real-time dashboard WebSocket with channel subscriptions.
+        """Real-time dashboard WebSocket with channel subscriptions and JWT auth.
 
-        Connect with optional ?channels=inventory,orders,sales query param.
+        Connect with ?token=<jwt>&channels=inventory,orders,sales query params.
         Send JSON messages to subscribe/unsubscribe dynamically:
           {"action": "subscribe", "channel": "alerts"}
           {"action": "unsubscribe", "channel": "audit"}
         """
+        # ── JWT Authentication ──
+        token = websocket.query_params.get("token", "")
+        if not token:
+            # Also accept from first message (for clients that can't set query params)
+            auth_header = websocket.headers.get("authorization", "")
+            if auth_header.startswith("Bearer "):
+                token = auth_header[7:]
+
+        user_payload = None
+        if token:
+            from auth.security import decode_token
+            user_payload = decode_token(token)
+
+        if not user_payload:
+            await websocket.close(code=4001, reason="Authentication required. Pass ?token=<jwt>")
+            return
+
         channels_param = websocket.query_params.get("channels", "")
         channels = [c.strip() for c in channels_param.split(",") if c.strip()] or None
 
         await channel_manager.connect(websocket, channels)
         try:
-            # Send initial connection info
+            # Send initial connection info with user context
             await channel_manager.send_to(websocket, {
                 "event": "connected",
+                "user_role": user_payload.get("role", ""),
                 "channels": sorted(channel_manager._connections.get(websocket, set())),
                 "available_channels": sorted(channel_manager.CHANNELS),
             })
@@ -1340,7 +1367,8 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
         return {
             "runtime": "running" if orchestrator.running else "stopped",
             "skills": _list_skills(),
-            "pending_approvals": len(orchestrator.pending_approvals),
+            "pending_approvals": len(await orchestrator.get_pending_approvals()),
+            "task_queue": orchestrator.task_queue.get_stats(),
             "timestamp": time.time(),
         }
 
@@ -1413,6 +1441,7 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
         if "error" in result:
             raise HTTPException(status_code=404, detail=result["error"])
         await orchestrator.emit_event({"type": "stock_update", "data": {"sku": payload.sku, "quantity": payload.quantity}})
+        await emit_inventory_update(payload.sku, "stock_changed", {"quantity": payload.quantity})
         return result
 
     @app.post("/api/inventory/register")
@@ -1423,6 +1452,7 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
         result = await skill.register_product(payload.model_dump())
         if "error" in result:
             raise HTTPException(status_code=409, detail=result["error"])
+        await emit_inventory_update(payload.sku, "product_registered", {"product_name": payload.product_name})
         return result
 
     @app.patch("/api/inventory/{sku}")
@@ -1433,6 +1463,7 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
         result = await skill.patch_item(sku, unit_price=payload.unit_price, image_url=payload.image_url, category=payload.category, barcode=payload.barcode)
         if "error" in result:
             raise HTTPException(status_code=404, detail=result["error"])
+        await emit_inventory_update(sku, "product_updated", {"changes": payload.model_dump(exclude_none=True)})
         return result
 
     @app.post("/api/inventory/check")
@@ -1554,6 +1585,13 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
 
         result["order_id"] = order_id
         result["gst_amount"] = gst
+
+        # Broadcast real-time updates to dashboard
+        await emit_sale_event({"order_id": order_id, "total": total_amount, "items_count": len(order_items), "payment_method": payload.payment_method})
+        await emit_order_event(order_id, "created", {"total_amount": total_amount, "customer_name": payload.customer_name or "Walk-in"})
+        for crossing in result.get("threshold_crossings", []):
+            await emit_alert("low_stock", f"{crossing['sku']} is below reorder threshold", "warning", {"sku": crossing["sku"], "stock": crossing["new_quantity"]})
+
         return result
 
     # ══════════════════════════════════════════════════════════
@@ -1840,7 +1878,7 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
         pending_deliveries = len([d for d in delivery if d["status"] in ("pending", "accepted", "out_for_delivery")])
         pending_returns = len([r for r in returns if r["status"] == "pending"])
         unpaid_vendors = len([o for o in orders["vendor_orders"] if o.get("payment_status") != "paid"])
-        pending_approvals = len(orchestrator.pending_approvals)
+        pending_approvals = len(await orchestrator.get_pending_approvals())
 
         # Find top selling product
         product_sales = {}
@@ -2320,18 +2358,19 @@ Open RetailOS for details."""
             raise HTTPException(status_code=404, detail="Negotiation skill not loaded")
         result = await negotiation_skill._handle_reply({"negotiation_id": payload.negotiation_id, "supplier_id": payload.supplier_id, "supplier_name": payload.supplier_name, "message": payload.message, "product_name": payload.product_name})
         if result.get("needs_approval"):
-            orchestrator.pending_approvals[result["approval_id"]] = {"skill": "negotiation", "result": result, "event": {"type": "supplier_reply"}, "timestamp": time.time()}
+            await orchestrator._save_approval(result["approval_id"], {"skill": "negotiation", "result": result, "event": {"type": "supplier_reply"}, "timestamp": time.time()})
         return result
 
     @app.get("/api/approvals")
     async def get_approvals():
-        return orchestrator.get_pending_approvals()
+        return await orchestrator.get_pending_approvals()
 
     @app.post("/api/approvals/approve")
     async def approve_action(payload: ApprovalPayload):
         result = await orchestrator.approve(payload.approval_id)
         if "error" in result:
             raise HTTPException(status_code=404, detail=result["error"])
+        await channel_manager.broadcast("alerts", "approval.approved", {"approval_id": payload.approval_id})
         return result
 
     @app.post("/api/approvals/reject")
@@ -2339,6 +2378,7 @@ Open RetailOS for details."""
         result = await orchestrator.reject(payload.approval_id, payload.reason)
         if "error" in result:
             raise HTTPException(status_code=404, detail=result["error"])
+        await channel_manager.broadcast("alerts", "approval.rejected", {"approval_id": payload.approval_id, "reason": payload.reason})
         return result
 
     @app.get("/api/audit")
@@ -2403,7 +2443,7 @@ Open RetailOS for details."""
                 await orchestrator.audit.log(skill="negotiation", event_type="reply_parsed", decision="Supplier replied: 50 boxes at 145/unit, delivery tomorrow, COD accepted", reasoning="Parsed WhatsApp reply from FreshFreeze — deal is within budget (saving 2,500 vs usual price)", outcome=json.dumps({"supplier": "FreshFreeze Distributors", "price_per_unit": 145, "quantity": 50, "delivery": "tomorrow", "terms": "COD"}), status="success")
                 await asyncio.sleep(2)
                 approval_id = f"demo_procurement_SKU-001_{int(time.time())}"
-                orchestrator.pending_approvals[approval_id] = {"id": approval_id, "skill": "negotiation", "reason": "I found a better price for Amul Vanilla Ice Cream!", "result": {"product_name": "Amul Vanilla Ice Cream", "sku": "SKU-001", "negotiation_id": f"neg_demo_{int(time.time())}", "top_supplier": {"supplier_id": "SUP-001", "supplier_name": "FreshFreeze Distributors", "price_per_unit": 145, "delivery_days": 1, "min_order_qty": 30}, "parsed": {"price_per_unit": 145, "quantity": 50, "delivery": "tomorrow"}}, "event": {"type": "supplier_reply"}, "timestamp": time.time()}
+                await orchestrator._save_approval(approval_id, {"id": approval_id, "skill": "negotiation", "reason": "I found a better price for Amul Vanilla Ice Cream!", "result": {"product_name": "Amul Vanilla Ice Cream", "sku": "SKU-001", "negotiation_id": f"neg_demo_{int(time.time())}", "top_supplier": {"supplier_id": "SUP-001", "supplier_name": "FreshFreeze Distributors", "price_per_unit": 145, "delivery_days": 1, "min_order_qty": 30}, "parsed": {"price_per_unit": 145, "quantity": 50, "delivery": "tomorrow"}}, "event": {"type": "supplier_reply"}, "timestamp": time.time()})
                 await orchestrator.audit.log(skill="orchestrator", event_type="approval_requested", decision="Deal ready! Waiting for your approval on the Approvals tab", reasoning="FreshFreeze offered 145/unit for 50 boxes of ice cream with next-day delivery. Saving 2,500 vs usual supplier.", outcome="Approval card created — tap YES to order", status="pending")
             except Exception as e:
                 await orchestrator.audit.log(skill="orchestrator", event_type="demo_error", decision="Demo flow encountered an error", reasoning=str(e), outcome="Some steps may not have completed", status="error")
