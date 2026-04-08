@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 from runtime.audit import AuditLogger
 from runtime.memory import Memory
+from runtime.task_queue import TaskQueue
 from skills.base_skill import BaseSkill, SkillState
 
 
@@ -52,6 +53,9 @@ class Orchestrator:
     what to do, routes to skills, and logs everything.
     """
 
+    # Redis key prefix for persistent approval storage
+    _APPROVAL_PREFIX = "retailos:approvals:"
+
     def __init__(
         self,
         memory: Memory,
@@ -65,13 +69,66 @@ class Orchestrator:
         self.client = genai.Client(api_key=api_key) if api_key else None
         self.event_queue: asyncio.Queue = asyncio.Queue()
         self.running = False
-        self.pending_approvals: dict[str, dict] = {}
+        self._approval_fallback: dict[str, dict] = {}  # in-memory fallback
         self.max_retries = 3
         self.retry_delay = 2  # seconds
+        self.task_queue = TaskQueue(memory=memory, max_workers=4)
+
+    # ── Persistent Approval Storage ──
+
+    async def _save_approval(self, approval_id: str, data: dict) -> None:
+        """Persist an approval to Redis (falls back to in-memory)."""
+        key = f"{self._APPROVAL_PREFIX}{approval_id}"
+        try:
+            await self.memory.set(key, data, ttl=86400 * 7)  # 7 day TTL
+        except Exception:
+            self._approval_fallback[approval_id] = data
+
+    async def _get_approval(self, approval_id: str) -> dict | None:
+        """Retrieve an approval from Redis (falls back to in-memory)."""
+        key = f"{self._APPROVAL_PREFIX}{approval_id}"
+        try:
+            result = await self.memory.get(key)
+            if result:
+                return result
+        except Exception:
+            pass
+        return self._approval_fallback.get(approval_id)
+
+    async def _delete_approval(self, approval_id: str) -> None:
+        """Remove an approval from persistent storage."""
+        key = f"{self._APPROVAL_PREFIX}{approval_id}"
+        try:
+            await self.memory.delete(key)
+        except Exception:
+            pass
+        self._approval_fallback.pop(approval_id, None)
+
+    async def _list_approval_ids(self) -> list[str]:
+        """List all pending approval IDs."""
+        prefix = self._APPROVAL_PREFIX
+        try:
+            keys = await self.memory._scan_keys(f"{prefix}*")
+            return [k.replace(prefix, "") for k in keys]
+        except Exception:
+            return list(self._approval_fallback.keys())
+
+    @property
+    def pending_approvals(self) -> dict[str, dict]:
+        """Backward-compatible property — returns in-memory fallback dict.
+
+        For code that accesses orchestrator.pending_approvals directly.
+        This is the fallback view; the canonical store is Redis.
+        """
+        return self._approval_fallback
 
     async def start(self) -> None:
         """Start the orchestrator event loop."""
         self.running = True
+
+        # Start background task queue
+        self.task_queue.register_handler("skill_execution", self._handle_skill_task)
+        await self.task_queue.start()
 
         # Wire up emit callbacks so skills can push events back into the queue
         for skill in self.skills.values():
@@ -89,8 +146,17 @@ class Orchestrator:
         # Start the main event processing loop
         asyncio.create_task(self._event_loop())
 
+    async def _handle_skill_task(self, payload: dict) -> dict:
+        """Task queue handler — executes a skill in the background worker pool."""
+        skill_name = payload["skill_name"]
+        event = payload["event"]
+        params = payload.get("params", {})
+        reason = payload.get("reason", "Background execution")
+        return await self._execute_skill(skill_name, event, params, reason)
+
     async def stop(self) -> None:
         self.running = False
+        await self.task_queue.stop()
         await self.audit.log(
             skill="orchestrator",
             event_type="runtime_stop",
@@ -427,12 +493,13 @@ Decide which skill(s) to run and why."""
                             return {"skill": skill_name, "status": "success", "result": result, "auto_approved": True}
 
                     approval_id = result.get("approval_id", f"{skill_name}_{int(time.time())}")
-                    self.pending_approvals[approval_id] = {
+                    approval_data = {
                         "skill": skill_name,
                         "result": result,
                         "event": event,
                         "timestamp": time.time(),
                     }
+                    await self._save_approval(approval_id, approval_data)
                     await self.audit.log(
                         skill=skill_name,
                         event_type="approval_requested",
@@ -477,10 +544,11 @@ Decide which skill(s) to run and why."""
 
     async def approve(self, approval_id: str) -> dict[str, Any]:
         """Owner approves a pending action."""
-        if approval_id not in self.pending_approvals:
+        approval = await self._get_approval(approval_id)
+        if not approval:
             return {"error": "Approval not found"}
 
-        approval = self.pending_approvals.pop(approval_id)
+        await self._delete_approval(approval_id)
 
         from brain.decision_logger import log_decision
         details = approval["result"].get("approval_details", {})
@@ -508,10 +576,12 @@ Decide which skill(s) to run and why."""
 
     async def reject(self, approval_id: str, reason: str = "") -> dict[str, Any]:
         """Owner rejects a pending action."""
-        if approval_id not in self.pending_approvals:
+        approval = await self._get_approval(approval_id)
+        if not approval:
             return {"error": "Approval not found"}
 
-        approval = self.pending_approvals.pop(approval_id)
+        await self._delete_approval(approval_id)
+
         if approval["skill"] == "shelf_manager":
             shelf_skill = self.skills.get("shelf_manager")
             if shelf_skill and hasattr(shelf_skill, "clear_suggestions"):
@@ -535,8 +605,12 @@ Decide which skill(s) to run and why."""
 
         return {"status": "rejected", "approval_id": approval_id}
 
-    def get_pending_approvals(self) -> list[dict[str, Any]]:
-        return [
-            {"id": k, **v}
-            for k, v in self.pending_approvals.items()
-        ]
+    async def get_pending_approvals(self) -> list[dict[str, Any]]:
+        """List all pending approvals from Redis (with in-memory fallback)."""
+        ids = await self._list_approval_ids()
+        results = []
+        for aid in ids:
+            data = await self._get_approval(aid)
+            if data:
+                results.append({"id": aid, **data})
+        return results

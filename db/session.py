@@ -20,7 +20,26 @@ if _db_url.startswith("sqlite://"):
 elif _db_url.startswith("postgresql://"):
     _db_url = _db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
 
-engine = create_async_engine(_db_url, echo=False)
+# Connection pool configuration — tuned per environment via settings
+_pool_size = int(os.environ.get("DB_POOL_SIZE", 10))
+_max_overflow = int(os.environ.get("DB_MAX_OVERFLOW", 20))
+_pool_recycle = int(os.environ.get("DB_POOL_RECYCLE", 1800))  # 30 min
+_pool_pre_ping = True  # Verify connections before use, drop stale ones
+
+_engine_kwargs: dict = {"echo": False}
+
+# SQLite doesn't support pool_size, only NullPool
+if "sqlite" in _db_url:
+    from sqlalchemy.pool import StaticPool
+    _engine_kwargs["poolclass"] = StaticPool
+    _engine_kwargs["connect_args"] = {"check_same_thread": False}
+else:
+    _engine_kwargs["pool_size"] = _pool_size
+    _engine_kwargs["max_overflow"] = _max_overflow
+    _engine_kwargs["pool_recycle"] = _pool_recycle
+    _engine_kwargs["pool_pre_ping"] = _pool_pre_ping
+
+engine = create_async_engine(_db_url, **_engine_kwargs)
 async_session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 

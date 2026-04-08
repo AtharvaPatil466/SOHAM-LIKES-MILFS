@@ -12,19 +12,54 @@ Conflict resolution:
 - Server always wins for price changes (pricing is centralized)
 """
 
+import json
 import time
 from typing import Any
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import select
+from sqlalchemy import String, Text, Float, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Mapped, mapped_column
 
 from auth.dependencies import require_role
 from db.models import Customer, Order, Product, User
-from db.session import get_db
+from db.session import Base, get_db
 
 router = APIRouter(prefix="/api/sync", tags=["offline-sync"])
+
+
+# ── Persistent idempotency store ──
+
+class ProcessedSyncOp(Base):
+    """Tracks processed sync operations for idempotency across restarts."""
+    __tablename__ = "processed_sync_ops"
+
+    op_id: Mapped[str] = mapped_column(String(100), primary_key=True)
+    result_json: Mapped[str] = mapped_column(Text, nullable=False)
+    processed_at: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+async def _check_processed(db: AsyncSession, op_id: str) -> dict | None:
+    """Check if an operation was already processed."""
+    result = await db.execute(
+        select(ProcessedSyncOp).where(ProcessedSyncOp.op_id == op_id)
+    )
+    row = result.scalar_one_or_none()
+    if row:
+        return json.loads(row.result_json)
+    return None
+
+
+async def _mark_processed(db: AsyncSession, op_id: str, result: dict) -> None:
+    """Mark an operation as processed in the DB."""
+    entry = ProcessedSyncOp(
+        op_id=op_id,
+        result_json=json.dumps(result, default=str),
+        processed_at=time.time(),
+    )
+    db.add(entry)
+    await db.flush()
 
 
 class SyncOperation(BaseModel):
@@ -66,10 +101,6 @@ class SyncPushRequest(BaseModel):
     }]})
 
 
-# Track processed operations for idempotency
-_processed_ops: dict[str, dict] = {}
-
-
 @router.post("/push")
 async def sync_push(
     body: SyncPushRequest,
@@ -80,20 +111,22 @@ async def sync_push(
 
     Operations are processed in order. Each op_id is tracked for
     idempotency — replaying the same batch is safe.
+    Idempotency state is persisted in the DB so it survives restarts.
     """
     results = []
     for op in body.operations:
-        # Idempotency check
-        if op.op_id in _processed_ops:
+        # Idempotency check (DB-backed)
+        existing = await _check_processed(db, op.op_id)
+        if existing:
             results.append({
                 "op_id": op.op_id,
                 "status": "already_processed",
-                "result": _processed_ops[op.op_id],
+                "result": existing,
             })
             continue
 
         result = await _process_operation(op, user, db)
-        _processed_ops[op.op_id] = result
+        await _mark_processed(db, op.op_id, result)
         results.append({
             "op_id": op.op_id,
             "status": result.get("status", "ok"),
@@ -192,14 +225,21 @@ async def sync_pull(
 
 
 @router.get("/status")
-async def sync_status(user: User = Depends(require_role("cashier"))):
+async def sync_status(
+    user: User = Depends(require_role("cashier")),
+    db: AsyncSession = Depends(get_db),
+):
     """Get sync engine status."""
+    from sqlalchemy import func
+    count_result = await db.execute(select(func.count()).select_from(ProcessedSyncOp))
+    processed_count = count_result.scalar() or 0
     return {
-        "processed_operations": len(_processed_ops),
+        "processed_operations": processed_count,
         "conflict_resolution": "last-write-wins",
         "supported_entity_types": ["product", "order", "customer"],
         "supported_op_types": ["stock_update", "sale", "customer_add", "price_check"],
         "idempotency": True,
+        "persistence": "database",
         "max_batch_size": 500,
     }
 
