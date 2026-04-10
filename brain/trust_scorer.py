@@ -1,19 +1,15 @@
 # brain/trust_scorer.py
-import sqlite3
-from pathlib import Path
-
+from brain.db import get_connection, db_exists
 from brain.delivery_tracker import get_delivery_score
 from brain.quality_scorer import get_quality_score
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-DB_PATH = BASE_DIR / "data" / "brain.db"
 
 def get_trust_score(supplier_id: str) -> dict:
     """Reads from the table and returns a score dict for any supplier. Pure SQL + math, no AI."""
-    if not DB_PATH.exists():
+    if not db_exists():
         return {"score": 50, "is_new": True, "breakdown": {}}
 
-    with sqlite3.connect(DB_PATH) as conn:
+    with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute('''
             SELECT
@@ -22,7 +18,6 @@ def get_trust_score(supplier_id: str) -> dict:
             FROM decisions
             WHERE supplier_id = ?
         ''', (supplier_id,))
-
         row = cursor.fetchone()
 
     total = row[0]
@@ -30,7 +25,7 @@ def get_trust_score(supplier_id: str) -> dict:
 
     approval_score = int((approved / total) * 100) if total > 0 else 50
 
-    with sqlite3.connect(DB_PATH) as conn:
+    with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute('''
             SELECT amount FROM decisions
@@ -43,7 +38,7 @@ def get_trust_score(supplier_id: str) -> dict:
         variance = sum((x - mean) ** 2 for x in amounts) / len(amounts)
         std_dev = variance ** 0.5
         coef_var = (std_dev / mean) if mean > 0 else 0
-        price_consistency_score = max(0, 100 - int(coef_var * 200)) # e.g. 50% variance => 0 score
+        price_consistency_score = max(0, 100 - int(coef_var * 200))
     else:
         price_consistency_score = 50
 
@@ -64,6 +59,6 @@ def get_trust_score(supplier_id: str) -> dict:
             "approval": approval_score,
             "delivery": delivery_score,
             "quality": quality_score,
-            "price_consistency": price_consistency_score
-        }
+            "price_consistency": price_consistency_score,
+        },
     }

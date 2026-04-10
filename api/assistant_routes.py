@@ -10,6 +10,7 @@ Gemini with full store context to answer complex queries like:
 The assistant has access to live inventory, orders, suppliers, and analytics.
 """
 
+import asyncio
 import json
 import time
 from pathlib import Path
@@ -168,9 +169,11 @@ async def assistant_chat(
 
     try:
         client = genai.Client(api_key=api_key)
-        response = await client.aio.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=full_prompt,
+        response = await asyncio.wait_for(
+            client.aio.models.generate_content(
+                model="gemini-2.0-flash", contents=full_prompt,
+            ),
+            timeout=30,
         )
 
         assistant_response = response.text.strip()

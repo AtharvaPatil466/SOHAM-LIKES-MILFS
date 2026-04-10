@@ -1,4 +1,5 @@
 # skills/scheduling.py
+import asyncio
 import time
 import json
 from typing import Any
@@ -100,9 +101,11 @@ Recommendation:
 
         if self.client:
             try:
-                response = await self.client.aio.models.generate_content(
-                    model="gemini-2.0-flash",
-                    contents=prompt
+                response = await asyncio.wait_for(
+                    self.client.aio.models.generate_content(
+                        model="gemini-2.0-flash", contents=prompt,
+                    ),
+                    timeout=30,
                 )
                 report = response.text.strip()
             except Exception:

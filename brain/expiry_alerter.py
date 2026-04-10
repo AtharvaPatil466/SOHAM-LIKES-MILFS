@@ -1,20 +1,18 @@
 # brain/expiry_alerter.py
 import sqlite3
 from datetime import date
-from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-DB_PATH = BASE_DIR / "data" / "brain.db"
+from brain.db import get_connection, db_exists
+
 
 def get_expiry_risks(inventory_items: list[dict], current_date: date | None = None) -> list[dict]:
     """Generates expiry_risk events for items likely to expire before selling out."""
     if current_date is None:
         current_date = date.today()
 
-    # Load metadata tracking shelf lives
     metadata_map = {}
-    if DB_PATH.exists():
-        with sqlite3.connect(DB_PATH) as conn:
+    if db_exists():
+        with get_connection() as conn:
             cursor = conn.cursor()
             try:
                 cursor.execute("SELECT product_id, shelf_life_days, last_restock_date FROM product_metadata")
@@ -45,15 +43,12 @@ def get_expiry_risks(inventory_items: list[dict], current_date: date | None = No
         days_to_expiry = shelf_life - days_since_restock
 
         if days_to_expiry <= 0:
-            continue # already expired
+            continue
 
         current_stock = item.get("current_stock", 0)
         daily_rate = item.get("daily_sales_rate", 0)
-
-        # Will it expire before we sell all of it?
         days_to_sellout = (current_stock / daily_rate) if daily_rate > 0 else float('inf')
 
-        # We flag it if we won't sell out in time, and it's approaching expiry (e.g., within 7 days, or if we have massive excess)
         if days_to_sellout > days_to_expiry and days_to_expiry <= 10:
             expected_unsold = current_stock - (daily_rate * days_to_expiry)
             if expected_unsold > 0:
@@ -65,8 +60,8 @@ def get_expiry_risks(inventory_items: list[dict], current_date: date | None = No
                         "category": item.get("category"),
                         "days_to_expiry": days_to_expiry,
                         "current_stock": current_stock,
-                        "expected_unsold": round(expected_unsold, 1)
-                    }
+                        "expected_unsold": round(expected_unsold, 1),
+                    },
                 })
 
     return events

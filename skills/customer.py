@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import time
@@ -234,9 +235,11 @@ Discount/deal: {discount}
 Write a personalized WhatsApp message."""
 
         try:
-            response = await self.client.aio.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=prompt
+            response = await asyncio.wait_for(
+                self.client.aio.models.generate_content(
+                    model="gemini-2.0-flash", contents=prompt,
+                ),
+                timeout=30,
             )
             return response.text.strip()
         except Exception as e:
@@ -327,9 +330,11 @@ Recent purchases: {purchase_summary}
 Write a re-engagement WhatsApp message."""
 
         try:
-            response = await self.client.aio.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=prompt
+            response = await asyncio.wait_for(
+                self.client.aio.models.generate_content(
+                    model="gemini-2.0-flash", contents=prompt,
+                ),
+                timeout=30,
             )
             return response.text.strip()
         except Exception as e:

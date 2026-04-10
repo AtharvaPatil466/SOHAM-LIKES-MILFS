@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import os
@@ -155,9 +156,11 @@ async def parse_recipe_request(text: str) -> dict[str, Any]:
     prompt = f"{RECIPE_PARSE_PROMPT}\n\nCustomer request: {text}\n"
 
     try:
-        response = await client.aio.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=prompt,
+        response = await asyncio.wait_for(
+            client.aio.models.generate_content(
+                model="gemini-2.0-flash", contents=prompt,
+            ),
+            timeout=30,
         )
         response_text = response.text.strip()
         if "```json" in response_text:

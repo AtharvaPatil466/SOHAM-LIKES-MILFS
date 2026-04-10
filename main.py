@@ -16,10 +16,11 @@ load_dotenv()
 async def init_runtime():
     """Initialize all runtime components and return the FastAPI app."""
 
-    # Initialize memory (Redis)
+    # Initialize memory (Redis — mandatory in production)
     redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
+    env = os.environ.get("RETAILOS_ENV", os.environ.get("ENV", "development")).lower()
     memory = Memory(redis_url)
-    await memory.init()
+    await memory.init(require_redis=(env == "production"))
 
     # Initialize audit logger (PostgreSQL)
     database_url = os.environ.get("DATABASE_URL", "postgresql://localhost:5432/retailos")

@@ -1,16 +1,15 @@
 # brain/conversion_scorer.py
 import sqlite3
-from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-DB_PATH = BASE_DIR / "data" / "brain.db"
+from brain.db import get_connection, db_exists
+
 
 def get_template_rankings() -> list[dict]:
     """Queries message_outcomes, groups by template_used, returns ranked performance."""
-    if not DB_PATH.exists():
+    if not db_exists():
         return []
 
-    with sqlite3.connect(DB_PATH) as conn:
+    with get_connection() as conn:
         cursor = conn.cursor()
         try:
             cursor.execute('''
@@ -39,8 +38,8 @@ def get_template_rankings() -> list[dict]:
             "conversion_rate": round(rate, 1),
             "avg_basket": round(avg_basket, 0) if avg_basket else 0,
         })
-
     return rankings
+
 
 def get_template_context() -> str:
     """Formats template rankings as a string block for injection into the Gemini prompt."""
@@ -53,8 +52,6 @@ def get_template_context() -> str:
         lines.append(
             f"  {r['template']:.<25s} {r['conversion_rate']}% conversion, avg ₹{r['avg_basket']} basket ({r['total_sent']} sends)"
         )
-
     if rankings:
         lines.append(f"\nPrefer '{rankings[0]['template']}' framing for this customer segment.")
-
     return "\n".join(lines)

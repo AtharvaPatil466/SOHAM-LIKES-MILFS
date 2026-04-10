@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import time
@@ -322,9 +323,11 @@ Past relationship: {json.dumps(relationship, default=str) if relationship else '
 Write the message only, no explanation."""
 
         try:
-            response = await self.client.aio.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=prompt
+            response = await asyncio.wait_for(
+                self.client.aio.models.generate_content(
+                    model="gemini-2.0-flash", contents=prompt,
+                ),
+                timeout=30,
             )
             return response.text.strip()
         except Exception as e:
@@ -356,9 +359,11 @@ Their reply (may be Hinglish, messy, or partial):
 Parse this reply and identify what information is present and what's missing."""
 
         try:
-            response = await self.client.aio.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=prompt
+            response = await asyncio.wait_for(
+                self.client.aio.models.generate_content(
+                    model="gemini-2.0-flash", contents=prompt,
+                ),
+                timeout=30,
             )
 
             text = response.text

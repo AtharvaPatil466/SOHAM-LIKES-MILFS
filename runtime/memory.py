@@ -28,12 +28,19 @@ class Memory:
         self.client: Optional[redis.Redis] = None
         self._fallback: dict[str, str] = {}
 
-    async def init(self) -> None:
+    async def init(self, require_redis: bool = False) -> None:
         try:
             self.client = redis.from_url(self.redis_url, decode_responses=True)
             await self.client.ping()
         except Exception:
             self.client = None
+            if require_redis:
+                raise RuntimeError(
+                    "Redis is required in production but unavailable at "
+                    f"{self.redis_url}. Set REDIS_URL to a valid Redis instance. "
+                    "Multi-instance deployments without Redis will have "
+                    "inconsistent approvals, memory, and task queue state."
+                )
 
     async def get(self, key: str) -> Any:
         if self.client:
