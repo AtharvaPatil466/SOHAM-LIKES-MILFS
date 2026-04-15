@@ -6,12 +6,10 @@ message_tracker, conversion_scorer, price_monitor, price_analyzer,
 churn_detector, seasonal_detector.
 """
 
-import os
 import time
 import pytest
 from datetime import date, timedelta
 from pathlib import Path
-from unittest.mock import patch
 
 # Use a test-specific DB to avoid polluting real data
 TEST_DB = Path(__file__).resolve().parent.parent / "data" / "test_brain.db"
