@@ -14,13 +14,16 @@ import json
 import logging
 import time
 import traceback
+import uuid
 from typing import Any
 
-from google import genai
+from runtime.llm_client import get_llm_client
 
 logger = logging.getLogger(__name__)
 
 from runtime.approval_manager import ApprovalManager, _extract_supplier_amount
+from runtime import events as E
+from runtime.utils import extract_json_from_llm, CircuitBreaker
 from runtime.audit import AuditLogger
 from runtime.context_builder import preprocess_event
 from runtime.memory import Memory
@@ -70,18 +73,19 @@ class Orchestrator:
         memory: Memory,
         audit: AuditLogger,
         skills: dict[str, BaseSkill],
-        api_key: str,
+        api_key: str = "",
     ):
         self.memory = memory
         self.audit = audit
         self.skills = skills
-        self.client = genai.Client(api_key=api_key) if api_key else None
+        self.llm = get_llm_client()
         self.event_queue: asyncio.Queue = asyncio.Queue()
         self.running = False
         self.max_retries = 3
         self.retry_delay = 2  # seconds
         self.task_queue = TaskQueue(memory=memory, max_workers=4)
         self.approvals = ApprovalManager(memory=memory, audit=audit)
+        self._llm_breaker = CircuitBreaker(failure_threshold=3, cooldown_seconds=60)
 
     # Backward-compatible property
     @property
@@ -100,7 +104,7 @@ class Orchestrator:
 
         await self.audit.log(
             skill="orchestrator",
-            event_type="runtime_start",
+            event_type=E.RUNTIME_START,
             decision="Starting RetailOS runtime",
             reasoning="System initialization",
             outcome="Runtime started successfully",
@@ -120,7 +124,7 @@ class Orchestrator:
         self.running = False
         await self.task_queue.stop()
         await self.audit.log(
-            skill="orchestrator", event_type="runtime_stop",
+            skill="orchestrator", event_type=E.RUNTIME_STOP,
             decision="Stopping RetailOS runtime", reasoning="Shutdown requested",
             outcome="Runtime stopped", status="success",
         )
@@ -139,7 +143,7 @@ class Orchestrator:
                 continue
             except Exception as e:
                 await self.audit.log(
-                    skill="orchestrator", event_type="event_loop_error",
+                    skill="orchestrator", event_type=E.EVENT_LOOP_ERROR,
                     decision="Error in event loop", reasoning=str(e),
                     outcome=traceback.format_exc(), status="error",
                 )
@@ -148,17 +152,22 @@ class Orchestrator:
         """Process a single event: preprocess, fetch context, route via Gemini, execute."""
         if not isinstance(event, dict) or "type" not in event:
             await self.audit.log(
-                skill="orchestrator", event_type="invalid_event",
+                skill="orchestrator", event_type=E.INVALID_EVENT,
                 decision="Rejected malformed event",
                 reasoning=f"Event missing 'type' field: {event!r}",
                 outcome="Skipped", status="error",
             )
             return {"error": "Invalid event: missing 'type' field"}
 
+        # Assign a flow_id for end-to-end tracing if not already present
+        if "flow_id" not in event:
+            event["flow_id"] = str(uuid.uuid4())
+        flow_id = event["flow_id"]
+
         # Preprocess: intercept delivery/quality/daily_analytics events
         preprocessed = await preprocess_event(event, self.skills, self.emit_event)
         if preprocessed is None:
-            return {"status": "success", "message": "Event handled by preprocessor"}
+            return {"status": "success", "message": "Event handled by preprocessor", "flow_id": flow_id}
 
         # Fetch relevant memory
         event_type = event.get("type", "unknown")
@@ -175,7 +184,7 @@ class Orchestrator:
             )
             results.append(result)
 
-        return {"event": event, "routing": routing_decision, "results": results}
+        return {"event": event, "flow_id": flow_id, "routing": routing_decision, "results": results}
 
     async def _route_with_gemini(self, event: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
         """CALL 1 — Orchestrator routing. Gemini decides what to do."""
@@ -189,50 +198,33 @@ Relevant memory context:
 
 Decide which skill(s) to run and why."""
 
+        # Circuit breaker: skip Gemini entirely if it's been failing
+        if not self._llm_breaker.allow():
+            logger.info("Circuit breaker OPEN — skipping Gemini, using fallback routing")
+            return self._fallback_route(event)
+
         for attempt in range(self.max_retries):
             try:
-                if not self.client:
-                    raise ValueError("API key not configured")
+                text = await self.llm.generate(prompt, timeout=GEMINI_TIMEOUT)
+                decision = extract_json_from_llm(text)
 
-                response = await asyncio.wait_for(
-                    self.client.aio.models.generate_content(
-                        model="gemini-2.0-flash",
-                        contents=prompt,
-                    ),
-                    timeout=GEMINI_TIMEOUT,
-                )
-
-                text = response.text
-                try:
-                    if "```json" in text:
-                        parts = text.split("```json")
-                        if len(parts) > 1:
-                            inner = parts[1].split("```")
-                            text = inner[0] if len(inner) > 1 else inner[0]
-                    elif "```" in text:
-                        parts = text.split("```")
-                        if len(parts) > 2:
-                            text = parts[1]
-                except (IndexError, ValueError):
-                    pass
-
-                decision = json.loads(text.strip())
-
+                self._llm_breaker.record_success()
                 await self.audit.log(
-                    skill="orchestrator", event_type="routing_decision",
+                    skill="orchestrator", event_type=E.ROUTING_DECISION,
                     decision=json.dumps(decision.get("actions", []), default=str),
                     reasoning=decision.get("overall_reasoning", ""),
                     outcome="Route determined", status="success",
-                    metadata={"event": event, "memory_keys": list(context.keys())},
+                    metadata={"flow_id": event.get("flow_id"), "event": event, "memory_keys": list(context.keys())},
                 )
                 return decision
 
             except Exception as e:
+                self._llm_breaker.record_failure()
                 if attempt < self.max_retries - 1:
                     await asyncio.sleep(self.retry_delay * (2 ** attempt))
                     continue
                 await self.audit.log(
-                    skill="orchestrator", event_type="gemini_api_error",
+                    skill="orchestrator", event_type=E.GEMINI_API_ERROR,
                     decision="API error after retries",
                     reasoning=f"Gemini API failed {self.max_retries} times: {e}",
                     outcome="Falling back to rule-based routing", status="error",
@@ -247,13 +239,13 @@ Decide which skill(s) to run and why."""
         actions = []
 
         routing_map = {
-            "start_procurement": [("procurement", "Fallback: start procurement process")],
-            "procurement_approved": [("negotiation", "Fallback: procurement approved triggers negotiation")],
-            "supplier_reply": [("negotiation", "Fallback: supplier reply needs parsing")],
-            "deal_confirmed": [("customer", "Fallback: deal confirmed triggers customer outreach")],
-            "churn_risk": [("customer", "Fallback: churn risk detected, triggering re-engagement")],
-            "shelf_optimization": [("shelf_manager", "Fallback: shelf optimization requested")],
-            "shelf_placement_approved": [("shelf_manager", "Fallback: apply approved shelf changes")],
+            E.START_PROCUREMENT: [("procurement", "Fallback: start procurement process")],
+            E.PROCUREMENT_APPROVED: [("negotiation", "Fallback: procurement approved triggers negotiation")],
+            E.SUPPLIER_REPLY: [("negotiation", "Fallback: supplier reply needs parsing")],
+            E.DEAL_CONFIRMED: [("customer", "Fallback: deal confirmed triggers customer outreach")],
+            E.CHURN_RISK: [("customer", "Fallback: churn risk detected, triggering re-engagement")],
+            E.SHELF_OPTIMIZATION: [("shelf_manager", "Fallback: shelf optimization requested")],
+            E.SHELF_PLACEMENT_APPROVED: [("shelf_manager", "Fallback: apply approved shelf changes")],
         }
 
         if event_type in routing_map:
@@ -261,11 +253,11 @@ Decide which skill(s) to run and why."""
                 {"skill": skill, "params": event.get("data", {}), "reason": reason}
                 for skill, reason in routing_map[event_type]
             ]
-        elif event_type in ("low_stock", "stock_update", "inventory_check"):
+        elif event_type in (E.LOW_STOCK, E.STOCK_UPDATE, E.INVENTORY_CHECK):
             actions = [{"skill": "inventory", "params": event.get("data", {}), "reason": "Fallback: stock level change"}]
-        elif event_type == "seasonal_preempt":
+        elif event_type == E.SEASONAL_PREEMPT:
             actions = [{"skill": "procurement", "params": event.get("data", {}), "reason": "Fallback: seasonal pattern detected"}]
-        elif event_type == "expiry_risk":
+        elif event_type == E.EXPIRY_RISK:
             actions = [
                 {"skill": "inventory", "params": event.get("data", {}), "reason": "Fallback: flag expiry risk"},
                 {"skill": "customer", "params": {**event.get("data", {}), "discount": "20% off (Flash Sale!)"}, "reason": "Fallback: targeted promotion for expiring product"},
@@ -280,7 +272,7 @@ Decide which skill(s) to run and why."""
         skill = self.skills.get(skill_name)
         if not skill:
             await self.audit.log(
-                skill=skill_name, event_type="skill_not_found",
+                skill=skill_name, event_type=E.SKILL_NOT_FOUND,
                 decision=f"Cannot execute {skill_name}",
                 reasoning=f"Skill '{skill_name}' not registered",
                 outcome="Skipped", status="error",
@@ -289,7 +281,7 @@ Decide which skill(s) to run and why."""
 
         if skill.state == SkillState.PAUSED:
             await self.audit.log(
-                skill=skill_name, event_type="skill_paused_skip",
+                skill=skill_name, event_type=E.SKILL_PAUSED_SKIP,
                 decision=f"Skipping {skill_name} — currently paused",
                 reasoning=reason, outcome="Skipped", status="skipped",
             )
@@ -301,10 +293,10 @@ Decide which skill(s) to run and why."""
                 result = await skill._safe_run(merged_event)
 
                 await self.audit.log(
-                    skill=skill_name, event_type="skill_executed",
+                    skill=skill_name, event_type=E.SKILL_EXECUTED,
                     decision=reason, reasoning=f"Executed on attempt {attempt + 1}",
                     outcome=json.dumps(result, default=str)[:2000], status="success",
-                    metadata={"attempt": attempt + 1, "params": params},
+                    metadata={"flow_id": event.get("flow_id"), "attempt": attempt + 1, "params": params},
                 )
 
                 # Check if result needs owner approval
@@ -315,17 +307,17 @@ Decide which skill(s) to run and why."""
 
             except Exception as e:
                 await self.audit.log(
-                    skill=skill_name, event_type="skill_error",
+                    skill=skill_name, event_type=E.SKILL_ERROR,
                     decision=f"Skill failed on attempt {attempt + 1}/{self.max_retries}",
                     reasoning=str(e), outcome=traceback.format_exc()[:1000],
-                    status="error", metadata={"attempt": attempt + 1},
+                    status="error", metadata={"flow_id": event.get("flow_id"), "attempt": attempt + 1},
                 )
                 if attempt < self.max_retries - 1:
                     await asyncio.sleep(self.retry_delay)
                     continue
 
                 await self.audit.log(
-                    skill=skill_name, event_type="skill_escalation",
+                    skill=skill_name, event_type=E.SKILL_ESCALATION,
                     decision=f"Escalating {skill_name} failure to owner",
                     reasoning=f"Failed after {self.max_retries} attempts: {e}",
                     outcome="Owner notification sent", status="escalated",
@@ -348,9 +340,9 @@ Decide which skill(s) to run and why."""
                 log_decision(supplier_id, amount, "approved")
                 follow_up = result.get("on_approval_event")
                 if follow_up:
-                    asyncio.create_task(self.emit_event(follow_up))
+                    await self.emit_event(follow_up)
                 await self.audit.log(
-                    skill=skill_name, event_type="auto_approved",
+                    skill=skill_name, event_type=E.AUTO_APPROVED,
                     decision="Silently approved via Brain subsystem",
                     reasoning=f"Trust score high and amount {amount} below ceiling",
                     outcome="Triggered follow-up event", status="success",
@@ -363,7 +355,7 @@ Decide which skill(s) to run and why."""
             "event": event, "timestamp": time.time(),
         })
         await self.audit.log(
-            skill=skill_name, event_type="approval_requested",
+            skill=skill_name, event_type=E.APPROVAL_REQUESTED,
             decision="Awaiting owner approval",
             reasoning=result.get("approval_reason", "Significant action requires approval"),
             outcome=json.dumps(details, default=str), status="pending",

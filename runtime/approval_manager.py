@@ -11,6 +11,7 @@ import time
 from typing import Any
 
 from runtime.audit import AuditLogger
+from runtime import events as E
 from runtime.memory import Memory
 
 logger = logging.getLogger(__name__)
@@ -84,7 +85,7 @@ class ApprovalManager:
 
         await self.audit.log(
             skill=approval["skill"],
-            event_type="owner_approved",
+            event_type=E.OWNER_APPROVED,
             decision="Owner approved action",
             reasoning="Manual approval via dashboard",
             outcome=json.dumps(approval["result"].get("approval_details", {}), default=str),
@@ -120,7 +121,7 @@ class ApprovalManager:
 
         await self.audit.log(
             skill=approval["skill"],
-            event_type="owner_rejected",
+            event_type=E.OWNER_REJECTED,
             decision="Owner rejected action",
             reasoning=reason or "No reason provided",
             outcome="Action cancelled",

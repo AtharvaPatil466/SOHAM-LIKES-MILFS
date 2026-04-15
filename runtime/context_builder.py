@@ -11,6 +11,8 @@ import logging
 from pathlib import Path
 from typing import Any, Callable, Awaitable
 
+from runtime import events as E
+
 logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,7 +32,7 @@ async def preprocess_event(
     event_type = event.get("type", "unknown")
 
     # Intercept delivery events → log into brain DB
-    if event_type == "delivery":
+    if event_type == E.DELIVERY:
         from brain.decision_logger import log_delivery
         data = event.get("data", {})
         log_delivery(
@@ -42,7 +44,7 @@ async def preprocess_event(
         return None  # Fully handled
 
     # Intercept quality issues → log into brain DB
-    if event_type == "quality_issue":
+    if event_type == E.QUALITY_ISSUE:
         from brain.decision_logger import log_quality_flag
         data = event.get("data", {})
         log_quality_flag(
@@ -53,7 +55,7 @@ async def preprocess_event(
         return None  # Fully handled
 
     # Daily analytics → run churn detection, expiry alerts, price monitoring, scheduling
-    if event_type == "daily_analytics":
+    if event_type == E.DAILY_ANALYTICS:
         await _run_daily_analytics(skills, emit_event)
         # Don't return None — let analytics skill also run
 
