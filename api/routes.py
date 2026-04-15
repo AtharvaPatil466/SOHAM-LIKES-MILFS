@@ -52,7 +52,6 @@ from api.voice_routes import router as voice_input_router
 from api.pos_routes import router as pos_router
 from api.offline_sync import router as sync_router
 from api.assistant_routes import router as assistant_router
-from api.shelf_map import router as shelf_map_router
 
 
 # ── Helpers ────────────────────────────────────────────────
@@ -1269,7 +1268,6 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
     app.include_router(pos_router)
     app.include_router(sync_router)
     app.include_router(assistant_router)
-    app.include_router(shelf_map_router, prefix="/api")
 
     # ── Initialize scheduler ──
     from scheduler.engine import Scheduler, register_default_jobs
