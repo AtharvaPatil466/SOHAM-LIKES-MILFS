@@ -10,13 +10,12 @@ Gemini with full store context to answer complex queries like:
 The assistant has access to live inventory, orders, suppliers, and analytics.
 """
 
-import asyncio
 import json
 import time
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict
 
 from auth.dependencies import require_role

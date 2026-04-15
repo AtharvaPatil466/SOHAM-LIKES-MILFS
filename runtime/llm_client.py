@@ -25,7 +25,6 @@ Configuration (env vars):
 """
 
 import asyncio
-import json
 import logging
 import os
 from abc import ABC, abstractmethod

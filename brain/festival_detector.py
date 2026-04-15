@@ -7,7 +7,7 @@ pan-India holidays for 2025-2027.
 """
 
 import json
-from datetime import date, timedelta
+from datetime import date
 from pathlib import Path
 
 _CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / "festivals.json"
