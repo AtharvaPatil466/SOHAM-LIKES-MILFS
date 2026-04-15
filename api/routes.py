@@ -13,32 +13,11 @@ from pydantic import BaseModel, ConfigDict
 
 from runtime.orchestrator import Orchestrator
 from auth.routes import router as auth_router
-from notifications.routes import router as notifications_router
-from reports.routes import router as reports_router
-from api.loyalty_routes import router as loyalty_router
 from api.health_routes import router as health_router
-from api.ml_routes import router as ml_router
-from api.workflow_routes import router as workflow_router
-from api.returns_routes import router as returns_router
-from api.vendor_routes import router as vendor_router
-from api.udhaar_routes import router as udhaar_v2_router
-from api.promotions_routes import router as promotions_router
-from api.staff_routes import router as staff_router
 from api.webhook_routes import router as webhook_router
-from api.store_routes import router as store_router
-from api.i18n_routes import router as i18n_router
-from api.mobile_routes import router as mobile_router
-from api.payment_routes import router as payment_router
 from api.whatsapp_routes import router as whatsapp_router
-from api.backup_routes import router as backup_router
 from api.scheduler_routes import router as scheduler_router, set_scheduler
-from api.push_routes import router as push_router
-from api.sms_routes import router as sms_router
-from api.digest_routes import router as digest_router
-from api.tally_routes import router as tally_router
 from api.shelf_audit_routes import router as shelf_audit_router
-from api.encryption_routes import router as encryption_router
-from api.compliance_routes import router as compliance_router
 from api.versioning import router as version_router, APIVersionMiddleware
 from api.websocket_manager import (
     channel_manager,
@@ -48,9 +27,6 @@ from api.websocket_manager import (
     emit_alert,
 )
 from api.analytics_routes import router as analytics_router
-from api.voice_routes import router as voice_input_router
-from api.pos_routes import router as pos_router
-from api.offline_sync import router as sync_router
 from api.assistant_routes import router as assistant_router
 
 
@@ -1236,39 +1212,15 @@ def create_app(orchestrator: Orchestrator) -> FastAPI:
     rate_limit = 10000 if _os.environ.get("TESTING") else 120
     app.add_middleware(RateLimitMiddleware, requests_per_minute=rate_limit)
 
-    # ── Auth routes ──
+    # ── Core routes ──
     app.include_router(auth_router)
-    app.include_router(notifications_router)
-    app.include_router(reports_router)
-    app.include_router(loyalty_router)
     app.include_router(health_router)
-    app.include_router(ml_router)
-    app.include_router(workflow_router)
-    app.include_router(returns_router)
-    app.include_router(vendor_router)
-    app.include_router(udhaar_v2_router)
-    app.include_router(promotions_router)
-    app.include_router(staff_router)
     app.include_router(webhook_router)
-    app.include_router(store_router)
-    app.include_router(i18n_router)
-    app.include_router(mobile_router)
-    app.include_router(payment_router)
     app.include_router(whatsapp_router)
-    app.include_router(backup_router)
     app.include_router(scheduler_router)
-    app.include_router(push_router)
-    app.include_router(sms_router)
-    app.include_router(digest_router)
-    app.include_router(tally_router)
     app.include_router(shelf_audit_router)
-    app.include_router(encryption_router)
-    app.include_router(compliance_router)
     app.include_router(version_router)
     app.include_router(analytics_router)
-    app.include_router(voice_input_router)
-    app.include_router(pos_router)
-    app.include_router(sync_router)
     app.include_router(assistant_router)
 
     # ── Initialize scheduler ──
