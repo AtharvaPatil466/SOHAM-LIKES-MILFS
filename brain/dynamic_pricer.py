@@ -6,7 +6,7 @@ Suggests price adjustments based on demand, inventory levels, expiry, and compet
 import json
 from pathlib import Path
 
-from brain.demand_forecaster import forecast_demand
+from brain.demand_forecast import forecast_demand_by_sku as forecast_demand
 from brain.price_monitor import get_market_reference
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"

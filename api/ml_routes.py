@@ -14,8 +14,8 @@ async def get_demand_forecast(
     horizon: int = 7,
     user: User = Depends(require_role("staff")),
 ):
-    from brain.demand_forecaster import forecast_demand
-    return forecast_demand(sku, horizon=horizon)
+    from brain.demand_forecast import forecast_demand_by_sku
+    return forecast_demand_by_sku(sku, horizon=horizon)
 
 
 @router.get("/pricing/{sku}")

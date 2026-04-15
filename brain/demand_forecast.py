@@ -201,3 +201,69 @@ def bulk_forecast(products: list[dict], forecast_days: int = 14) -> list[dict]:
         )
         results.append(result)
     return results
+
+
+# ── SKU-based convenience wrappers (previously in demand_forecaster.py) ──
+
+import json
+import time
+from pathlib import Path
+
+_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+
+
+def _load_orders():
+    try:
+        with open(_DATA_DIR / "mock_orders.json") as f:
+            return json.load(f).get("customer_orders", [])
+    except Exception:
+        return []
+
+
+def get_daily_sales_history(sku: str, days: int = 30) -> list[float]:
+    """Build a daily sales time series for a given SKU over the last N days."""
+    orders = _load_orders()
+    now = time.time()
+    cutoff = now - (days * 86400)
+    daily = [0.0] * days
+    for order in orders:
+        ts = order.get("timestamp", 0)
+        if ts < cutoff:
+            continue
+        day_index = int((ts - cutoff) / 86400)
+        if 0 <= day_index < days:
+            for item in order.get("items", []):
+                if item.get("sku") == sku:
+                    daily[day_index] += item.get("qty", 1)
+    return daily
+
+
+def forecast_demand_by_sku(sku: str, horizon: int = 7) -> dict:
+    """Full demand forecast for a product by SKU."""
+    history = get_daily_sales_history(sku, days=30)
+    result = forecast_demand(daily_sales=history, forecast_days=horizon)
+    result["sku"] = sku
+    result["history_days"] = len(history)
+    result["total_sold_30d"] = sum(history)
+    return result
+
+
+# Backward-compatible alias
+def exponential_smoothing_forecast(series: list[float], alpha: float = 0.3, horizon: int = 7) -> dict:
+    """Backward-compatible wrapper around the full forecast engine."""
+    if not series or len(series) < 3:
+        avg = sum(series) / len(series) if series else 0
+        return {
+            "forecast": [round(avg, 1)] * horizon,
+            "trend": "insufficient_data",
+            "confidence": "low",
+            "avg_daily": round(avg, 1),
+        }
+    result = forecast_demand(daily_sales=series, forecast_days=horizon)
+    return {
+        "forecast": [f["predicted_qty"] for f in result["forecast"]],
+        "trend": result["trend"]["direction"],
+        "confidence": "high" if result["std_daily_sales"] / max(result["avg_daily_sales"], 0.01) < 0.3 else "medium" if result["std_daily_sales"] / max(result["avg_daily_sales"], 0.01) < 0.6 else "low",
+        "avg_daily": result["avg_daily_sales"],
+        "smoothed_current": result["forecast"][0]["predicted_qty"] if result["forecast"] else 0,
+    }

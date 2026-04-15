@@ -1,7 +1,7 @@
 """Integration tests for brain modules."""
 
 from brain.churn_detector import get_churn_scores
-from brain.demand_forecaster import exponential_smoothing_forecast
+from brain.demand_forecast import exponential_smoothing_forecast
 from brain.basket_analyzer import compute_co_occurrences
 from brain.dynamic_pricer import get_price_suggestion
 
