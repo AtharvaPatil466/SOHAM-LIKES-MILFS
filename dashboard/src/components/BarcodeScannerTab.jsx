@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Camera, Search, Package, X, QrCode } from 'lucide-react';
 
 const getApiBase = () => (typeof window !== 'undefined' ? window.location.origin : '');
@@ -24,30 +24,23 @@ export default function BarcodeScannerTab() {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
 
-  // Cleanup camera on unmount
-  useEffect(() => {
-    return () => stopCamera();
-  }, []);
+  useEffect(() => () => stopCamera(), []);
 
   const startCamera = async () => {
     setError('');
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
-      });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
+      if (videoRef.current) videoRef.current.srcObject = stream;
       setScanning(true);
-    } catch (err) {
+    } catch {
       setError('Camera access denied. Use manual entry instead.');
     }
   };
 
   const stopCamera = () => {
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
     setScanning(false);
@@ -57,7 +50,6 @@ export default function BarcodeScannerTab() {
     if (!code) return;
     setError('');
     setResult(null);
-
     try {
       const resp = await fetch(`${api}/api/mobile/barcode/${encodeURIComponent(code)}`, {
         headers: headers(),
@@ -90,20 +82,13 @@ export default function BarcodeScannerTab() {
     }
   };
 
-  const handleManualSubmit = (e) => {
-    e.preventDefault();
-    if (manualCode.trim()) {
-      lookupBarcode(manualCode.trim());
-    }
+  const handleManualSubmit = (event) => {
+    event.preventDefault();
+    if (manualCode.trim()) lookupBarcode(manualCode.trim());
   };
 
-  // Use BarcodeDetector API if available (Chrome 83+, Android)
   useEffect(() => {
-    if (!scanning || !videoRef.current) return;
-
-    if (!('BarcodeDetector' in window)) {
-      return; // Fall back to manual entry
-    }
+    if (!scanning || !videoRef.current || !('BarcodeDetector' in window)) return;
 
     const detector = new window.BarcodeDetector({
       formats: ['ean_13', 'ean_8', 'code_128', 'code_39', 'upc_a', 'upc_e', 'qr_code'],
@@ -122,160 +107,135 @@ export default function BarcodeScannerTab() {
           return;
         }
       } catch {
-        // Ignore detection errors
+        // Ignore detection errors.
       }
       animationId = requestAnimationFrame(detect);
     };
 
-    // Start detection after video is playing
     const onPlaying = () => {
       animationId = requestAnimationFrame(detect);
     };
-    videoRef.current.addEventListener('playing', onPlaying);
 
+    videoRef.current.addEventListener('playing', onPlaying);
     return () => {
       cancelAnimationFrame(animationId);
-      if (videoRef.current) {
-        videoRef.current.removeEventListener('playing', onPlaying);
-      }
+      if (videoRef.current) videoRef.current.removeEventListener('playing', onPlaying);
     };
   }, [scanning]);
 
   return (
-    <div className="p-6 space-y-6">
-      <h2 className="text-xl font-bold text-white flex items-center gap-2">
-        <QrCode size={20} /> Barcode Scanner
-      </h2>
-
-      {/* Camera / Scanner */}
-      <div className="bg-gray-800 rounded-lg p-4">
-        {!scanning ? (
-          <div className="text-center">
-            <button
-              onClick={startCamera}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 mx-auto"
-            >
-              <Camera size={20} /> Open Camera Scanner
-            </button>
-            <p className="text-gray-400 text-sm mt-2">
-              Point your phone camera at a barcode to scan
-            </p>
-          </div>
-        ) : (
-          <div className="relative">
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              className="w-full max-h-64 rounded-lg bg-black"
-            />
-            {/* Scanning overlay */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="border-2 border-green-400 w-48 h-32 rounded-lg opacity-60" />
-            </div>
-            <button
-              onClick={stopCamera}
-              className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full"
-            >
-              <X size={16} />
-            </button>
-            {!('BarcodeDetector' in window) && (
-              <p className="text-yellow-400 text-xs mt-2">
-                Browser barcode detection not supported. Enter code manually below.
-              </p>
-            )}
-          </div>
-        )}
+    <div className="space-y-6">
+      <div className="atelier-paper rounded-[28px] p-6">
+        <div className="atelier-label text-[10px] text-[var(--ink-muted)]">Barcode Scanner</div>
+        <h2 className="mt-2 font-display text-3xl font-bold text-[var(--ink)]">Scan products into the same command center</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--ink-muted)]">
+          Camera lookup, manual barcode entry, and product search now follow the same warm atelier palette as the rest of the dashboard.
+        </p>
       </div>
 
-      {/* Manual Entry / Search */}
-      <div className="bg-gray-800 rounded-lg p-4">
-        <form onSubmit={handleManualSubmit} className="flex gap-3">
-          <input
-            className="flex-1 bg-gray-700 text-white px-4 py-2 rounded text-sm"
-            placeholder="Enter barcode or product name..."
-            value={manualCode}
-            onChange={(e) => {
-              setManualCode(e.target.value);
-              searchProducts(e.target.value);
-            }}
-          />
-          <button
-            type="submit"
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm flex items-center gap-1"
-          >
-            <Search size={16} /> Lookup
-          </button>
-        </form>
-
-        {/* Search Suggestions */}
-        {searchResults.length > 0 && !result && (
-          <div className="mt-2 bg-gray-700 rounded-lg overflow-hidden">
-            {searchResults.map((p, i) => (
+      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+        <div className="atelier-panel rounded-[28px] p-6 text-[var(--text)]">
+          {!scanning ? (
+            <div className="text-center">
               <button
-                key={i}
-                className="w-full text-left px-4 py-2 hover:bg-gray-600 border-b border-gray-600 last:border-0"
-                onClick={() => {
-                  setResult({ ...p, found: true });
-                  setSearchResults([]);
-                }}
+                onClick={startCamera}
+                className="inline-flex items-center gap-2 rounded-2xl bg-[var(--accent)] px-6 py-3 font-black text-[#003738] transition-all hover:brightness-105"
               >
-                <div className="text-white text-sm">{p.product_name}</div>
-                <div className="text-gray-400 text-xs">
-                  {p.sku} | ₹{(p.unit_price || 0).toFixed(2)} | Stock: {p.current_stock}
-                </div>
+                <Camera size={18} />
+                Open Camera Scanner
               </button>
-            ))}
-          </div>
-        )}
+              <p className="mt-3 text-sm text-[var(--text-muted)]">Point your device at a barcode to scan live inventory.</p>
+            </div>
+          ) : (
+            <div className="relative">
+              <video ref={videoRef} autoPlay playsInline className="w-full max-h-64 rounded-2xl bg-black" />
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <div className="h-32 w-48 rounded-2xl border-2 border-[var(--accent)] opacity-70" />
+              </div>
+              <button
+                onClick={stopCamera}
+                className="absolute right-3 top-3 rounded-full bg-[var(--danger)] p-2 text-[var(--primary-ink)]"
+              >
+                <X size={14} />
+              </button>
+              {!('BarcodeDetector' in window) && (
+                <p className="mt-3 text-xs text-[var(--warning)]">Browser barcode detection is not supported here. Manual entry still works below.</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="atelier-paper rounded-[28px] p-6">
+          <form onSubmit={handleManualSubmit} className="flex gap-3">
+            <input
+              className="atelier-input-light flex-1"
+              placeholder="Enter barcode or product name..."
+              value={manualCode}
+              onChange={(e) => {
+                setManualCode(e.target.value);
+                searchProducts(e.target.value);
+              }}
+            />
+            <button
+              type="submit"
+              className="inline-flex items-center gap-2 rounded-2xl bg-[var(--primary)] px-4 py-2.5 text-sm font-black text-[var(--primary-ink)] transition-all hover:brightness-105"
+            >
+              <Search size={16} />
+              Lookup
+            </button>
+          </form>
+
+          {searchResults.length > 0 && !result && (
+            <div className="mt-3 overflow-hidden rounded-2xl border border-black/5 bg-white/75">
+              {searchResults.map((product, index) => (
+                <button
+                  key={index}
+                  className="w-full border-b border-black/5 px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-white"
+                  onClick={() => {
+                    setResult({ ...product, found: true });
+                    setSearchResults([]);
+                  }}
+                >
+                  <div className="text-sm font-semibold text-[var(--ink)]">{product.product_name}</div>
+                  <div className="mt-1 text-xs text-[var(--ink-muted)]">
+                    {product.sku} | Rs {(product.unit_price || 0).toFixed(2)} | Stock: {product.current_stock}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {error && (
+            <div className="mt-4 rounded-2xl border border-[rgba(255,180,171,0.2)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--primary-ink)]">
+              {error}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Error */}
-      {error && (
-        <div className="bg-red-900/30 border border-red-700 text-red-300 px-4 py-3 rounded-lg text-sm">
-          {error}
-        </div>
-      )}
-
-      {/* Result */}
       {result && (
-        <div className="bg-gray-800 rounded-lg p-5">
+        <div className="atelier-paper-strong rounded-[28px] p-6">
           <div className="flex items-start gap-4">
-            <div className="bg-gray-700 p-3 rounded-lg">
-              <Package size={32} className="text-blue-400" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--accent-soft)] text-[var(--accent)]">
+              <Package size={28} />
             </div>
             <div className="flex-1">
-              <h3 className="text-white text-lg font-bold">{result.product_name}</h3>
-              <div className="grid grid-cols-2 gap-3 mt-3 text-sm">
-                <div>
-                  <span className="text-gray-400">SKU:</span>{' '}
-                  <span className="text-white font-mono">{result.sku}</span>
-                </div>
-                <div>
-                  <span className="text-gray-400">Category:</span>{' '}
-                  <span className="text-white">{result.category}</span>
-                </div>
-                <div>
-                  <span className="text-gray-400">Price:</span>{' '}
-                  <span className="text-green-400 font-bold">₹{(result.unit_price || 0).toFixed(2)}</span>
-                </div>
-                <div>
-                  <span className="text-gray-400">Stock:</span>{' '}
-                  <span className={result.current_stock > 0 ? 'text-green-400' : 'text-red-400'}>
-                    {result.current_stock} units
-                  </span>
-                </div>
+              <h3 className="text-2xl font-black text-[var(--ink)]">{result.product_name}</h3>
+              <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                <div><span className="text-[var(--ink-muted)]">SKU:</span> <span className="font-mono text-[var(--ink)]">{result.sku}</span></div>
+                <div><span className="text-[var(--ink-muted)]">Category:</span> <span className="text-[var(--ink)]">{result.category}</span></div>
+                <div><span className="text-[var(--ink-muted)]">Price:</span> <span className="font-bold text-[var(--primary-ink)]">Rs {(result.unit_price || 0).toFixed(2)}</span></div>
+                <div><span className="text-[var(--ink-muted)]">Stock:</span> <span className="text-[var(--ink)]">{result.current_stock} units</span></div>
                 {result.barcode && (
-                  <div className="col-span-2">
-                    <span className="text-gray-400">Barcode:</span>{' '}
-                    <span className="text-white font-mono">{result.barcode}</span>
+                  <div className="sm:col-span-2">
+                    <span className="text-[var(--ink-muted)]">Barcode:</span> <span className="font-mono text-[var(--ink)]">{result.barcode}</span>
                   </div>
                 )}
               </div>
             </div>
           </div>
           <button
-            className="mt-4 text-gray-400 text-sm hover:text-white"
+            className="mt-5 text-sm font-semibold text-[var(--ink-muted)] transition-colors hover:text-[var(--ink)]"
             onClick={() => {
               setResult(null);
               setManualCode('');

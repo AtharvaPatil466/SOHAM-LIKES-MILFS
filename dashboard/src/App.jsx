@@ -420,16 +420,16 @@ export default function App() {
         />
       ) : null}
 
-      <header className={`sticky top-0 z-40 border-b border-[rgba(67,72,72,0.18)] backdrop-blur-xl ${isKioskMode ? 'bg-[rgba(17,20,19,0.92)]' : 'bg-[rgba(17,20,19,0.78)]'}`}>
+      <header className={`sticky top-0 z-40 border-b border-[var(--outline)] backdrop-blur-xl ${isKioskMode ? 'bg-[rgba(26,24,20,0.94)]' : 'bg-[rgba(26,24,20,0.82)]'}`}>
         <div className="mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-10">
           <div className="flex min-h-[84px] items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-md bg-[var(--surface-high)] text-[var(--primary)]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-md bg-[var(--surface-high)] text-[var(--text)]">
                 <Zap size={20} />
               </div>
               <div>
-                <div className="font-display text-3xl font-light italic tracking-tight text-[var(--primary)]">RetailOS</div>
-                <div className="atelier-label text-[10px] font-medium text-[#8d9192]">
+                <div className="font-display text-3xl font-light italic tracking-tight text-[var(--text)]">RetailOS</div>
+                <div className="atelier-label text-[10px] font-medium text-[var(--text-muted)]">
                   {isKioskMode ? 'Customer kiosk' : 'Retail command center'}
                 </div>
               </div>
@@ -438,7 +438,7 @@ export default function App() {
             {!isKioskMode ? (
               <div className="hidden min-w-0 flex-1 items-center justify-center gap-6 xl:flex">
                 <div className="relative min-w-[240px] max-w-[320px] flex-1">
-                  <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8d9192]" />
+                  <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
                   <input
                     readOnly
                     value=""
@@ -453,14 +453,14 @@ export default function App() {
                       onClick={() => setActiveTab(tab.id)}
                       className={`relative flex flex-shrink-0 items-center gap-2 rounded-sm px-4 py-2.5 text-sm transition-all ${
                         activeTab === tab.id
-                          ? 'bg-[var(--surface-low)] text-[var(--primary)]'
-                          : 'text-[#8d9192] hover:bg-[var(--surface-low)] hover:text-[var(--text)]'
+                          ? 'bg-[var(--paper)] text-[var(--primary-ink)]'
+                          : 'text-[#6b6560] hover:bg-[var(--surface-low)] hover:text-[var(--text)]'
                       }`}
                     >
                       <tab.icon size={16} />
                       <span className={activeTab === tab.id ? 'font-semibold' : 'font-medium'}>{tab.label}</span>
                       {tab.badge > 0 && (
-                        <span className="rounded-sm bg-[var(--primary)] px-2 py-0.5 text-[10px] font-bold text-[var(--primary-ink)]">
+                        <span className="rounded-sm bg-[var(--paper)] px-2 py-0.5 text-[10px] font-bold text-[var(--primary-ink)]">
                           {tab.badge}
                         </span>
                       )}
@@ -477,7 +477,7 @@ export default function App() {
             <div className="flex items-center gap-3">
               {!isKioskMode ? (
                 <div className="hidden sm:flex items-center gap-2 rounded-sm atelier-panel-soft px-4 py-2 text-sm">
-                  <div className={`h-2.5 w-2.5 rounded-full ${!isOnline ? 'bg-[#ccc6ba]' : isConnected ? 'bg-[#8bd3d4]' : 'bg-[#ffb4ab]'}`} />
+                <div className={`h-2.5 w-2.5 rounded-full ${!isOnline ? 'bg-[#8a8078]' : isConnected ? 'bg-[var(--live)]' : 'bg-[var(--danger)]'}`} />
                   <span className="font-medium text-[var(--text-muted)]">
                     {!isOnline
                       ? `Offline${pendingCount > 0 ? ` (${pendingCount} queued)` : ''}`
@@ -488,7 +488,7 @@ export default function App() {
                           : token ? 'Reconnecting' : 'Not signed in'}
                   </span>
                   {!isOnline && pendingCount > 0 && (
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
+                    <span className="rounded-full bg-[var(--paper)] px-2 py-0.5 text-[10px] font-bold text-[var(--primary-ink)]">
                       {pendingCount}
                     </span>
                   )}
@@ -496,7 +496,7 @@ export default function App() {
               ) : null}
               <button 
                 onClick={fetchData}
-                className="rounded-sm atelier-panel-soft p-3 text-[#8d9192] transition-all hover:text-[var(--text)]"
+                className="rounded-sm atelier-panel-soft p-3 text-[var(--text-muted)] transition-all hover:text-[var(--text)]"
                 title="Refresh data"
               >
                 <RefreshCw size={16} />
@@ -505,18 +505,18 @@ export default function App() {
                 <div className="relative">
                   <button
                     onClick={() => setShowAlerts(!showAlerts)}
-                    className="rounded-sm atelier-panel-soft p-3 text-[#8d9192] transition-all hover:text-[var(--text)]"
+                    className="rounded-sm atelier-panel-soft p-3 text-[var(--text-muted)] transition-all hover:text-[var(--text)]"
                   >
                     <Bell size={16} />
                   </button>
                   {alertCount > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-sm bg-[var(--primary)] px-1 text-[10px] font-bold text-[var(--primary-ink)]">
+                    <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-sm bg-[var(--paper)] px-1 text-[10px] font-bold text-[var(--primary-ink)]">
                       {alertCount}
                     </span>
                   )}
                 </div>
               ) : null}
-              <div className={`xl:hidden rounded-sm atelier-panel-soft p-3 text-[#8d9192] ${isKioskMode ? 'hidden' : ''}`}>
+              <div className={`xl:hidden rounded-sm atelier-panel-soft p-3 text-[var(--text-muted)] ${isKioskMode ? 'hidden' : ''}`}>
                 <Menu size={16} />
               </div>
             </div>
@@ -531,14 +531,14 @@ export default function App() {
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center gap-2 rounded-sm border px-4 py-2 text-sm transition-all ${
                       activeTab === tab.id
-                        ? 'border-[rgba(215,193,194,0.35)] bg-[var(--surface-low)] text-[var(--primary)]'
-                        : 'border-[rgba(67,72,72,0.2)] bg-[var(--surface-high)] text-[#8d9192] hover:text-[var(--text)]'
+                        ? 'border-[rgba(240,235,227,0.4)] bg-[var(--paper)] text-[var(--primary-ink)]'
+                        : 'border-[var(--outline)] bg-[var(--surface-high)] text-[#6b6560] hover:text-[var(--text)]'
                     }`}
                   >
                     <tab.icon size={15} />
                     <span>{tab.label}</span>
                     {tab.badge > 0 && (
-                      <span className={`rounded-sm px-2 py-0.5 text-[10px] font-bold ${activeTab === tab.id ? 'bg-[rgba(215,193,194,0.16)] text-[var(--primary)]' : 'bg-[var(--primary)] text-[var(--primary-ink)]'}`}>
+                      <span className={`rounded-sm px-2 py-0.5 text-[10px] font-bold ${activeTab === tab.id ? 'bg-[rgba(42,37,32,0.08)] text-[var(--primary-ink)]' : 'bg-[var(--paper)] text-[var(--primary-ink)]'}`}>
                         {tab.badge}
                       </span>
                     )}
@@ -556,7 +556,7 @@ export default function App() {
             <aside className="hidden xl:block">
               <div className="sticky top-28">
                 <div className="mb-6 rounded-lg atelier-panel p-6 shadow-[0_40px_80px_rgba(0,0,0,0.18)]">
-                  <div className="atelier-label text-[10px] text-[#8bd3d4]">Current View</div>
+                  <div className="atelier-label text-[10px] text-[var(--text-muted)]">Current View</div>
                   <h2 className="font-display mt-4 text-4xl font-light italic leading-none tracking-tight text-[var(--text)]">
                     {headerMap[activeTab]?.title || 'Dashboard'}
                   </h2>
@@ -571,7 +571,7 @@ export default function App() {
           <div className="min-w-0">
             {!isKioskMode ? (
               <div className="mb-8 xl:hidden">
-                <div className="atelier-label text-[10px] text-[#8bd3d4]">Current View</div>
+                <div className="atelier-label text-[10px] text-[var(--text-muted)]">Current View</div>
                 <h2 className="font-display mt-3 text-4xl font-light italic tracking-tight text-[var(--text)]">
                   {headerMap[activeTab]?.title || 'Dashboard'}
                 </h2>

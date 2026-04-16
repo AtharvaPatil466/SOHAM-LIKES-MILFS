@@ -22,10 +22,18 @@ function formatCurrency(value) {
 }
 
 function BreakdownBar({ items, total }) {
-  const colors = ['bg-teal-600', 'bg-amber-500', 'bg-blue-500', 'bg-emerald-500', 'bg-rose-500', 'bg-indigo-500', 'bg-orange-500'];
+  const colors = [
+    'bg-[var(--accent)]',
+    'bg-[var(--primary)]',
+    'bg-[var(--warning)]',
+    'bg-[rgba(215,193,194,0.85)]',
+    'bg-[var(--danger)]',
+    'bg-[rgba(139,211,212,0.65)]',
+    'bg-[rgba(233,226,213,0.75)]',
+  ];
   return (
     <div>
-      <div className="flex h-4 w-full overflow-hidden rounded-full bg-stone-200">
+      <div className="flex h-4 w-full overflow-hidden rounded-full bg-[rgba(25,28,27,0.12)]">
         {items.map((item, index) => {
           const pct = total > 0 ? (item.amount / total) * 100 : 0;
           return <div key={item.label} className={`${colors[index % colors.length]} transition-all`} style={{ width: `${pct}%` }} title={`${item.label}: ${formatCurrency(item.amount)}`} />;
@@ -35,8 +43,8 @@ function BreakdownBar({ items, total }) {
         {items.map((item, index) => (
           <div key={item.label} className="flex items-center gap-2 text-xs">
             <div className={`h-2.5 w-2.5 rounded-full ${colors[index % colors.length]}`} />
-            <span className="font-semibold text-stone-700">{item.label}</span>
-            <span className="text-stone-500">{formatCurrency(item.amount)}</span>
+            <span className="font-semibold text-[var(--ink)]">{item.label}</span>
+            <span className="text-[var(--ink-muted)]">{formatCurrency(item.amount)}</span>
           </div>
         ))}
       </div>
@@ -46,13 +54,13 @@ function BreakdownBar({ items, total }) {
 
 function StatCard({ label, value, icon: Icon, color, bg, helper }) {
   return (
-    <div className="rounded-[24px] border border-black/5 bg-[rgba(255,252,247,0.72)] p-5 shadow-[0_14px_35px_rgba(0,0,0,0.04)]">
+    <div className="atelier-paper-soft rounded-[24px] p-5">
       <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${bg}`}>
         <Icon size={18} className={color} />
       </div>
-      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-stone-500">{label}</div>
+      <div className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--ink-muted)]">{label}</div>
       <div className={`mt-1 text-2xl font-black tracking-tight ${color}`}>{value}</div>
-      {helper && <div className="mt-2 text-xs font-semibold text-stone-500">{helper}</div>}
+      {helper && <div className="mt-2 text-xs font-semibold text-[var(--ink-muted)]">{helper}</div>}
     </div>
   );
 }
@@ -158,7 +166,7 @@ export default function FinancialsTab({ refreshTick = 0 }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-stone-300 border-t-teal-700" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[rgba(215,193,194,0.28)] border-t-[var(--accent)]" />
       </div>
     );
   }
@@ -166,46 +174,46 @@ export default function FinancialsTab({ refreshTick = 0 }) {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Total Revenue" value={formatCurrency(totals.totalRevenue)} icon={TrendingUp} color="text-emerald-700" bg="bg-emerald-100" helper="All customer sales" />
-        <StatCard label="Total Procurement" value={formatCurrency(totals.totalProcurement)} icon={TrendingDown} color="text-blue-700" bg="bg-blue-100" helper="All supplier orders" />
-        <StatCard label="Outstanding Udhaar" value={formatCurrency(totals.udhaarOutstanding)} icon={Wallet} color="text-amber-700" bg="bg-amber-100" helper={`${udhaar.filter((ledger) => ledger.balance > 0).length} active credit accounts`} />
-        <StatCard label="Vendor Payables" value={formatCurrency(vendorSummary.total_unpaid)} icon={CreditCard} color="text-rose-700" bg="bg-rose-100" helper={`${vendorSummary.unpaid_orders || 0} unpaid orders`} />
+        <StatCard label="Total Revenue" value={formatCurrency(totals.totalRevenue)} icon={TrendingUp} color="text-[var(--primary-ink)]" bg="bg-[var(--accent-soft)]" helper="All customer sales" />
+        <StatCard label="Total Procurement" value={formatCurrency(totals.totalProcurement)} icon={TrendingDown} color="text-[var(--primary-ink)]" bg="bg-[rgba(215,193,194,0.18)]" helper="All supplier orders" />
+        <StatCard label="Outstanding Udhaar" value={formatCurrency(totals.udhaarOutstanding)} icon={Wallet} color="text-[var(--primary-ink)]" bg="bg-[var(--warning-soft)]" helper={`${udhaar.filter((ledger) => ledger.balance > 0).length} active credit accounts`} />
+        <StatCard label="Vendor Payables" value={formatCurrency(vendorSummary.total_unpaid)} icon={CreditCard} color="text-[var(--primary-ink)]" bg="bg-[var(--danger-soft)]" helper={`${vendorSummary.unpaid_orders || 0} unpaid orders`} />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <div className="rounded-[28px] border border-black/5 bg-[rgba(255,252,247,0.92)] p-6 shadow-[0_18px_45px_rgba(0,0,0,0.05)]">
+        <div className="atelier-paper rounded-[28px] p-6">
           <div className="mb-4 flex items-center gap-2">
-            <BadgePercent size={16} className="text-teal-600" />
-            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-stone-500">GST & Billing</span>
+            <BadgePercent size={16} className="text-[var(--accent)]" />
+            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--ink-muted)]">GST & Billing</span>
           </div>
 
           {gstSummary && (
             <>
-              <div className="mb-4 rounded-2xl border border-teal-200 bg-teal-50/70 px-4 py-3 text-sm font-semibold text-teal-800">
+              <div className="mb-4 rounded-2xl border border-[rgba(139,211,212,0.24)] bg-[var(--accent-soft)] px-4 py-3 text-sm font-semibold text-[var(--primary-ink)]">
                 Reporting period: {gstSummary.reporting_period}
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-xl border border-black/5 bg-white/75 p-4">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Output GST</div>
-                  <div className="mt-2 text-2xl font-black text-stone-900">{formatCurrency(gstSummary.output_gst)}</div>
-                  <div className="mt-1 text-xs text-stone-500">Collected from sales</div>
+                <div className="rounded-xl border border-black/5 bg-white/70 p-4">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-muted)]">Output GST</div>
+                  <div className="mt-2 text-2xl font-black text-[var(--ink)]">{formatCurrency(gstSummary.output_gst)}</div>
+                  <div className="mt-1 text-xs text-[var(--ink-muted)]">Collected from sales</div>
                 </div>
                 <div className="rounded-xl border border-black/5 bg-white/75 p-4">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Input GST</div>
-                  <div className="mt-2 text-2xl font-black text-emerald-700">{formatCurrency(gstSummary.input_gst)}</div>
-                  <div className="mt-1 text-xs text-stone-500">Claimable on purchases</div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-muted)]">Input GST</div>
+                  <div className="mt-2 text-2xl font-black text-[var(--primary-ink)]">{formatCurrency(gstSummary.input_gst)}</div>
+                  <div className="mt-1 text-xs text-[var(--ink-muted)]">Claimable on purchases</div>
                 </div>
                 <div className="rounded-xl border border-black/5 bg-white/75 p-4">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Return Adjustment</div>
-                  <div className="mt-2 text-2xl font-black text-amber-700">{formatCurrency(gstSummary.refund_adjustment)}</div>
-                  <div className="mt-1 text-xs text-stone-500">Processed refunds reducing liability</div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-muted)]">Return Adjustment</div>
+                  <div className="mt-2 text-2xl font-black text-[var(--primary-ink)]">{formatCurrency(gstSummary.refund_adjustment)}</div>
+                  <div className="mt-1 text-xs text-[var(--ink-muted)]">Processed refunds reducing liability</div>
                 </div>
                 <div className="rounded-xl border border-black/5 bg-white/75 p-4">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Net Liability</div>
-                  <div className={`mt-2 text-2xl font-black ${gstSummary.net_liability >= 0 ? 'text-rose-700' : 'text-emerald-700'}`}>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-muted)]">Net Liability</div>
+                  <div className="mt-2 text-2xl font-black text-[var(--ink)]">
                     {formatCurrency(gstSummary.net_liability)}
                   </div>
-                  <div className="mt-1 text-xs text-stone-500">Output minus input and refunds</div>
+                  <div className="mt-1 text-xs text-[var(--ink-muted)]">Output minus input and refunds</div>
                 </div>
               </div>
             </>
@@ -222,11 +230,11 @@ export default function FinancialsTab({ refreshTick = 0 }) {
               <h3 className="mt-2 font-display text-2xl font-bold">Morning owner message</h3>
             </div>
             {dailySummary?.metrics?.pending_approvals > 0 ? (
-              <div className="rounded-full bg-amber-400/15 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-amber-300">
+              <div className="rounded-full bg-[var(--warning-soft)] px-3 py-1 text-[10px] font-black uppercase tracking-wider text-[var(--warning)]">
                 {dailySummary.metrics.pending_approvals} approvals open
               </div>
             ) : (
-              <div className="rounded-full bg-emerald-400/15 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300">
+              <div className="rounded-full bg-[var(--accent-soft)] px-3 py-1 text-[10px] font-black uppercase tracking-wider text-[var(--accent)]">
                 Clear start
               </div>
             )}
@@ -260,7 +268,7 @@ export default function FinancialsTab({ refreshTick = 0 }) {
                 href={dailySummary.whatsapp_link}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-emerald-400"
+                className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-bold text-[#003738] transition-colors hover:brightness-105"
               >
                 <MessageSquareShare size={14} />
                 Open in WhatsApp
@@ -271,39 +279,39 @@ export default function FinancialsTab({ refreshTick = 0 }) {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <div className="rounded-[28px] border border-black/5 bg-[rgba(255,252,247,0.92)] p-6 shadow-[0_18px_45px_rgba(0,0,0,0.05)]">
+        <div className="atelier-paper rounded-[28px] p-6">
           <div className="mb-4 flex items-center gap-2">
-            <Receipt size={16} className="text-teal-600" />
-            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-stone-500">Revenue Mix</span>
+            <Receipt size={16} className="text-[var(--accent)]" />
+            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--ink-muted)]">Revenue Mix</span>
           </div>
           <BreakdownBar items={paymentItems} total={totals.totalRevenue} />
           <div className="mt-5 rounded-2xl border border-black/5 bg-white/75 p-4">
-            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-stone-500">Gross Profit</div>
-            <div className={`mt-2 text-3xl font-black ${totals.grossProfit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--ink-muted)]">Gross Profit</div>
+            <div className="mt-2 text-3xl font-black text-[var(--ink)]">
               {formatCurrency(totals.grossProfit)}
             </div>
-            <div className="mt-1 text-xs font-semibold text-stone-500">Margin {totals.margin}%</div>
+            <div className="mt-1 text-xs font-semibold text-[var(--ink-muted)]">Margin {totals.margin}%</div>
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-black/5 bg-[rgba(255,252,247,0.92)] p-6 shadow-[0_18px_45px_rgba(0,0,0,0.05)]">
+        <div className="atelier-paper rounded-[28px] p-6">
           <div className="mb-4 flex items-center gap-2">
-            <CreditCard size={16} className="text-rose-600" />
-            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-stone-500">Payables Watch</span>
+            <CreditCard size={16} className="text-[var(--primary-ink)]" />
+            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--ink-muted)]">Payables Watch</span>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-xl border border-black/5 bg-white/75 p-4">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Unpaid</div>
-              <div className="mt-2 text-xl font-black text-rose-700">{formatCurrency(vendorSummary.total_unpaid)}</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-muted)]">Unpaid</div>
+              <div className="mt-2 text-xl font-black text-[var(--ink)]">{formatCurrency(vendorSummary.total_unpaid)}</div>
             </div>
             <div className="rounded-xl border border-black/5 bg-white/75 p-4">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Overdue Orders</div>
-              <div className="mt-2 text-xl font-black text-stone-900">{vendorSummary.overdue_orders || 0}</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-muted)]">Overdue Orders</div>
+              <div className="mt-2 text-xl font-black text-[var(--ink)]">{vendorSummary.overdue_orders || 0}</div>
             </div>
             <div className="rounded-xl border border-black/5 bg-white/75 p-4">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Overdue Amount</div>
-              <div className="mt-2 text-xl font-black text-amber-700">{formatCurrency(vendorSummary.overdue_amount)}</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-muted)]">Overdue Amount</div>
+              <div className="mt-2 text-xl font-black text-[var(--ink)]">{formatCurrency(vendorSummary.overdue_amount)}</div>
             </div>
           </div>
 
@@ -311,50 +319,50 @@ export default function FinancialsTab({ refreshTick = 0 }) {
             {(vendorSummary.unpaid_details || []).slice(0, 5).map((item) => (
               <div key={item.order_id} className="flex items-center justify-between rounded-xl border border-black/5 bg-white/75 px-4 py-3">
                 <div className="min-w-0">
-                  <div className="text-sm font-semibold text-stone-900">{item.supplier_name}</div>
-                  <div className="mt-0.5 flex items-center gap-2 text-[10px] text-stone-500 flex-wrap">
+                  <div className="text-sm font-semibold text-[var(--ink)]">{item.supplier_name}</div>
+                  <div className="mt-0.5 flex items-center gap-2 text-[10px] text-[var(--ink-muted)] flex-wrap">
                     <span>{item.order_id}</span>
                     <span>Due {item.due_date}</span>
                     {item.is_overdue ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 font-bold text-amber-700">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[var(--warning-soft)] px-2 py-0.5 font-bold text-[var(--primary-ink)]">
                         <AlertTriangle size={10} />
                         {item.overdue_days}d overdue
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 font-bold text-emerald-700">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-soft)] px-2 py-0.5 font-bold text-[var(--primary-ink)]">
                         <CheckCircle2 size={10} />
                         On track
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="text-sm font-black text-stone-900">{formatCurrency(item.amount)}</div>
+                <div className="text-sm font-black text-[var(--ink)]">{formatCurrency(item.amount)}</div>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-black/5 bg-[rgba(255,252,247,0.92)] p-6 shadow-[0_18px_45px_rgba(0,0,0,0.05)]">
+      <div className="atelier-paper rounded-[28px] p-6">
         <div className="mb-4 flex items-center gap-2">
-          <IndianRupee size={16} className="text-stone-600" />
-          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-stone-500">Recent Transactions</span>
+          <IndianRupee size={16} className="text-[var(--primary-ink)]" />
+          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--ink-muted)]">Recent Transactions</span>
         </div>
         <div className="space-y-2">
           {recentTransactions.slice(0, 10).map((txn) => (
             <div key={txn.order_id} className="flex items-center justify-between gap-4 rounded-xl border border-black/5 bg-white/75 px-4 py-3">
               <div className="flex items-center gap-3 min-w-0">
-                <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${txn.type === 'income' ? 'bg-emerald-100' : 'bg-rose-100'}`}>
-                  {txn.type === 'income' ? <ArrowUpRight size={14} className="text-emerald-700" /> : <ArrowDownRight size={14} className="text-rose-700" />}
+                <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${txn.type === 'income' ? 'bg-[var(--accent-soft)]' : 'bg-[var(--danger-soft)]'}`}>
+                  {txn.type === 'income' ? <ArrowUpRight size={14} className="text-[var(--accent)]" /> : <ArrowDownRight size={14} className="text-[var(--danger)]" />}
                 </div>
                 <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold text-stone-900">{txn.label}</div>
-                  <div className="text-[10px] text-stone-500">
+                  <div className="truncate text-sm font-semibold text-[var(--ink)]">{txn.label}</div>
+                  <div className="text-[10px] text-[var(--ink-muted)]">
                     {txn.order_id} | {new Date((txn.timestamp || 0) * 1000).toLocaleDateString()}
                   </div>
                 </div>
               </div>
-              <div className={`text-sm font-black ${txn.type === 'income' ? 'text-emerald-700' : 'text-rose-700'}`}>
+              <div className="text-sm font-black text-[var(--ink)]">
                 {txn.type === 'income' ? '+' : '-'} {formatCurrency(txn.total_amount)}
               </div>
             </div>
@@ -363,10 +371,10 @@ export default function FinancialsTab({ refreshTick = 0 }) {
       </div>
 
       {supplierItems.length > 0 && (
-        <div className="rounded-[28px] border border-black/5 bg-[rgba(255,252,247,0.92)] p-6 shadow-[0_18px_45px_rgba(0,0,0,0.05)]">
+        <div className="atelier-paper rounded-[28px] p-6">
           <div className="mb-4 flex items-center gap-2">
-            <PieChart size={16} className="text-blue-600" />
-            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-stone-500">Procurement by Supplier</span>
+            <PieChart size={16} className="text-[var(--primary-ink)]" />
+            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--ink-muted)]">Procurement by Supplier</span>
           </div>
           <BreakdownBar items={supplierItems} total={totals.totalProcurement} />
         </div>
