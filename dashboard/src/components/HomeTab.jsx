@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../api';
 import { motion } from 'framer-motion';
 import {
   TrendingUp,
@@ -35,7 +36,7 @@ function AnalyticsSummarySection() {
   const fetchSummary = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/analytics/summary');
+      const res = await apiFetch('/api/analytics/summary');
       const data = await res.json();
       if (data && !data.message) {
         setSummary(data);
@@ -49,7 +50,7 @@ function AnalyticsSummarySection() {
   const runAnalytics = async () => {
     setRunning(true);
     try {
-      await fetch('/api/analytics/run', { method: 'POST' });
+      await apiFetch('/api/analytics/run', { method: 'POST' });
       setTimeout(fetchSummary, 3000);
     } catch { /* ignore */ }
     finally { setRunning(false); }

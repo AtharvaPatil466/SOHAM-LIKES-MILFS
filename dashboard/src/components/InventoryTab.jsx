@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Package, AlertTriangle, RefreshCw, PackageX, CheckCircle, Search, Plus, Minus, ImagePlus, Link2, X, ChevronDown, ChevronUp, Megaphone, TrendingDown, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { apiFetch, apiFetchArray } from '../api';
 
 const CATEGORY_OPTIONS = ['Dairy', 'Frozen', 'Snacks', 'Beverages', 'Staples', 'Household', 'Personal Care', 'Other'];
 
@@ -50,10 +51,7 @@ function ExpiryAlertsBanner() {
   });
 
   useEffect(() => {
-    fetch('/api/inventory/expiry-risks')
-      .then((r) => r.json())
-      .then((data) => setRisks(data || []))
-      .catch(() => {});
+    apiFetchArray('/api/inventory/expiry-risks').then(setRisks);
   }, []);
 
   const handleDismiss = (sku) => {
@@ -64,7 +62,7 @@ function ExpiryAlertsBanner() {
 
   const handleSendOffer = async (item) => {
     try {
-      await fetch('/api/events', {
+      await apiFetch('/api/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'expiry_offer', data: { sku: item.product_id || item.sku, product_name: item.product_name } }),
@@ -72,7 +70,7 @@ function ExpiryAlertsBanner() {
     } catch (err) { console.error(err); }
   };
 
-  const visible = risks.filter((r) => (r.days_to_expiry <= 5) && !dismissed[r.product_id || r.sku]);
+  const visible = (Array.isArray(risks) ? risks : []).filter((r) => (r.days_to_expiry <= 5) && !dismissed[r.product_id || r.sku]);
   if (visible.length === 0) return null;
 
   return (
@@ -123,7 +121,7 @@ function MarketIntelSection({ sku, unitPrice }) {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/market-prices/${sku}`);
+      const res = await apiFetch(`/api/market-prices/${sku}`);
       const d = await res.json();
       setData(d);
     } catch (err) { console.error(err); }
@@ -139,7 +137,7 @@ function MarketIntelSection({ sku, unitPrice }) {
     e.preventDefault();
     setSaving(true);
     try {
-      await fetch('/api/market-prices/log', {
+      await apiFetch('/api/market-prices/log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ product_id: sku, source_name: logForm.source_name, price_per_unit: Number(logForm.price_per_unit), unit: logForm.unit }),
@@ -610,11 +608,10 @@ export default function InventoryTab() {
   const fetchInventory = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/inventory');
-      const data = await res.json();
-      setInventory(data || []);
+      setInventory(await apiFetchArray('/api/inventory'));
     } catch (err) {
       console.error(err);
+      setInventory([]);
     } finally {
       setLoading(false);
     }
@@ -633,7 +630,7 @@ export default function InventoryTab() {
   const saveImage = async (sku) => {
     setSavingImage(sku);
     try {
-      const response = await fetch(`/api/inventory/${sku}`, {
+      const response = await apiFetch(`/api/inventory/${sku}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image_url: draftImageUrl.trim() || null })
@@ -659,7 +656,7 @@ export default function InventoryTab() {
     if (newQuantity < 0) return;
     setUpdating(sku);
     try {
-      const response = await fetch('/api/inventory/update', {
+      const response = await apiFetch('/api/inventory/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sku, quantity: newQuantity })
@@ -694,7 +691,7 @@ export default function InventoryTab() {
     }
   }, [registerForm.category, inventory, showRegisterModal]);
 
-  const filtered = inventory.filter(item => 
+  const filtered = (Array.isArray(inventory) ? inventory : []).filter(item =>
     item.product_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.sku?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -755,7 +752,7 @@ export default function InventoryTab() {
         image_url: registerForm.image_url.trim() || null,
       };
 
-      const response = await fetch('/api/inventory/register', {
+      const response = await apiFetch('/api/inventory/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

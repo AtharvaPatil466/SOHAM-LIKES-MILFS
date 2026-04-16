@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Mic, MicOff, Send, Volume2, VolumeX, Trash2, Bot, User, Loader2, Navigation } from 'lucide-react';
+import { authHeaders } from '../api';
 
 const API_BASE = '';
 
@@ -31,7 +32,7 @@ export default function VoiceAssistantTab() {
 
   // Fetch assistant status
   useEffect(() => {
-    fetch(`${API_BASE}/api/assistant/status`)
+    fetch(`${API_BASE}/api/assistant/status`, { headers: authHeaders() })
       .then((r) => r.json())
       .then(setStatus)
       .catch(() => {});

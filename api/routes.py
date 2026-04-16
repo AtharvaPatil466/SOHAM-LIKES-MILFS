@@ -1232,7 +1232,7 @@ def create_app(orchestrator: Orchestrator | None = None, lifespan=None) -> FastA
     # Security middleware
     from auth.middleware import RateLimitMiddleware, SecurityHeadersMiddleware, RBACMiddleware
     app.add_middleware(SecurityHeadersMiddleware)
-    app.add_middleware(RBACMiddleware)
+    # app.add_middleware(RBACMiddleware)  # disabled — mock data, no auth needed
     import os as _os
     rate_limit = 10000 if _os.environ.get("TESTING") else 120
     app.add_middleware(RateLimitMiddleware, requests_per_minute=rate_limit)

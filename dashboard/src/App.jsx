@@ -47,6 +47,7 @@ import BarcodeScannerTab from './components/BarcodeScannerTab';
 import VoiceAssistantTab from './components/VoiceAssistantTab';
 import LoginForm from './components/LoginForm';
 import useOfflineSync from './useOfflineSync';
+import { authHeaders } from './api';
 
 const getStoredToken = () => {
   try {
@@ -54,11 +55,6 @@ const getStoredToken = () => {
   } catch {
     return '';
   }
-};
-
-const authHeaders = () => {
-  const token = getStoredToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
 const toArray = (value) => {
@@ -416,9 +412,9 @@ export default function App() {
   return (
     <div className="min-h-screen overflow-x-hidden text-[var(--text)]">
       {!isKioskMode ? (
-        <Sidebar 
-          activeTab={activeTab} 
-          setActiveTab={setActiveTab} 
+        <Sidebar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
           approvalCount={approvals.length}
           isConnected={isConnected}
         />
@@ -489,7 +485,7 @@ export default function App() {
                         ? 'Syncing...'
                         : isConnected
                           ? 'Live'
-                          : 'Reconnecting'}
+                          : token ? 'Reconnecting' : 'Not signed in'}
                   </span>
                   {!isOnline && pendingCount > 0 && (
                     <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
@@ -573,10 +569,6 @@ export default function App() {
           ) : null}
 
           <div className="min-w-0">
-            {authRequired ? (
-              <LoginForm onSuccess={() => { setAuthRequired(false); setRefreshTick((t) => t + 1); }} />
-            ) : null}
-
             {!isKioskMode ? (
               <div className="mb-8 xl:hidden">
                 <div className="atelier-label text-[10px] text-[#8bd3d4]">Current View</div>

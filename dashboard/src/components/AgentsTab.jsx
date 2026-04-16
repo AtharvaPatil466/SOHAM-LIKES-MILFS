@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { apiFetch } from '../api';
 import { motion } from 'framer-motion';
 import { 
   Package, 
@@ -64,7 +65,7 @@ export default function AgentsTab({ agents, onRefresh }) {
   const toggleAgent = async (name, currentState) => {
     const endpoint = currentState === 'running' ? 'pause' : 'resume';
     try {
-      await fetch(`/api/skills/${name}/${endpoint}`, { method: 'POST' });
+      await apiFetch(`/api/skills/${name}/${endpoint}`, { method: 'POST' });
       onRefresh();
     } catch (e) {
       console.error('Failed to toggle agent:', e);
@@ -74,7 +75,7 @@ export default function AgentsTab({ agents, onRefresh }) {
   const triggerDemo = async () => {
     setIsTriggering(true);
     try {
-      await fetch('/api/demo/trigger-flow', { method: 'POST' });
+      await apiFetch('/api/demo/trigger-flow', { method: 'POST' });
       alert("✅ Demo triggered! Go to Dashboard to see it starting.");
     } catch (e) {
       console.error('Failed to trigger demo:', e);

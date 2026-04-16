@@ -33,6 +33,12 @@ class RootErrorBoundary extends React.Component {
           <pre className="mt-6 overflow-x-auto rounded-2xl bg-stone-900 p-4 text-xs text-stone-100">
             {String(this.state.error?.stack || this.state.error?.message || this.state.error)}
           </pre>
+          <button
+            onClick={() => this.setState({ error: null })}
+            className="mt-4 rounded-full bg-stone-900 px-5 py-2 text-sm font-bold text-white hover:bg-stone-700"
+          >
+            Try again
+          </button>
         </div>
       </div>
     )

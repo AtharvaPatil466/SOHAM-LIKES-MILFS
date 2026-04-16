@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { apiFetch } from '../api';
 import {
   IndianRupee,
   TrendingUp,
@@ -69,11 +70,11 @@ export default function FinancialsTab({ refreshTick = 0 }) {
     setLoading(true);
     try {
       const [ordersRes, vendorRes, gstRes, dailyRes, udhaarRes] = await Promise.all([
-        fetch('/api/orders'),
-        fetch('/api/vendor-payments'),
-        fetch('/api/gst/summary'),
-        fetch('/api/daily-summary'),
-        fetch('/api/udhaar'),
+        apiFetch('/api/orders'),
+        apiFetch('/api/vendor-payments'),
+        apiFetch('/api/gst/summary'),
+        apiFetch('/api/daily-summary'),
+        apiFetch('/api/udhaar'),
       ]);
       const [ordersData, vendorData, gstData, dailyData, udhaarData] = await Promise.all([
         ordersRes.json(),
@@ -82,11 +83,14 @@ export default function FinancialsTab({ refreshTick = 0 }) {
         dailyRes.json(),
         udhaarRes.json(),
       ]);
-      setOrders(ordersData || { customer_orders: [], vendor_orders: [] });
+      setOrders({
+        customer_orders: ordersData?.customer_orders || [],
+        vendor_orders: ordersData?.vendor_orders || [],
+      });
       setVendorSummary(vendorData || { unpaid_details: [] });
       setGstSummary(gstData || null);
       setDailySummary(dailyData || null);
-      setUdhaar(udhaarData || []);
+      setUdhaar(Array.isArray(udhaarData) ? udhaarData : udhaarData?.ledgers || []);
     } catch (err) {
       console.error('Failed to fetch financial data:', err);
     } finally {

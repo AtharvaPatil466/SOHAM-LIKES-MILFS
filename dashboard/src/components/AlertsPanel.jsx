@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch, apiFetchArray } from '../api';
 import { X, Bell, Package, TrendingUp, RotateCw, Megaphone, AlertTriangle, ChevronRight, CheckCircle2, Trash2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -28,9 +29,7 @@ export default function AlertsPanel({ open, onClose, onNavigate, onAlertCountCha
   const fetchAlerts = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/alerts?limit=30');
-      const data = await res.json();
-      setAlerts(data || []);
+      setAlerts(await apiFetchArray('/api/alerts?limit=30'));
     } catch { /* ignore */ }
     finally { setLoading(false); }
   };

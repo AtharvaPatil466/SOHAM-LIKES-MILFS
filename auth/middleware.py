@@ -306,7 +306,7 @@ class RBACMiddleware(BaseHTTPMiddleware):
             token = auth_header[7:]
             payload = jose_jwt.decode(
                 token,
-                os.environ.get("JWT_SECRET_KEY", ""),
+                os.environ.get("JWT_SECRET_KEY", "retailos-dev-secret-change-in-production"),
                 algorithms=["HS256"],
             )
             user_role = payload.get("role", "")

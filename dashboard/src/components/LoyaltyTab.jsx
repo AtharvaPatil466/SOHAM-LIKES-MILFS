@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Award, Star, Gift, TrendingUp } from 'lucide-react';
+import { authHeaders } from '../api';
 
 const getApiBase = () => (typeof window !== 'undefined' ? window.location.origin : '');
 
@@ -18,8 +19,8 @@ export default function LoyaltyTab() {
 
   useEffect(() => {
     Promise.all([
-      fetch(`${api}/api/loyalty/catalog`).then((r) => r.json()),
-      fetch(`${api}/api/loyalty/catalog/categories`).then((r) => r.json()),
+      fetch(`${api}/api/loyalty/catalog`, { headers: authHeaders() }).then((r) => r.json()),
+      fetch(`${api}/api/loyalty/catalog/categories`, { headers: authHeaders() }).then((r) => r.json()),
     ])
       .then(([cat, cats]) => {
         setCatalog(cat.products || []);

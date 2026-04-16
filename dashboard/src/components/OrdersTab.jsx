@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { apiFetch } from '../api';
 import { motion } from 'framer-motion';
 import {
   Truck,
@@ -235,9 +236,9 @@ export default function OrdersTab({ refreshTick = 0 }) {
     setLoading(true);
     try {
       const [ordersRes, returnsRes, vendorSummaryRes] = await Promise.all([
-        fetch('/api/orders'),
-        fetch('/api/returns'),
-        fetch('/api/vendor-payments'),
+        apiFetch('/api/orders'),
+        apiFetch('/api/returns'),
+        apiFetch('/api/vendor-payments'),
       ]);
       const [ordersData, returnsData, vendorSummaryData] = await Promise.all([
         ordersRes.json(),
@@ -250,7 +251,7 @@ export default function OrdersTab({ refreshTick = 0 }) {
       const vendorOrders = (ordersData?.vendor_orders || []).map((order) => ({ ...order, ...(dueMap[order.order_id] || {}) }));
 
       setOrders({ customer_orders: ordersData?.customer_orders || [], vendor_orders: vendorOrders });
-      setReturns(returnsData || []);
+      setReturns(Array.isArray(returnsData) ? returnsData : []);
       setVendorSummary(vendorSummaryData || { unpaid_details: [] });
     } catch (err) {
       console.error('Failed to fetch orders:', err);
@@ -266,7 +267,7 @@ export default function OrdersTab({ refreshTick = 0 }) {
   const payVendor = async (orderId) => {
     setPayingOrderId(orderId);
     try {
-      await fetch(`/api/vendor-orders/${orderId}/pay`, { method: 'POST' });
+      await apiFetch(`/api/vendor-orders/${orderId}/pay`, { method: 'POST' });
       await fetchData();
       window.dispatchEvent(new Event('retailos:data-changed'));
     } catch (err) {
@@ -279,7 +280,7 @@ export default function OrdersTab({ refreshTick = 0 }) {
   const processReturn = async (returnId) => {
     setProcessingReturnId(returnId);
     try {
-      await fetch(`/api/returns/${returnId}/process`, { method: 'POST' });
+      await apiFetch(`/api/returns/${returnId}/process`, { method: 'POST' });
       await fetchData();
       window.dispatchEvent(new Event('retailos:data-changed'));
     } catch (err) {

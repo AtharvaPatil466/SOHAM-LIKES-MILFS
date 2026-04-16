@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { apiFetch } from '../api';
 import { motion } from 'framer-motion';
 import {
   Minus,
@@ -130,7 +131,7 @@ export default function CartTab({ refreshTick = 0 }) {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [inventoryRes, customersRes] = await Promise.all([fetch('/api/inventory'), fetch('/api/customers')]);
+      const [inventoryRes, customersRes] = await Promise.all([apiFetch('/api/inventory'), apiFetch('/api/customers')]);
       const [inventoryData, customersData] = await Promise.all([inventoryRes.json(), customersRes.json()]);
       setInventory(inventoryData || []);
       setCustomers(customersData || []);
@@ -257,7 +258,7 @@ export default function CartTab({ refreshTick = 0 }) {
 
     setSubmittingSale(true);
     try {
-      const response = await fetch('/api/inventory/sale', {
+      const response = await apiFetch('/api/inventory/sale', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -285,7 +286,7 @@ export default function CartTab({ refreshTick = 0 }) {
     if (!voiceText.trim()) return;
     setVoiceBusy(true);
     try {
-      const response = await fetch('/api/voice/execute', {
+      const response = await apiFetch('/api/voice/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: voiceText }),

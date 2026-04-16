@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { apiFetch } from '../api';
 import { motion } from 'framer-motion';
 import {
   Search,
@@ -350,10 +351,10 @@ export default function CustomersTab({ refreshTick = 0 }) {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [customersRes, udhaarRes] = await Promise.all([fetch('/api/customers'), fetch('/api/udhaar')]);
+      const [customersRes, udhaarRes] = await Promise.all([apiFetch('/api/customers'), apiFetch('/api/udhaar')]);
       const [customersData, udhaarData] = await Promise.all([customersRes.json(), udhaarRes.json()]);
-      setCustomers(customersData || []);
-      setUdhaar(udhaarData || []);
+      setCustomers(Array.isArray(customersData) ? customersData : []);
+      setUdhaar(Array.isArray(udhaarData) ? udhaarData : udhaarData?.ledgers || []);
     } catch (err) {
       console.error('Failed to fetch customers:', err);
     } finally {
@@ -391,7 +392,7 @@ export default function CustomersTab({ refreshTick = 0 }) {
     if (!customer.udhaar_id || !draft.amount) return;
     setProcessingId(customer.customer_id);
     try {
-      await fetch('/api/udhaar/payment', {
+      await apiFetch('/api/udhaar/payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -414,7 +415,7 @@ export default function CustomersTab({ refreshTick = 0 }) {
     if (!customer.udhaar_id) return;
     setSendingReminderId(customer.customer_id);
     try {
-      const response = await fetch(`/api/udhaar/${customer.udhaar_id}/remind`, { method: 'POST' });
+      const response = await apiFetch(`/api/udhaar/${customer.udhaar_id}/remind`, { method: 'POST' });
       const data = await response.json();
       if (data?.whatsapp_link) {
         window.open(data.whatsapp_link, '_blank', 'noopener,noreferrer');

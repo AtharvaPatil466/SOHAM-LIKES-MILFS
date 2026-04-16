@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../api';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Check,
@@ -34,7 +35,7 @@ export default function ApprovalsTab({ approvals, onRefresh }) {
 
   const fetchNegotiations = async () => {
     try {
-      const res = await fetch('/api/negotiations');
+      const res = await apiFetch('/api/negotiations');
       const data = await res.json();
       setNegotiations(data.active || {});
     } catch (e) {
@@ -49,7 +50,7 @@ export default function ApprovalsTab({ approvals, onRefresh }) {
   const handleAction = async (id, type) => {
     try {
       const endpoint = type === 'approve' ? 'approve' : 'reject';
-      await fetch(`/api/approvals/${endpoint}`, {
+      await apiFetch(`/api/approvals/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ approval_id: id })

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { apiFetch } from '../api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LayoutGrid, Snowflake, Zap, ArrowRight, MoveRight, Trash2, Layers, TrendingUp, ChevronDown, ChevronUp, Sparkles, Plus, Pencil, X, Eye, Package, Search } from 'lucide-react';
 
@@ -68,9 +69,9 @@ function ZoneFormModal({ zone, onClose, onSave }) {
     try {
       const body = { zone_name: name, zone_type: type, total_slots: slots };
       if (zone) {
-        await fetch(`/api/shelf-zones/zones/${zone.zone_id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        await apiFetch(`/api/shelf-zones/zones/${zone.zone_id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       } else {
-        await fetch('/api/shelf-zones/zones', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        await apiFetch('/api/shelf-zones/zones', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       }
       onSave();
     } catch (e) {
@@ -131,7 +132,7 @@ function ProductAssignModal({ zoneId, onClose, onSave }) {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/inventory');
+        const res = await apiFetch('/api/inventory');
         setInventory(await res.json());
       } catch (e) { console.error(e); }
     })();
@@ -145,7 +146,7 @@ function ProductAssignModal({ zoneId, onClose, onSave }) {
     if (!selectedSku) return;
     setSaving(true);
     try {
-      const res = await fetch(`/api/shelf-zones/zones/${zoneId}/assign`, {
+      const res = await apiFetch(`/api/shelf-zones/zones/${zoneId}/assign`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sku: selectedSku, product_name: selectedName, shelf_level: shelfLevel }),
       });
@@ -403,8 +404,8 @@ export default function ShelfTrackerTab() {
   const fetchData = useCallback(async () => {
     try {
       const [shelfRes, velRes] = await Promise.all([
-        fetch('/api/shelf-zones'),
-        fetch('/api/shelf-zones/velocity'),
+        apiFetch('/api/shelf-zones'),
+        apiFetch('/api/shelf-zones/velocity'),
       ]);
       const shelfData = await shelfRes.json();
       const velData = await velRes.json();
@@ -430,7 +431,7 @@ export default function ShelfTrackerTab() {
   const handleOptimize = async () => {
     setOptimizing(true);
     try {
-      const res = await fetch('/api/shelf-zones/optimize', { method: 'POST' });
+      const res = await apiFetch('/api/shelf-zones/optimize', { method: 'POST' });
       if (!res.ok) {
         throw new Error('Failed to trigger optimization');
       }
@@ -446,7 +447,7 @@ export default function ShelfTrackerTab() {
 
   const handleDeleteZone = async (zoneId) => {
     try {
-      const res = await fetch(`/api/shelf-zones/zones/${zoneId}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/shelf-zones/zones/${zoneId}`, { method: 'DELETE' });
       if (!res.ok) {
         const err = await res.json();
         alert(err.detail || 'Failed to delete');
@@ -458,7 +459,7 @@ export default function ShelfTrackerTab() {
 
   const handleRemoveProduct = async (zoneId, sku) => {
     try {
-      await fetch(`/api/shelf-zones/zones/${zoneId}/products/${sku}`, { method: 'DELETE' });
+      await apiFetch(`/api/shelf-zones/zones/${zoneId}/products/${sku}`, { method: 'DELETE' });
       fetchData();
     } catch (e) { console.error(e); }
   };

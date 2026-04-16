@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { apiFetch } from '../api';
 import { motion } from 'framer-motion';
 import {
   AlertTriangle,
@@ -164,9 +165,9 @@ export default function CustomerAssistantTab({ kioskMode = false }) {
   const fetchBootstrap = async () => {
     try {
       const [profileRes, configRes, analyticsRes] = await Promise.all([
-        fetch('/api/store-profile'),
-        fetch('/api/customer-assistant/config'),
-        fetch('/api/customer-assistant/analytics'),
+        apiFetch('/api/store-profile'),
+        apiFetch('/api/customer-assistant/config'),
+        apiFetch('/api/customer-assistant/analytics'),
       ]);
       const [profileData, configData, analyticsData] = await Promise.all([
         profileRes.json(),
@@ -218,14 +219,14 @@ export default function CustomerAssistantTab({ kioskMode = false }) {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/customer-assistant/query', {
+      const response = await apiFetch('/api/customer-assistant/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text }),
       });
       const data = await response.json();
       setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: 'assistant', text: data.answer, response: data, sourceQuery: text }]);
-      fetch('/api/customer-assistant/analytics')
+      apiFetch('/api/customer-assistant/analytics')
         .then((res) => res.json())
         .then((analyticsData) => setAnalytics(analyticsData))
         .catch(() => {});
@@ -299,12 +300,12 @@ export default function CustomerAssistantTab({ kioskMode = false }) {
       };
 
       const [profileRes, configRes] = await Promise.all([
-        fetch('/api/store-profile', {
+        apiFetch('/api/store-profile', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(nextProfile),
         }),
-        fetch('/api/customer-assistant/config', {
+        apiFetch('/api/customer-assistant/config', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(nextConfig),
@@ -366,7 +367,7 @@ export default function CustomerAssistantTab({ kioskMode = false }) {
   const shareWhatsAppAnswer = async (message) => {
     const sourceQuery = message?.sourceQuery || query || latestAssistantResponse?.product || 'What time do you close?';
     try {
-      const response = await fetch('/api/customer-assistant/whatsapp-link', {
+      const response = await apiFetch('/api/customer-assistant/whatsapp-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: sourceQuery }),

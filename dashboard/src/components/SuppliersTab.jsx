@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Truck, Search, Plus, ChevronDown, ChevronUp, X, Star, Clock, Package, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { apiFetch, apiFetchArray } from '../api';
 
 function TrustBar({ score }) {
   const color = score >= 80 ? 'bg-emerald-500' : score >= 60 ? 'bg-amber-500' : 'bg-red-500';
@@ -24,7 +25,7 @@ function SupplierCard({ supplier, onViewHistory }) {
     if (!expanded && !history) {
       setLoadingHistory(true);
       try {
-        const res = await fetch(`/api/suppliers/${supplier.supplier_id}/history`);
+        const res = await apiFetch(`/api/suppliers/${supplier.supplier_id}/history`);
         const data = await res.json();
         setHistory(data);
       } catch (err) {
@@ -246,11 +247,10 @@ export default function SuppliersTab() {
   const fetchSuppliers = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/suppliers');
-      const data = await res.json();
-      setSuppliers(data || []);
+      setSuppliers(await apiFetchArray('/api/suppliers'));
     } catch (err) {
       console.error(err);
+      setSuppliers([]);
     } finally {
       setLoading(false);
     }
@@ -263,7 +263,7 @@ export default function SuppliersTab() {
     return () => clearTimeout(t);
   }, [toast]);
 
-  const filtered = suppliers.filter((s) => {
+  const filtered = (Array.isArray(suppliers) ? suppliers : []).filter((s) => {
     const matchesSearch = s.supplier_name?.toLowerCase().includes(searchTerm.toLowerCase()) || s.supplier_id?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesTrust = trustFilter === 'All' || (trustFilter === 'Trusted' && s.trust_score >= 80) || (trustFilter === 'Watchlist' && s.trust_score < 60);
     return matchesSearch && matchesTrust;
@@ -272,7 +272,7 @@ export default function SuppliersTab() {
   const handleRegister = async (payload) => {
     setSubmitting(true);
     try {
-      const res = await fetch('/api/suppliers/register', {
+      const res = await apiFetch('/api/suppliers/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

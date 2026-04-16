@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiFetch, apiFetchArray } from '../api';
 import { motion } from 'framer-motion';
 import { Bike, Clock, CheckCircle2, Phone, MapPin, Package, MessageCircle, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 
@@ -120,11 +121,10 @@ export default function DeliveryQueueTab({ refreshTick = 0 }) {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/delivery-requests');
-        const data = await res.json();
-        setRequests(data || []);
+        setRequests(await apiFetchArray('/api/delivery-requests'));
       } catch (err) {
         console.error('Failed to fetch delivery requests:', err);
+        setRequests([]);
       } finally {
         setLoading(false);
       }
@@ -133,7 +133,7 @@ export default function DeliveryQueueTab({ refreshTick = 0 }) {
 
   const updateStatus = async (requestId, newStatus) => {
     try {
-      const res = await fetch(`/api/delivery-requests/${requestId}/status`, {
+      const res = await apiFetch(`/api/delivery-requests/${requestId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
