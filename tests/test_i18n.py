@@ -1,7 +1,5 @@
 """i18n and voice command tests."""
 
-import pytest
-
 from i18n.service import (
     translate,
     get_all_translations,
@@ -9,7 +7,6 @@ from i18n.service import (
     parse_voice_command,
 )
 from i18n.translations import SUPPORTED_LANGUAGES
-from tests.conftest import register_user, auth_header
 
 
 class TestTranslations:
@@ -133,24 +130,3 @@ class TestVoiceCommands:
         assert result["raw_text"] == "check stock of dal"
 
 
-class TestVoiceCommandAPI:
-    @pytest.mark.asyncio
-    async def test_voice_command_endpoint(self, client):
-        reg = await register_user(client, "voice_user1", "cashier")
-        resp = await client.post("/api/i18n/voice-command", json={"text": "check stock of rice"}, headers=auth_header(reg["token"]))
-        assert resp.status_code == 200
-        assert resp.json()["intent"] == "stock_check"
-
-    @pytest.mark.asyncio
-    async def test_voice_command_hindi(self, client):
-        reg = await register_user(client, "voice_user2", "cashier")
-        resp = await client.post("/api/i18n/voice-command", json={"text": "चावल का स्टॉक बताओ"}, headers=auth_header(reg["token"]))
-        assert resp.status_code == 200
-        assert resp.json()["intent"] == "stock_check"
-
-    @pytest.mark.asyncio
-    async def test_detect_language_endpoint(self, client):
-        reg = await register_user(client, "voice_user3", "cashier")
-        resp = await client.post("/api/i18n/detect-language", json={"text": "चावल"}, headers=auth_header(reg["token"]))
-        assert resp.status_code == 200
-        assert resp.json()["detected_language"] == "hi"

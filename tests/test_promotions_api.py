@@ -1,145 +1,14 @@
-"""Integration tests for promotions, payments, and notification endpoints."""
+"""Integration tests for endpoints that are still registered."""
 
-import time
 import pytest
 
 from tests.conftest import register_user, auth_header
 
 
 @pytest.mark.asyncio
-async def test_create_promotion(client):
-    reg = await register_user(client, "promo_owner", "owner")
-    resp = await client.post("/api/v2/promotions", headers=auth_header(reg["token"]), json={
-        "title": "Test Sale 10% Off",
-        "promo_type": "percentage",
-        "promo_code": "TEST10",
-        "discount_value": 10,
-        "min_order_amount": 200,
-        "starts_at": time.time(),
-        "ends_at": time.time() + 86400,
-    })
-    assert resp.status_code == 200
-    data = resp.json()
-    assert data["promo_code"] == "TEST10"
-    assert data["status"] == "created"
-
-
-@pytest.mark.asyncio
-async def test_list_promotions(client):
-    reg = await register_user(client, "promo_lister", "owner")
-    resp = await client.get("/api/v2/promotions", headers=auth_header(reg["token"]))
-    assert resp.status_code == 200
-    data = resp.json()
-    assert "promotions" in data
-    assert isinstance(data["promotions"], list)
-
-
-@pytest.mark.asyncio
-async def test_create_combo_deal(client):
-    reg = await register_user(client, "combo_owner", "owner")
-    resp = await client.post("/api/v2/promotions/combo", headers=auth_header(reg["token"]), json={
-        "name": "Rice + Dal Combo",
-        "items": [
-            {"sku": "RICE-5KG", "qty": 1, "price": 275},
-            {"sku": "TOOR-DAL-1KG", "qty": 1, "price": 160},
-        ],
-        "combo_price": 400,
-    })
-    # combo endpoint may require specific fields; just check it doesn't 500
-    assert resp.status_code in (200, 422)
-
-
-@pytest.mark.asyncio
-async def test_payment_config(client):
-    reg = await register_user(client, "pay_user", "owner")
-    resp = await client.get("/api/payments/config", headers=auth_header(reg["token"]))
-    assert resp.status_code == 200
-    data = resp.json()
-    assert "razorpay_key_id" in data or "is_configured" in data
-
-
-@pytest.mark.asyncio
-async def test_record_offline_payment(client):
-    reg = await register_user(client, "pay_cashier", "cashier")
-    resp = await client.post("/api/payments/record-offline", headers=auth_header(reg["token"]), json={
-        "order_id": "ORD-TEST-001",
-        "amount": 750.0,
-        "method": "cash",
-    })
-    assert resp.status_code == 200
-    assert resp.json()["status"] == "recorded"
-
-
-@pytest.mark.asyncio
-async def test_payment_history(client):
-    reg = await register_user(client, "pay_history", "owner")
-    resp = await client.get("/api/payments/history", headers=auth_header(reg["token"]))
-    assert resp.status_code == 200
-    assert "payments" in resp.json()
-
-
-@pytest.mark.asyncio
-async def test_push_status(client):
-    reg = await register_user(client, "push_user", "owner")
-    resp = await client.get("/api/push/status", headers=auth_header(reg["token"]))
-    assert resp.status_code == 200
-    data = resp.json()
-    assert "is_configured" in data or "configured" in data
-
-
-@pytest.mark.asyncio
-async def test_sms_status(client):
-    reg = await register_user(client, "sms_user", "cashier")
-    resp = await client.get("/api/sms/status", headers=auth_header(reg["token"]))
-    assert resp.status_code == 200
-
-
-@pytest.mark.asyncio
-async def test_digest_status(client):
-    reg = await register_user(client, "digest_user", "cashier")
-    resp = await client.get("/api/digests/status", headers=auth_header(reg["token"]))
-    assert resp.status_code == 200
-
-
-@pytest.mark.asyncio
-async def test_tally_status(client):
-    reg = await register_user(client, "tally_user", "owner")
-    resp = await client.get("/api/tally/status", headers=auth_header(reg["token"]))
-    assert resp.status_code == 200
-    data = resp.json()
-    assert "is_configured" in data
-
-
-@pytest.mark.asyncio
 async def test_shelf_audit_status(client):
     reg = await register_user(client, "shelf_user", "cashier")
     resp = await client.get("/api/shelf-audit/status", headers=auth_header(reg["token"]))
-    assert resp.status_code == 200
-
-
-@pytest.mark.asyncio
-async def test_encryption_status(client):
-    reg = await register_user(client, "enc_user", "owner")
-    resp = await client.get("/api/encryption/status", headers=auth_header(reg["token"]))
-    assert resp.status_code == 200
-    data = resp.json()
-    assert "algorithm" in data
-    assert "AES" in data["algorithm"] or "Fernet" in data["algorithm"]
-
-
-@pytest.mark.asyncio
-async def test_compliance_purposes(client):
-    reg = await register_user(client, "comp_user", "owner")
-    resp = await client.get("/api/compliance/purposes", headers=auth_header(reg["token"]))
-    assert resp.status_code == 200
-    data = resp.json()
-    assert "purposes" in data
-
-
-@pytest.mark.asyncio
-async def test_compliance_retention(client):
-    reg = await register_user(client, "comp_ret_user", "owner")
-    resp = await client.get("/api/compliance/retention-policies", headers=auth_header(reg["token"]))
     assert resp.status_code == 200
 
 
@@ -182,11 +51,4 @@ async def test_websocket_stats(client):
 async def test_scheduler_jobs(client):
     reg = await register_user(client, "sched_user", "owner")
     resp = await client.get("/api/scheduler/jobs", headers=auth_header(reg["token"]))
-    assert resp.status_code == 200
-
-
-@pytest.mark.asyncio
-async def test_backup_status(client):
-    reg = await register_user(client, "backup_user", "owner")
-    resp = await client.get("/api/backup/list", headers=auth_header(reg["token"]))
     assert resp.status_code == 200
