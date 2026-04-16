@@ -1,9 +1,12 @@
 import asyncio
 import logging
 import os
+from contextlib import asynccontextmanager
 
 import uvicorn
 from dotenv import load_dotenv
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from runtime.audit import AuditLogger
 from runtime.memory import Memory
@@ -17,57 +20,8 @@ setup_logging()
 logger = logging.getLogger("retailos.runtime")
 
 
-async def init_runtime():
-    """Initialize all runtime components and return the FastAPI app."""
-
-    # Initialize memory (Redis — mandatory in production)
-    redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
-    env = os.environ.get("RETAILOS_ENV", os.environ.get("ENV", "development")).lower()
-    memory = Memory(redis_url)
-    await memory.init(require_redis=(env == "production"))
-
-    # Initialize audit logger (PostgreSQL)
-    database_url = os.environ.get("DATABASE_URL", "postgresql://localhost:5432/retailos")
-    audit = AuditLogger(database_url)
-    await audit.init()
-
-    # Load all skills
-    skill_loader = SkillLoader(skills_dir="skills", memory=memory, audit=audit)
-    skills = await skill_loader.discover_and_load()
-    logger.info(
-        "Loaded runtime skills",
-        extra={"skill_count": len(skills), "skill_names": sorted(skills.keys())},
-    )
-
-    # Initialize orchestrator
-    api_key = os.environ.get("GEMINI_API_KEY", "")
-    orchestrator = Orchestrator(
-        memory=memory,
-        audit=audit,
-        skills=skills,
-        api_key=api_key,
-    )
-
-    # Start the orchestrator event loop
-    await orchestrator.start()
-
-    # Seed demo data into memory
-    await _seed_memory(memory)
-
-    # Create FastAPI app
-    app = create_app(orchestrator)
-
-    # Store references for cleanup
-    app.state.orchestrator = orchestrator
-    app.state.memory = memory
-    app.state.audit = audit
-
-    return app
-
-
 async def _seed_memory(memory: Memory):
     """Seed memory with demo data for realistic behavior."""
-    # Supplier histories
     await memory.set("supplier:SUP-001:history", {
         "name": "FreshFreeze Distributors",
         "orders": 12,
@@ -93,8 +47,6 @@ async def _seed_memory(memory: Memory):
         "last_order": "2026-03-15",
         "notes": "New supplier, fast so far but higher prices",
     })
-
-    # Yesterday's analytics summary
     await memory.set("orchestrator:daily_summary", {
         "timestamp": 1711238400,
         "summary": "System processed 47 events yesterday. CoolFoods India was 2 days late on delivery again — 3rd time in 4 orders. Protein category offers had 34% conversion rate. Ice cream restocking frequency increased 20% vs last month.",
@@ -120,29 +72,100 @@ async def _seed_memory(memory: Memory):
             "Focus customer offers on protein category",
         ],
     })
-
     logger.info("Seeded demo memory")
 
 
-# Global app reference for uvicorn
-app = None
+async def init_runtime() -> tuple:
+    """Initialize all runtime components."""
+    redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
+    env = os.environ.get("RETAILOS_ENV", os.environ.get("ENV", "development")).lower()
+    memory = Memory(redis_url)
+    await memory.init(require_redis=(env == "production"))
+
+    database_url = os.environ.get("DATABASE_URL", "postgresql://localhost:5432/retailos")
+    audit = AuditLogger(database_url)
+    await audit.init()
+
+    skill_loader = SkillLoader(skills_dir="skills", memory=memory, audit=audit)
+    skills = await skill_loader.discover_and_load()
+    logger.info(
+        "Loaded runtime skills",
+        extra={"skill_count": len(skills), "skill_names": sorted(skills.keys())},
+    )
+
+    api_key = os.environ.get("GEMINI_API_KEY", "")
+    orchestrator = Orchestrator(
+        memory=memory,
+        audit=audit,
+        skills=skills,
+        api_key=api_key,
+    )
+    await orchestrator.start()
+    await _seed_memory(memory)
+
+    return orchestrator, memory, audit
 
 
-async def startup():
-    global app
-    app = await init_runtime()
-    return app
+# ── App factory for gunicorn ──
+# gunicorn imports `main:app` at module level, so `app` must exist at import time.
+# Async initialization happens via FastAPI's lifespan handler on first request.
+
+_orchestrator = None
+_memory = None
+_audit = None
+
+
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    """Async startup/shutdown for the FastAPI app."""
+    global _orchestrator, _memory, _audit
+    _orchestrator, _memory, _audit = await init_runtime()
+
+    # Attach to app state so routes can access them
+    application.state.orchestrator = _orchestrator
+    application.state.memory = _memory
+    application.state.audit = _audit
+
+    # Inject orchestrator into route handlers
+    from api.routes import _set_orchestrator
+    _set_orchestrator(_orchestrator)
+
+    # Run the same startup tasks that on_event("startup") would run
+    try:
+        from db.session import init_db
+        await init_db()
+    except Exception:
+        logger.warning("db.session.init_db failed (non-critical)")
+
+    yield
+
+    # Shutdown
+    logger.info("RetailOS shutting down")
+
+
+def create_production_app() -> FastAPI:
+    """Create the FastAPI app with lifespan — importable by gunicorn."""
+    inner_app = create_app(orchestrator=None, lifespan=lifespan)
+    return inner_app
+
+
+# This is what gunicorn imports: `main:app`
+app = create_production_app()
 
 
 def main():
-    """Entry point — starts the RetailOS runtime."""
+    """Entry point for local development — `python main.py`."""
 
     async def run():
-        global app
-        app = await init_runtime()
+        global _orchestrator, _memory, _audit
+        _orchestrator, _memory, _audit = await init_runtime()
+        inner_app = create_app(_orchestrator)
+        inner_app.state.orchestrator = _orchestrator
+        inner_app.state.memory = _memory
+        inner_app.state.audit = _audit
 
         config = uvicorn.Config(
-            app,
+            inner_app,
             host="0.0.0.0",
             port=int(os.environ.get("PORT", 8000)),
             log_level="info",

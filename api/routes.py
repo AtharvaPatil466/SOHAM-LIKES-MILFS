@@ -1039,12 +1039,37 @@ def _init_sentry():
         )
 
 
-def create_app(orchestrator: Orchestrator) -> FastAPI:
+_orchestrator_ref: list[Orchestrator | None] = [None]
+
+
+class _OrchestratorProxy:
+    """Thin proxy so route closures can capture this at import time,
+    while the real orchestrator gets injected later via lifespan."""
+    def __getattr__(self, name):
+        real = _orchestrator_ref[0]
+        if real is None:
+            raise RuntimeError("Orchestrator not initialized yet — is the lifespan handler running?")
+        return getattr(real, name)
+
+
+def _set_orchestrator(orch: Orchestrator) -> None:
+    """Inject the orchestrator after async init (used by lifespan handler)."""
+    _orchestrator_ref[0] = orch
+
+
+def create_app(orchestrator: Orchestrator | None = None, lifespan=None) -> FastAPI:
     _init_logging()
     _init_sentry()
 
+    # Store orchestrator in mutable ref so lifespan can inject it later
+    if orchestrator is not None:
+        _orchestrator_ref[0] = orchestrator
+    # Replace local var with proxy so closures work even when orchestrator is None at import
+    orchestrator = _OrchestratorProxy()
+
     app = FastAPI(
         title="RetailOS",
+        lifespan=lifespan,
         description=(
             "Autonomous Agent Runtime for Indian Kirana & Retail Store Operations.\n\n"
             "## Modules\n"

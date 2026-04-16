@@ -1,0 +1,20 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://retailos-api.onrender.com/api/:path*"
+    },
+    {
+      "source": "/ws/:path*",
+      "destination": "https://retailos-api.onrender.com/ws/:path*"
+    },
+    {
+      "source": "/health",
+      "destination": "https://retailos-api.onrender.com/health"
+    },
+    {
+      "source": "/docs",
+      "destination": "https://retailos-api.onrender.com/docs"
+    }
+  ]
+}
